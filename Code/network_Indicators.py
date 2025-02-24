@@ -12,13 +12,11 @@ from matplotlib.colors import Normalize, rgb2hex
 def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
     """
     Calcula la métrica de centralidad especificada para un grafo y guarda el gráfico en un formato interactivo (HTML).
-
     Parameters:
         graph (networkx.Graph): Grafo de entrada.
         metric (str): Métrica de centralidad ('closeness', 'eigenvector', 'pagerank', etc.).
         place_name (str): Nombre de la ciudad o lugar para nombrar el archivo.
         cmap (matplotlib colormap, optional): Colormap para el gradiente. Por defecto: plt.cm.viridis.
-
     Returns:
         None
     """
@@ -143,7 +141,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
     colorscale = [[norm(val), rgb2hex(cmap(norm(val)))] for val in np.linspace(0, 1, 256)]
     
     # 3. Traza de nodos con barra de colores
-    node_trace = go.Scattergl(
+    node_trace = go.Scatter(
         x=positions[:, 1],
         y=positions[:, 0],
         mode='markers',
@@ -161,7 +159,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
             line=dict(width=0.5, color='rgba(0,0,0,0.8)'),
             opacity=0.9
         ),
-        hoverinfo='text',
+        hoverinfo='text+name',
         text=[f"Nodo: {node}<br>Centralidad: {val:.4f}" for node, val in zip(nodes, node_colors)]
     )
 
@@ -215,21 +213,6 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
         ),
         template='plotly_white',
         height=800,
-        updatemenus=[{
-            'type': 'buttons',
-            'buttons': [{
-                'label': 'Reset Vista',
-                'method': 'relayout',
-                'args': [{
-                    'xaxis.range': x_range,
-                    'yaxis.range': y_range
-                }]
-            }],
-            'x': 0.01,
-            'xanchor': 'left',
-            'y': 1.05,
-            'yanchor': 'top'
-        }]
     )
     # =============================================
     # 6. Exportación optimizada
