@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from openpyxl import load_workbook, Workbook
 
 ## Class to define the different mobility information (The ABC of mobility)
-class Node:
+class CiudadesABC:
     def __init__(self, index, ObsID, year, LastObservation, City, metro_names, Country, continent, 
                  region, subregion, state_name, state_abbr, population, longitude, latitude, 
                  Walking, Cycling, Motorbikes, Active, Bus, Car, IncomeGroup, DataSource, DataLink, GDPPP_2022):
@@ -18,8 +18,8 @@ class Node:
         self.continent = continent  # Continent
         self.region = region  # Region
         self.subregion = subregion  # Subregion
-        self.state_name = state_name  # State name
-        self.state_abbr = state_abbr  # State abbreviation
+        self.state_name = str(state_name) if state_name not in [None, "", " "] else "Not applicable" # State name
+        self.state_abbr = str(state_abbr) if state_abbr not in [None, "", " "] else "Not applicable"  # State abbreviation
         self.population = int(population) if population else None  # Population
         self.longitude = float(longitude)  # Geographic longitude
         self.latitude = float(latitude)  # Geographic latitude
@@ -36,7 +36,7 @@ class Node:
 
     def __repr__(self):
         return (
-            f"Node(index={self.index}, ObsID={self.ObsID}, year={self.year}, "
+            f"CiudadesABC(index={self.index}, ObsID={self.ObsID}, year={self.year}, "
             f"LastObservation={self.LastObservation}, City={self.City}, "
             f"metro_names={self.metro_names}, Country={self.Country}, continent={self.continent}, "
             f"region={self.region}, subregion={self.subregion}, state_name={self.state_name}, "
@@ -56,7 +56,7 @@ def read_nodes_from_excel(filename, sheet_name):
 
     # Iterate over rows starting from the second (excluding headers)
     for row in sheet.iter_rows(min_row=2, values_only=True):
-        node = Node(
+        node = CiudadesABC(
             index=row[0],
             ObsID=row[1],
             year=row[2],

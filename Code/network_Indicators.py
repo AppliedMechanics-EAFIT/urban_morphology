@@ -66,8 +66,15 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
         centrality = nx.betweenness_centrality(graph)
     elif metric == "closeness":
         centrality = nx.closeness_centrality(graph)
+    elif metric == "slc":
+        centrality = calculate_slc(graph)
+    elif metric == "lsc":
+        centrality = calculate_lsc(graph, alpha=0.5)
     else:
         raise ValueError(f"Métrica desconocida: {metric}")
+
+
+
 
     # Extraer valores de centralidad
     node_colors = [centrality[node] for node in graph.nodes()]
@@ -133,8 +140,8 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
     node_colors = np.array([centrality[node] for node in nodes])
      
     # 1. Tamaño de nodos y bordes aumentado
-    NODE_SIZE = 4  # Aumentado de 4 a 8
-    EDGE_WIDTH = 1.5  # Aumentado de 0.3 a 1.5
+    NODE_SIZE = 5  # Aumentado de 4 a 8
+    EDGE_WIDTH = 1  # Aumentado de 0.3 a 1.5
     
     # 2. Configuración de la barra de colores
     norm = Normalize(vmin=node_colors.min(), vmax=node_colors.max())
@@ -148,20 +155,22 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
         marker=dict(
             size=NODE_SIZE,
             color=node_colors,  # Usar valores directos
-            colorscale='Viridis',  # Mapeo directo a colorscale
+            colorscale='Rainbow',  # Mapeo directo a colorscale
             colorbar=dict(
                 title=dict(text=f'Centralidad {metric}', side='right'),
-                thickness=20,
-                x=1.08,
-                len=0.75,
+                thickness=25,
+                x=1.05,
+                len=0.8,
                 ticksuffix='   '
             ),
-            line=dict(width=0.5, color='rgba(0,0,0,0.8)'),
-            opacity=0.9
+            line=dict(width=0.6, color='rgba(0,0,0,0.8)'),  # Borde más visible
+            opacity=0.85
         ),
         hoverinfo='text+name',
         text=[f"Nodo: {node}<br>Centralidad: {val:.4f}" for node, val in zip(nodes, node_colors)]
     )
+
+
 
     # Traza de bordes optimizada
     edge_x = []
@@ -294,7 +303,9 @@ def coefficient_centrality(graph, metric, ciudad):
         "betweenness": nx.betweenness_centrality(graph),
         "closeness": nx.closeness_centrality(graph),
         "pagerank": nx.pagerank(graph, alpha=0.85),
-        "eigenvector": calculate_eigenvector_centrality(graph)  # Usar la función personalizada
+        "eigenvector": calculate_eigenvector_centrality(graph) , 
+        "slc": calculate_slc(graph),
+        "lsc": calculate_lsc(graph, alpha=0.5)
     }
     
     # Crear libro de Excel
@@ -308,11 +319,13 @@ def coefficient_centrality(graph, metric, ciudad):
         ("Intermediación", 2),
         ("Cercanía", 2),
         ("PageRank", 2),
-        ("Vector Propio", 2)
+        ("Vector Propio", 2),
+        ("Centralidad semilocal",2),
+        ("Centraldad local ponderada", 2)
     ]
     
     # Escribir cabecera principal
-    ws.merge_cells('A1:J1')
+    ws.merge_cells('A1:N1')
     ws['A1'] = ciudad
     ws['A1'].alignment = Alignment(horizontal='center')
     
@@ -332,7 +345,7 @@ def coefficient_centrality(graph, metric, ciudad):
     fila = 4
     for nodo in graph.nodes():
         col = 1
-        for metrica in ['degree', 'betweenness', 'closeness', 'pagerank', 'eigenvector']:
+        for metrica in ['degree', 'betweenness', 'closeness', 'pagerank', 'eigenvector', "slc" , "lsc"]:
             try:
                 valor = metricas[metrica].get(nodo, 0)
             except KeyError:
@@ -360,5 +373,67 @@ def coefficient_centrality(graph, metric, ciudad):
     return ruta_completa
 
 
+def calculate_slc(graph):
+    """
+    Calcula la Centralidad Semilocal Clásica (SLC) para cada nodo en el grafo dirigido.
+    
+    Parámetros:
+    - graph: Grafo dirigido de NetworkX.
 
+    Retorna:
+    - Un diccionario con la SLC de cada nodo.
+    """
+    slc = {}
+
+    for node in graph.nodes():
+        # Obtener vecinos a distancia 1
+        neighbors_1 = set(graph.successors(node))  # Vecinos directos salientes
+
+        # Calcular SLC usando la fórmula:
+        slc_value = sum(len(set(graph.successors(w))) for w in neighbors_1)  # N2(w)
+        slc[node] = slc_value
+
+    # Normalizar valores entre 0 y 1
+    max_slc = max(slc.values(), default=1)
+    slc = {node: val / max_slc for node, val in slc.items()}
+
+    return slc
+
+
+def calculate_lsc(graph, alpha=0.5):
+    """
+    Calcula la Centralidad Semilocal Mejorada (LSC) para cada nodo en el grafo dirigido.
+    
+    Parámetros:
+    - graph: Grafo dirigido de NetworkX.
+    - alpha: Parámetro de ajuste (0 <= alpha <= 1).
+
+    Retorna:
+    - Un diccionario con la LSC de cada nodo.
+    """
+    # Obtener la centralidad SLC primero
+    slc = calculate_slc(graph)
+    lsc = {}
+
+    for node in graph.nodes():
+        # Obtener vecinos a distancia 1
+        neighbors_1 = set(graph.successors(node))
+
+        # Obtener vecinos a distancia 2
+        neighbors_2 = set()
+        for neighbor in neighbors_1:
+            neighbors_2.update(set(graph.successors(neighbor)))
+
+        # Calcular LSC usando la fórmula:
+        lsc_value = sum(alpha * len(set(graph.successors(u))) + 
+                        (1 - alpha) * sum(slc.get(w, 0) for w in set(graph.successors(u)))
+                        for u in neighbors_1)
+
+        lsc[node] = lsc_value
+
+    # Normalizar valores entre 0 y 1
+    max_lsc = max(lsc.values(), default=1)
+    lsc = {node: val / max_lsc for node, val in lsc.items()}
+
+    return lsc
 
