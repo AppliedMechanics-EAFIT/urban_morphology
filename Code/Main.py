@@ -19,6 +19,8 @@ import geopandas as gpd
 from shapely.ops import unary_union, linemerge
 from shapely.geometry import LineString, MultiLineString, GeometryCollection
 
+
+#
 # # Define a place or city to compile
 place_name = "Pasto, Colombia"
 
