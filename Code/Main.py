@@ -3,7 +3,7 @@
 ## Main file to executethe different programs and functions
 from Lecture import CiudadesABC,read_nodes_from_excel
 from network_Indicators import plot_centrality, coefficient_centrality
-from cleaning_DATA_ABC import remove_duplicate_observations
+from cleaning_DATA_ABC import clean_and_filter_data
 import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -26,16 +26,16 @@ place_name = "Pasto, Colombia"
 graph = ox.graph_from_place(place_name, network_type='drive')
 ox.plot_graph(graph)
 
-# Métricas disponibles
-metrics = [ "eigenvector", "closeness","pagerank", "betweenness", "degree","slc" , "lsc"]
+# # Métricas disponibles
+# metrics = [ "eigenvector", "closeness","pagerank", "betweenness", "degree","slc" , "lsc"]
 
-# # Generar gráficos para cada métrica
-for metric in metrics:
-    plot_centrality(graph, metric, place_name)
+# # # Generar gráficos para cada métrica
+# for metric in metrics:
+#     plot_centrality(graph, metric, place_name)
 
 
-# Ejemplo de uso
-archivo_resultado = coefficient_centrality(graph, "all", place_name)
+# # Ejemplo de uso
+# archivo_resultado = coefficient_centrality(graph, "all", place_name)
 
 output_file_ABC="Data_ABC/Data_The_ABC_cleaned.xlsx"
 report_file_ABC="Data_ABC/Removed_Duplicates.xlsx"
@@ -43,6 +43,6 @@ filename_ABC= "Data_ABC/DATOS_THE_ABC.xlsx"
 Raw_data_the_abc = read_nodes_from_excel(filename_ABC, "DATA")
 
 # Uso de la función
-remove_duplicate_observations(filename_ABC, output_file_ABC, report_file_ABC)  # Reemplaza con el nombre real de tu archivo
+clean_and_filter_data(filename_ABC, output_file_ABC, report_file_ABC)
 
 
