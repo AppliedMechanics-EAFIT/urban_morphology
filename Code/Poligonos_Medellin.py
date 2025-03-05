@@ -91,6 +91,7 @@ def plot_road_network_from_geojson(geojson_path, network_type, simplify=True):
 
 
 
+import re
 
 
 
@@ -98,197 +99,203 @@ def plot_road_network_from_geojson(geojson_path, network_type, simplify=True):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-def load_geojson(geojson_path, to_crs=None):
-    """
-    Carga un GeoJSON y (opcionalmente) lo reproyecta a 'to_crs'.
-    Retorna un GeoDataFrame con la geometría en el CRS deseado (por defecto, se queda como venga).
-    """
-    gdf = gpd.read_file(geojson_path)
-
-    if to_crs is not None:
-        gdf = gdf.to_crs(to_crs)
-    return gdf
-
-
-
-def classify_polygon(polygon, network_type="drive", epsg_utm=32618):
-    """
-    Recibe un polígono en EPSG:4326.
-    1) Lo reproyecta a UTM para calcular área (en metros) y, si lo deseas, buffer.
-    2) Vuelve a EPSG:4326 para usar OSMnx.
-    3) Calcula estadísticas de la subred.
-    4) Retorna la categoría y algunas métricas útiles.
-    """
-
-    try:
-        # Envolver el polígono en una GeoSeries con CRS 4326
-        poly_gs = gpd.GeoSeries([polygon], crs="EPSG:4326")
-
-        # Reproyectar a UTM para mediciones en metros
-        poly_utm = poly_gs.to_crs(epsg=epsg_utm).geometry[0]
-
-        # (Opcional) Hacer un pequeño buffer si deseas una “zona de influencia”
-        # poly_utm_buffer = poly_utm.buffer(10)  # 10m o 15m, lo que desees
-        # En este ejemplo no hacemos buffer; si lo deseas, reemplaza `poly_utm` por `poly_utm_buffer`.
-        poly_utm_buffer = poly_utm
-
-        # Área en km^2 para densidad
-        area_km2 = poly_utm_buffer.area / 1e6 if poly_utm_buffer.area > 0 else 0
-
-        # Reproyectar de vuelta a WGS84 para OSMnx
-        poly_4326_buffer = gpd.GeoSeries([poly_utm_buffer], crs=f"EPSG:{epsg_utm}").to_crs(epsg=4326).geometry[0]
-
-        # Extraer la red desde OSM
-        G = ox.graph_from_polygon(poly_4326_buffer, network_type=network_type, simplify=True)
-
-        # Calcular métricas generales
-        stats = ox.stats.basic_stats(G)
-
-        # Intersecciones, grado medio
-        intersection_count = stats["intersection_count"]
-        intersection_density = intersection_count / area_km2 if area_km2 > 0 else 0
-        avg_street_per_node = stats["streets_per_node_avg"]
-
-        # Definir tu propia lógica de clasificación
-        if intersection_density > 120 and avg_street_per_node > 3.0:
-            category = "gridiron"
-        elif intersection_density < 60 and avg_street_per_node < 2.5:
-            category = "cul-de-sac"
-        elif 60 <= intersection_density <= 120 and 2.5 <= avg_street_per_node <= 3.0:
-            category = "hibrido"
-        else:
-            category = "organico"
-
-        return category, intersection_density, avg_street_per_node, intersection_count, area_km2
-
-    except Exception as e:
-        print(f"[ERROR] Polígono no pudo clasificarse: {e}")
-        return "indeterminado", 0, 0, 0, 0
-    
-
-
-def classify_all_polygons(gdf, network_type="drive", epsg_utm=32618):
-    """
-    Aplica 'classify_polygon' a cada polígono del GeoDataFrame (asumido en EPSG:4326).
-    Agrega columnas de resultado: clasificacion, densidad, grado, intersec_count, area_km2, etc.
-    Retorna el mismo gdf con las columnas extras.
-    """
-
-    # Crear listas para cada métrica
-    categories = []
-    intersection_densities = []
-    avg_degs = []
-    intersection_counts = []
-    areas_km2 = []
-
-    for geom in gdf.geometry:
-        cat, i_dens, avg_deg, i_count, a_km2 = classify_polygon(
-            geom,
-            network_type=network_type,
-            epsg_utm=epsg_utm
-        )
-        categories.append(cat)
-        intersection_densities.append(i_dens)
-        avg_degs.append(avg_deg)
-        intersection_counts.append(i_count)
-        areas_km2.append(a_km2)
-
-    # Insertar columnas en el DataFrame
-    gdf["clasificacion"] = categories
-    gdf["densidad_intersecciones"] = intersection_densities
-    gdf["grado_medio"] = avg_degs
-    gdf["num_intersecciones"] = intersection_counts
-    gdf["area_km2"] = areas_km2
-
-    return gdf
-
-
-
-
-def plot_classified_polygons(gdf_classified):
-    """
-    Dibuja todos los polígonos del gdf con un color distinto según 'clasificacion'.
-    """
-    # Definir colores para cada categoría
-    color_map = {
-        "gridiron": "lightblue",
-        "cul-de-sac": "red",
-        "hibrido": "purple",
-        "organico": "green",
-        "indeterminado": "gray"
-    }
-
-    # Crear la figura
-    fig, ax = plt.subplots(figsize=(10, 8))
-
-    # Graficar cada categoría con su color
-    for cat, color in color_map.items():
-        subset = gdf_classified[gdf_classified["clasificacion"] == cat]
-        if len(subset) > 0:
-            subset.plot(ax=ax, color=color, edgecolor="black", linewidth=0.5, label=cat)
-
-    # Ajustar título, leyenda, etc.
-    ax.set_title("Clasificación Morfológica por Polígono")
-    ax.set_xlabel("Longitud")
-    ax.set_ylabel("Latitud")
-
-    # Manejo de leyenda sin duplicados
-    handles, labels = ax.get_legend_handles_labels()
-    unique = list(dict(zip(labels, handles)).items())  # elimina duplicados
-    ax.legend([u[1] for u in unique], [u[0] for u in unique], loc="best", title="Tipo de Patrón")
-
-    plt.tight_layout()
-    plt.show()
-
-
-
-def full_workflow_classification(
+def get_street_network_metrics_per_polygon(
     geojson_path,
-    network_type="drive",
-    epsg_utm=32618,
-    plot_result=True
+    network_type='drive',
+    output_txt='stats_output.txt'
 ):
     """
-    1) Carga un GeoJSON.
-    2) Clasifica cada polígono en 'cul-de-sac', 'gridiron', 'orgánico', etc. según sus métricas de la red OSM.
-    3) (Opcional) Grafica el resultado.
-    4) Retorna un GeoDataFrame con columnas de clasificación y métricas.
+    Lee un archivo GeoJSON que contiene uno o varios polígonos (o multipolígonos)
+    y, para cada polígono/sub-polígono, calcula estadísticas de la red vial usando OSMnx.
+    Luego, almacena los resultados en un archivo de texto, con un índice que
+    identifica cada polígono procesado.
+
+    Parámetros:
+    -----------
+    geojson_path : str
+        Ruta al archivo GeoJSON.
+    network_type : str
+        Tipo de vías a recuperar ('all', 'drive', 'walk', etc.). Por defecto 'drive'.
+    output_txt : str
+        Nombre o ruta del archivo .txt donde se guardarán los resultados.
+
+    Retorna:
+    --------
+    None. Escribe un archivo .txt con las estadísticas de cada polígono.
     """
 
-    # 1. Cargar
-    gdf = load_geojson(geojson_path, to_crs="EPSG:4326")
+    # ---------------------------------------------------------------------
+    # 0. Si ya existe el .txt, leer su contenido previo
+    #    y detectar qué Polígono/SubPolígono se han calculado.
+    # ---------------------------------------------------------------------
+    old_lines = []
+    processed_pairs = set()  # para almacenar (idx, sub_idx)
 
-    # 2. Clasificar
-    gdf_classified = classify_all_polygons(gdf, network_type=network_type, epsg_utm=epsg_utm)
+    if os.path.exists(output_txt):
+        with open(output_txt, 'r', encoding='utf-8') as old_file:
+            old_lines = old_file.readlines()
 
-    # 3. Graficar resultado
-    if plot_result:
-        plot_classified_polygons(gdf_classified)
+        # Buscar líneas con el patrón: "=== Polígono X - SubPolígono Y ==="
+        pattern = r"=== Polígono (\d+) - SubPolígono (\d+) ==="
+        for line in old_lines:
+            match = re.search(pattern, line)
+            if match:
+                i_str, s_str = match.groups()
+                processed_pairs.add((int(i_str), int(s_str)))
 
-    return gdf_classified
+    # ---------------------------------------------------------------------
+    # 1. Cargar el GeoJSON como un GeoDataFrame
+    # ---------------------------------------------------------------------
+    gdf = gpd.read_file(geojson_path)
+
+    # ---------------------------------------------------------------------
+    # 2. Abrimos el archivo de salida (modo 'w') para sobrescribir
+    #    pero primero volvemos a escribir lo que había antes
+    # ---------------------------------------------------------------------
+    os.makedirs(os.path.dirname(output_txt) or '.', exist_ok=True)
+    with open(output_txt, 'w', encoding='utf-8') as f:
+
+        # Reescribir el contenido previo (si existía)
+        for line in old_lines:
+            f.write(line)
+
+        # -----------------------------------------------------------------
+        # 3. Iterar sobre cada fila (cada 'feature') del GeoDataFrame
+        # -----------------------------------------------------------------
+        for idx, row in gdf.iterrows():
+            geometry = row.geometry
+
+            if geometry is None or geometry.is_empty:
+                # Si la geometría está vacía, la ignoramos
+                f.write(f"\n=== Polígono {idx}: GEOMETRÍA VACÍA ===\n")
+                continue
+
+            # Determinar si es Polygon o MultiPolygon
+            if geometry.geom_type == 'Polygon':
+                polygons_list = [geometry]
+            elif geometry.geom_type == 'MultiPolygon':
+                polygons_list = list(geometry.geoms)
+            else:
+                # Si es otro tipo de geometría (LineString, Point, etc.), saltar
+                f.write(f"\n=== Polígono {idx}: Tipo de geometría no válido ({geometry.geom_type}) ===\n")
+                continue
+
+            # -----------------------------------------------------------------
+            # 4. Procesar cada sub-polígono
+            # -----------------------------------------------------------------
+            for sub_idx, poly in enumerate(polygons_list):
+
+                # Si ya está en processed_pairs, no recalculamos
+                if (idx, sub_idx) in processed_pairs:
+                    print(f"Saltando Polígono {idx} - SubPolígono {sub_idx}: ya existe en {output_txt}")
+                    continue
+
+                try:
+                    G = ox.graph_from_polygon(
+                        poly,
+                        network_type=network_type,
+                        simplify=True
+                    )
+                except Exception as e:
+                    f.write(f"\n--- Polígono {idx}-{sub_idx}: ERROR al crear la red ---\n{e}\n")
+                    continue
+
+                # Verificar si el grafo tiene aristas
+                if len(G.edges()) == 0:
+                    f.write(f"\n--- Polígono {idx}-{sub_idx}: Grafo vacío (sin vías) ---\n")
+                    continue
+
+                # Calcular estadísticas
+                stats = ox.stats.basic_stats(G)
+
+                # Calcular área de este sub-polígono en km²
+                area_km2 = (
+                    gpd.GeoDataFrame(geometry=[poly], crs=gdf.crs)
+                    .to_crs(epsg=3395)
+                    .geometry.area.sum() / 1e6
+                )
+
+                intersection_count = stats.get("intersection_count", 0)
+                street_length_total = stats.get("street_length_total", 0.0)
+
+                if area_km2 > 0:
+                    intersection_density_km2 = intersection_count / area_km2
+                    street_density_km2 = street_length_total / area_km2
+                else:
+                    intersection_density_km2 = 0
+                    street_density_km2 = 0
+
+                stats["intersection_density_km2"] = intersection_density_km2
+                stats["street_density_km2"] = street_density_km2
+                stats["area_km2"] = area_km2
+
+                # -----------------------------------------------------------------
+                # 4.5 Guardar resultados en el archivo de texto
+                # -----------------------------------------------------------------
+                f.write(f"\n=== Polígono {idx} - SubPolígono {sub_idx} ===\n")
+                for k, v in stats.items():
+                    f.write(f"{k}: {v}\n")
+
+    print(f"Resultados guardados en: {output_txt}")
 
 
+# Ejemplo de uso
 if __name__ == "__main__":
     geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA.geojson"
-    gdf_final = full_workflow_classification(geojson_file)
+    get_street_network_metrics_per_polygon(
+        geojson_path=geojson_file,
+        network_type='drive',
+        output_txt='Resultados/poligonos_stats.txt'
+    )
 
-    # Mostrar en consola las primeras filas con sus métricas
-    print(gdf_final[[
-        "clasificacion",
-        "densidad_intersecciones",
-        "grado_medio",
-        "num_intersecciones",
-        "area_km2"
-    ]].head())
 
+# def plot_classified_network(geojson_path, network_type='all'):
+#     """
+#     Loads a GeoJSON, computes street network metrics, and visualizes it with classification.
+#     """
+#     # Get street network statistics
+#     network_stats = get_street_network_metrics(geojson_path, network_type)
+
+#     # Load the polygon and network
+#     gdf = gpd.read_file(geojson_path)
+#     polygon = gdf.geometry.union_all()
+#     G = ox.graph_from_polygon(polygon, network_type=network_type, simplify=True)
+
+#     # Assign a classification based on computed stats
+#     classification = classify_from_metrics(network_stats)
+
+#     # Assign colors based on classification
+#     color_map = {
+#         "Gridiron": "blue",
+#         "Cul-de-sac": "red",
+#         "Hybrid": "purple",
+#         "Organic": "green"
+#     }
+
+#     fig, ax = plt.subplots(figsize=(12, 12))
+#     gdf.plot(ax=ax, facecolor="none", edgecolor="black", linewidth=1, linestyle="--")
+
+#     # Plot the road network
+#     ox.plot_graph(G, ax=ax, node_size=0, edge_linewidth=0.4, edge_color=color_map[classification])
+
+
+# def classify_from_metrics(stats):
+#     """
+#     Classifies the street network based on calculated metrics.
+#     """
+#     intersection_density = stats["intersection_density_km2"]
+#     avg_node_degree = stats["streets_per_node_avg"]
+#     circuity = stats["circuity_avg"]
+
+#     if intersection_density > 200 and avg_node_degree >= 3 and circuity < 1.2:
+#         return "Gridiron"
+#     elif intersection_density < 50 and avg_node_degree < 2.5 and circuity > 1.3:
+#         return "Cul-de-sac"
+#     elif 50 <= intersection_density <= 150 and 2.5 <= avg_node_degree < 3 and 1.2 <= circuity <= 1.4:
+#         return "Hybrid"
+#     else:
+#         return "Organic"
+
+# # Example usage
+# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA.geojson"
+# plot_classified_network(geojson_file, network_type='drive')
