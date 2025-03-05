@@ -140,7 +140,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
     node_colors = np.array([centrality[node] for node in nodes])
      
     # 1. Tamaño de nodos y bordes aumentado
-    NODE_SIZE = 5  # Aumentado de 4 a 8
+    NODE_SIZE = 4  # Aumentado de 4 a 8
     EDGE_WIDTH = 1  # Aumentado de 0.3 a 1.5
     
     # 2. Configuración de la barra de colores
@@ -155,7 +155,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.viridis):
         marker=dict(
             size=NODE_SIZE,
             color=node_colors,  # Usar valores directos
-            colorscale='Rainbow',  # Mapeo directo a colorscale
+            colorscale='Plasma',  # Mapeo directo a colorscale
             colorbar=dict(
                 title=dict(text=f'Centralidad {metric}', side='right'),
                 thickness=25,
