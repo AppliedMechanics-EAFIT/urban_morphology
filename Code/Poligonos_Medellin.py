@@ -12,7 +12,11 @@ import plotly.graph_objects as go
 import numpy as np
 import matplotlib.patches as mpatches
 import ast
-
+import numpy as np
+import seaborn as sns
+from scipy.stats import f_oneway, kruskal
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 
 def convert_shapefile_to_geojson(shapefile_paths, output_directory="Poligonos_Medellin/Json_files"):
@@ -997,7 +1001,7 @@ def match_polygons_by_area(gdfA, gdfB, area_ratio_threshold=0.9, out_csv=None):
 
 
 
-def main():
+def Excel_for_rural_and_urban_movility_data():
     # Rutas
     stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
     matches_csv = "Poligonos_Medellin/Resultados/Matchs_A_B/matches_by_area.csv"
@@ -1096,23 +1100,15 @@ def main():
 
 # # ==================== EJEMPLO DE USO ====================
 # if __name__ == "__main__":
-#     main()
+#     Excel_for_rural_and_urban_movility_data()
 
 
 
 
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-from scipy.stats import f_oneway, kruskal
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-
-def main():
+def Statis_analisis(excel_file):
     # 1) Leer el Excel
-    excel_file = "Poligonos_Clasificados_Movilidad_Proporciones.xlsx"  
+    
     # Ajusta el nombre si tu archivo es diferente
     df = pd.read_excel(excel_file)
     # Esperamos cols: 
@@ -1211,5 +1207,239 @@ def main():
     print("\nInterpretación: Coeficientes que comparan cada categoría vs la base (cul_de_sac si code=0).")
     print("p-values indican si la proporción p_auto, etc. es significativa para distinguir el pattern.\n")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     Statis_analisis(excel_file)
+
+
+
+
+
+
+
+
+
+
+
+def filter_periphery_polygons(in_geojson, out_geojson, area_threshold=5.0):
+    """
+    Lee un GeoJSON (in_geojson), elimina polígonos con área >= area_threshold (km²),
+    y guarda un nuevo GeoJSON en out_geojson con los polígonos filtrados.
+    Retorna un GeoDataFrame con el resultado.
+
+    Parámetros:
+    -----------
+    in_geojson : ruta al archivo GeoJSON original.
+    out_geojson: ruta donde se guardará el GeoJSON filtrado.
+    area_threshold: float, umbral de área en km²; 
+                    los polígonos con área >= threshold se considerarán "rurales" y se excluyen.
+
+    Retorna:
+    --------
+    GeoDataFrame con los polígonos “urbanos” (área < area_threshold).
+    """
+
+    # 1. Cargar el GeoDataFrame
+    gdf = gpd.read_file(in_geojson)
+    print(f"Leído: {in_geojson} con {len(gdf)} polígonos totales.")
+
+    # 2. Reproyectar a un sistema métrico para calcular área en km² (por ejemplo EPSG:3395 o 3857)
+    #    EPSG:3395 (World Mercator) o 3857 (Pseudo Mercator). Ajusta según tu región si deseas mayor precisión.
+    gdf_merc = gdf.to_crs(epsg=3395)
+
+    # 3. Calcular área en km²
+    gdf["area_km2"] = gdf_merc.geometry.area / 1e6
+
+    # 4. Filtrar
+    mask_urban = gdf["area_km2"] < area_threshold
+    gdf_filtered = gdf[mask_urban].copy()
+    print(f"Se excluyen {len(gdf) - len(gdf_filtered)} polígonos por ser >= {area_threshold} km².")
+
+    # 5. Guardar como GeoJSON nuevo
+    #    (si no deseas la columna "area_km2" en el resultado, la dropeas antes)
+    gdf_filtered.drop(columns=["area_km2"], inplace=True)
+    gdf_filtered.to_file(out_geojson, driver="GeoJSON")
+    print(f"Archivo filtrado guardado en: {out_geojson} con {len(gdf_filtered)} polígonos.\n")
+
+    return gdf_filtered
+
+
+# gdf_filtrado = filter_periphery_polygons(
+#     in_geojson="Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA.geojson",
+#     out_geojson="Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson",
+#     area_threshold=5.0  # Ajusta a tu criterio
+# )
+
+
+# # Graph of visualization of medellin with its respective polygons
+# geojson_file_filtered = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson "
+# plot_road_network_from_geojson(geojson_file_filtered, network_type='drive', simplify=True)
+
+
+
+
+
+
+
+
+
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+
+# ------ CALCULO PARA MALLA SIMPLIFICADA DE AREA URBANA MEDELLIN ANTIOQUIA -----------
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+#  =============================================================================
+
+
+# # Ejemplo de uso
+# if __name__ == "__main__":
+#     geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+#     stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+
+#     # 1. Cargar stats desde .txt
+#     stats_dict = load_polygon_stats_from_txt(stats_txt)
+
+#     # 2. Generar PNG con cada fila = (idx, 0)
+#     plot_polygons_classification_png(
+#         geojson_path=geojson_file,
+#         stats_dict=stats_dict,
+#         classify_func=classify_polygon,
+#         output_png="polygon_classification_URBAN_MESH.png"
+#     )
+
+
+# # ================== EJEMPLO DE USO ==================
+# if __name__ == "__main__":
+#     # Define las rutas a tus archivos
+#     geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+#     stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+#     stats_dict = load_polygon_stats_from_txt(stats_txt)
+    
+
+#     plot_street_patterns_classification(
+#         geojson_path=geojson_file,
+#         classify_func=classify_polygon,
+#         stats_dict=stats_dict,
+#         place_name="Medellin",
+#         network_type="drive",
+#         output_folder="Graphs_Cities",
+#         simplify=False
+#     )
+
+# def Excel_for_urban_movility_data():
+#     # 1) Rutas ajustadas
+#     stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+#     matches_csv = "Poligonos_Medellin/Resultados/Matchs_A_B/matches_by_area.csv"
+#     shpB = "Poligonos_Medellin/eod_gen_trips_mode.shp"
+
+#     # Importante: en vez del shapefile original,
+#     # usamos el GeoJSON filtrado “_URBANO.geojson”.
+#     geojsonA = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+
+#     # 2) Cargar stats
+#     stats_dict = load_polygon_stats_from_txt(stats_txt)
+#     print(f"Cargadas stats para {len(stats_dict)} polígonos (subpolígono).")
+
+#     # 3) Cargar CSV de emparejamientos A-B
+#     df_matches = pd.read_csv(matches_csv)  # [indexA, indexB, area_ratio]
+#     print("Muestra df_matches:\n", df_matches.head(), "\n")
+
+#     # 4) Leer shapefile/GeoDataFrame B (movilidad)
+#     gdfB = gpd.read_file(shpB)
+#     print("Columnas B:", gdfB.columns)
+
+#     # 5) Leer AHORA el GeoJSON A “URBANO”
+#     gdfA = gpd.read_file(geojsonA)
+#     print(f"Leídos {len(gdfA)} polígonos en GeoJSON A URBANO.")
+
+#     # 6) Armar DataFrame final (como antes)
+#     final_rows = []
+#     for i, row in df_matches.iterrows():
+#         idxA = row["indexA"]
+#         idxB = row["indexB"]
+#         ratio = row["area_ratio"]
+
+#         # stats => (idxA,0)
+#         key_stats = (idxA, 0)
+#         poly_stats = stats_dict.get(key_stats, {})
+#         pattern = classify_polygon(poly_stats)
+
+#         # Extraer movilidad de B (asumiendo gdfB.index == indexB)
+#         rowB = gdfB.loc[idxB]
+
+          
+
+#         # Variables proporcionales
+#         p_walk_  = rowB.get("p_walk",  0)
+#         p_tpc_   = rowB.get("p_tpc",   0)
+#         p_sitva_ = rowB.get("p_sitva", 0)
+#         p_auto_  = rowB.get("p_auto",  0)
+#         p_moto_  = rowB.get("p_moto",  0)
+#         p_taxi_  = rowB.get("p_taxi",  0)
+#         p_bike_  = rowB.get("p_bike",  0)
+
+#         final_rows.append({
+#             "indexA": idxA,
+#             "indexB": idxB,
+#             "area_ratio": ratio,
+#             "street_pattern": pattern,
+#             "p_walk":  p_walk_,
+#             "p_tpc":   p_tpc_,
+#             "p_sitva": p_sitva_,
+#             "p_auto":  p_auto_,
+#             "p_moto":  p_moto_,
+#             "p_taxi":  p_taxi_,
+#             "p_bike":  p_bike_
+#         })
+
+#     df_final = pd.DataFrame(final_rows)
+#     df_final = df_final[[
+#         "indexA", "indexB", "area_ratio", "street_pattern", 
+#         "p_walk", "p_tpc", "p_sitva", "p_auto", "p_moto", "p_taxi", "p_bike"
+#     ]]
+
+#     output_xlsx = "Poligonos_Medellin/Resultados/Statics_Results/RURAL/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
+#     df_final.to_excel(output_xlsx, index=False)
+#     print(f"Guardado Excel final en {output_xlsx} con {len(df_final)} filas.\n")
+
+#     # 7) Graficar
+#     #   => asignar pattern a gdfA
+#     gdfA["pattern"] = None
+#     indexA_to_pattern = {}
+#     for i, rowF in df_final.iterrows():
+#         indexA_to_pattern[rowF["indexA"]] = rowF["street_pattern"]
+
+#     # Mapear pattern
+#     for i in gdfA.index:
+#         gdfA.loc[i,"pattern"] = indexA_to_pattern.get(i, None)
+
+#     fig, ax = plt.subplots(figsize=(8,8))
+#     gdfA.plot(column="pattern", ax=ax, legend=True, cmap="Set2")
+#     ax.set_title("GeoJSON Urbano - Polígonos Clasificados")
+#     plt.tight_layout()
+#     plt.savefig("map_poligonosA_urbano_classified.png", dpi=300)
+#     print("Mapa guardado en map_poligonosA_urbano_classified.png")
+
+# if __name__ == "__main__":
+#     Excel_for_urban_movility_data()
+
+# if __name__ == "__main__":
+#     excel_file = "Poligonos_Medellin/Resultados/Statics_Results/RURAL/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
+#     Statis_analisis(excel_file)
