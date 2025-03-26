@@ -2,7 +2,7 @@
 ## https://github.com/AppliedMechanics-EAFIT/urban_morphology
 ## Main file to executethe different programs and functions
 from Lecture import CiudadesABC,read_nodes_from_excel
-from network_Indicators import plot_centrality, coefficient_centrality
+from network_Indicators import plot_centrality, coefficient_centrality,compute_edge_betweenness_data, plot_edge_centrality
 from cleaning_DATA_ABC import clean_and_filter_data
 import osmnx as ox
 import networkx as nx
@@ -23,21 +23,40 @@ import json
 import plotly.graph_objects as go
 import numpy as np
 from shapely.geometry import Polygon, MultiPolygon
+from matplotlib import cm
+
+cities = [
+    "Medellin, Colombia",
+    "Pasto, Colombia",
+]
+
+# Avaliable metrics
+metrics = [ "eigenvector", "closeness","pagerank", "betweenness", "degree","slc" , "lsc"]
+
+for city in cities:
+    place_name = city
+    
+    try:
+        print(f"\n{'='*40}\nProcesando: {place_name}\n{'='*40}")
+        
+        # 1. Obtener grafo
+        graph = ox.graph_from_place(place_name, network_type='drive')
+        
+        # # 2. Procesar métricas de nodos
+        # for metric in metrics:
+        #     print(f"\nMétrica nodal: {metric.upper()}")
+        #     plot_centrality(graph, metric, place_name)
+            
+        # 3. Procesar métricas de aristas (edge centrality)
+        print("\nCalculando centralidad de aristas (Edge Betweenness)")
+        edge_data = compute_edge_betweenness_data(graph, metric="betweenness")
+        plot_edge_centrality(edge_data, place_name)
+            
+    except Exception as e:
+        print(f"Error en {place_name}: {str(e)}")
+        continue
 
 
-# # Define a place or city to compile
-# place_name = "Pasto, Colombia"
-
-# # Graph 
-# graph = ox.graph_from_place(place_name, network_type='drive')
-# ox.plot_graph(graph)
-
-# # Avaliable metrics
-# metrics = [ "eigenvector", "closeness","pagerank", "betweenness", "degree","slc" , "lsc"]
-
-# # Generate a graph for each metric in metrics
-# for metric in metrics:
-#     plot_centrality(graph, metric, place_name)
 
 
 # # Data excel with centrality values for each node
@@ -60,7 +79,7 @@ from shapely.geometry import Polygon, MultiPolygon
 # geojson_results = convert_shapefile_to_geojson(shapefiles)
 
 
-# Graph of visualization of medellin with its respective polygons
-geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA.geojson"
-plot_road_network_from_geojson(geojson_file, network_type='drive', simplify=True)
+# # Graph of visualization of medellin with its respective polygons
+# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA.geojson"
+# plot_road_network_from_geojson(geojson_file, network_type='drive', simplify=True)
 

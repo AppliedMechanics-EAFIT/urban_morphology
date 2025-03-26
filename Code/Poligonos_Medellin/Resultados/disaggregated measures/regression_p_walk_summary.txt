@@ -1,0 +1,40 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                 p_walk   R-squared:                       0.300
+Model:                            OLS   Adj. R-squared:                  0.280
+Method:                 Least Squares   F-statistic:                     14.93
+Date:                Tue, 25 Mar 2025   Prob (F-statistic):           4.24e-30
+Time:                        21:43:44   Log-Likelihood:                 266.28
+No. Observations:                 502   AIC:                            -502.6
+Df Residuals:                     487   BIC:                            -439.3
+Df Model:                          14                                         
+Covariance Type:            nonrobust                                         
+============================================================================================
+                               coef    std err          t      P>|t|      [0.025      0.975]
+--------------------------------------------------------------------------------------------
+const                        0.2132      0.123      1.730      0.084      -0.029       0.455
+n                           -0.0034      0.002     -2.204      0.028      -0.006      -0.000
+m                            0.0013      0.001      2.356      0.019       0.000       0.002
+k_avg                        0.0609      0.012      5.087      0.000       0.037       0.084
+edge_length_total        -7.858e-06   5.51e-06     -1.426      0.155   -1.87e-05    2.97e-06
+edge_length_avg             -0.0009      0.001     -0.949      0.343      -0.003       0.001
+streets_per_node_avg        -0.0522      0.027     -1.932      0.054      -0.105       0.001
+intersection_count          -0.0089      0.002     -4.185      0.000      -0.013      -0.005
+street_length_total       1.571e-05   1.05e-05      1.497      0.135    -4.9e-06    3.63e-05
+street_segment_count         0.0053      0.002      3.405      0.001       0.002       0.008
+street_length_avg            0.0008      0.001      0.755      0.451      -0.001       0.003
+circuity_avg                 0.0555      0.060      0.927      0.355      -0.062       0.173
+intersection_density_km2     0.0015      0.000      6.281      0.000       0.001       0.002
+street_density_km2       -1.319e-05    2.8e-06     -4.711      0.000   -1.87e-05   -7.69e-06
+area_km2                    -0.0008      0.002     -0.478      0.633      -0.004       0.003
+==============================================================================
+Omnibus:                       12.774   Durbin-Watson:                   1.591
+Prob(Omnibus):                  0.002   Jarque-Bera (JB):               13.028
+Skew:                           0.383   Prob(JB):                      0.00148
+Kurtosis:                       3.188   Cond. No.                     7.09e+05
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 7.09e+05. This might indicate that there are
+strong multicollinearity or other numerical problems.

@@ -400,8 +400,6 @@ def load_polygon_stats_from_txt(stats_txt):
 
     return stats_dict
 
-
-
 def classify_polygon(poly_stats):
     """
     Clasifica un polígono (o sub-polígono) en:
@@ -491,8 +489,6 @@ def classify_polygon(poly_stats):
 
     # D. Caso general => híbrido
     return "hibrido"
-
-
 
 def add_classification_to_gdf(geojson_path, stats_dict):
     """
@@ -602,10 +598,6 @@ def plot_polygons_classification_png(
 #         classify_func=classify_polygon,
 #         output_png="polygon_classification.png"
 #     )
-
-
-
-
 
 
 
@@ -832,15 +824,25 @@ def plot_street_patterns_classification(
             'format': 'svg',
             'width': 1600,
             'height': 1600
-        }
+        },
+        'responsive': True
     }
 
     os.makedirs(output_folder, exist_ok=True)
     out_html = os.path.join(output_folder, f"StreetPatterns_{place_name}.html")
-    fig.write_html(out_html, config=config, include_plotlyjs='cdn', auto_open=False)
+    fig.write_html(
+        out_html, 
+        config=config, 
+        include_plotlyjs='cdn', 
+        auto_open=False, 
+        full_html=True,
+        default_width='100%',
+        default_height='100%'
+        )
 
     print(f"Archivo HTML generado: {out_html}")
     print("Capa base filtrada (sin duplicados) + sub-polígonos clasificados superpuestos.")
+
 
 
 
@@ -1294,7 +1296,6 @@ def filter_periphery_polygons(in_geojson, out_geojson, area_threshold=5.0):
 #  =============================================================================
 #  =============================================================================
 #  =============================================================================
-
 # ------ CALCULO PARA MALLA SIMPLIFICADA DE AREA URBANA MEDELLIN ANTIOQUIA -----------
 #  =============================================================================
 #  =============================================================================
@@ -1443,3 +1444,315 @@ def filter_periphery_polygons(in_geojson, out_geojson, area_threshold=5.0):
 # if __name__ == "__main__":
 #     excel_file = "Poligonos_Medellin/Resultados/Statics_Results/RURAL/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
 #     Statis_analisis(excel_file)
+
+
+
+
+
+
+
+
+
+
+def prepare_mobility_data(
+    stats_txt="Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt", 
+    matches_csv="Poligonos_Medellin/Resultados/Matchs_A_B/matches_by_area.csv", 
+    shpB="Poligonos_Medellin/eod_gen_trips_mode.shp", 
+    geojsonA="Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+):
+    """
+    Prepara un DataFrame de movilidad a partir de múltiples fuentes de datos.
+    
+    Parámetros:
+    -----------
+    stats_txt : str, ruta al archivo de estadísticas de polígonos
+    matches_csv : str, ruta al CSV de emparejamientos A-B
+    shpB : str, ruta al shapefile de movilidad
+    geojsonA : str, ruta al GeoJSON de polígonos urbanos
+    
+    Retorna:
+    --------
+    DataFrame con datos de movilidad y características de polígonos
+    """
+    # 1) Cargar stats de polígonos
+    stats_dict = load_polygon_stats_from_txt(stats_txt)
+    print(f"Cargadas stats para {len(stats_dict)} polígonos (subpolígono).")
+
+    # 2) Cargar CSV de emparejamientos A-B
+    df_matches = pd.read_csv(matches_csv)  # [indexA, indexB, area_ratio]
+    print("Muestra df_matches:\n", df_matches.head(), "\n")
+
+    # 3) Leer shapefile/GeoDataFrame B (movilidad)
+    gdfB = gpd.read_file(shpB)
+    print("Columnas B:", gdfB.columns)
+
+    # 4) Leer GeoJSON A "URBANO"
+    gdfA = gpd.read_file(geojsonA)
+    print(f"Leídos {len(gdfA)} polígonos en GeoJSON A URBANO.")
+
+    # 5) Armar DataFrame final
+    final_rows = []
+    for i, row in df_matches.iterrows():
+        idxA = row["indexA"]
+        idxB = row["indexB"]
+        ratio = row["area_ratio"]
+
+        # Obtener estadísticas del polígono
+        key_stats = (idxA, 0)
+        poly_stats = stats_dict.get(key_stats, {})
+        pattern = classify_polygon(poly_stats)
+
+        # Extraer movilidad de B
+        rowB = gdfB.loc[idxB]
+
+        # Variables proporcionales de movilidad
+        mobility_columns = [
+            "p_walk", "p_tpc", "p_sitva", 
+            "p_auto", "p_moto", "p_taxi", "p_bike"
+        ]
+        
+        mobility_data = {col: rowB.get(col, 0) for col in mobility_columns}
+
+        # Construir fila de datos
+        row_data = {
+            "indexA": idxA,
+            "indexB": idxB,
+            "area_ratio": ratio,
+            "street_pattern": pattern,
+            **mobility_data
+        }
+
+        final_rows.append(row_data)
+
+    # Crear DataFrame final
+    df_final = pd.DataFrame(final_rows)
+    df_final = df_final[[
+        "indexA", "indexB", "area_ratio", "street_pattern", 
+        "p_walk", "p_tpc", "p_sitva", 
+        "p_auto", "p_moto", "p_taxi", "p_bike"
+    ]]
+
+    # Guardar como CSV
+    output_path = "Poligonos_Medellin/Resultados/mobility_data.csv"
+    df_final.to_csv(output_path, index=False)
+    print(f"Datos de movilidad guardados en {output_path}")
+
+    return df_final
+
+import json
+from shapely.wkt import loads
+from shapely.geometry import shape
+
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+def enhanced_polygon_clustering_visualization(df_merged, geojson_file, mobility_data):
+    """
+    Realiza visualizaciones de clusters de polígonos utilizando match_polygons_by_area.
+    """
+    # Ruta base para guardar resultados
+    clustering_dir = "Poligonos_Medellin/Resultados/disaggregated measures/clustering"
+    os.makedirs(clustering_dir, exist_ok=True)
+    
+    # Métricas de movilidad
+    mobility_metrics = [
+        'p_walk', 'p_tpc', 'p_sitva', 'p_auto', 'p_moto', 'p_taxi', 'p_bike'
+    ]
+    
+    # Cargar GeoJSON
+    gdf = gpd.read_file(geojson_file)
+    
+    # Preparar diccionario para resultados
+    clustering_geojsons = {}
+    
+    # Procesar cada métrica de movilidad
+    for mobility_metric in mobility_metrics:
+        # Columna de cluster
+        cluster_column = f'cluster_{mobility_metric}'
+        
+        # Verificar que la columna exista
+        if cluster_column not in df_merged.columns:
+            print(f"ADVERTENCIA: No se encontró columna {cluster_column}")
+            continue
+        
+        # Crear copia del GeoJSON
+        gdf_clusters = gdf.copy()
+        
+        # Asegurar correspondencia correcta de polígonos
+        cluster_map = {}
+        for _, row in mobility_data.iterrows():
+            indexA, indexB = row['indexA'], row['indexB']
+            
+            # Buscar el cluster correspondiente en df_merged
+            cluster_value = df_merged[
+                (df_merged['indexA'] == indexA) & 
+                (df_merged[cluster_column].notna())
+            ][cluster_column].values
+            
+            if len(cluster_value) > 0:
+                cluster_map[indexB] = cluster_value[0]
+        
+        # Asignar clusters al GeoDataFrame
+        gdf_clusters[cluster_column] = gdf_clusters.index.map(cluster_map)
+        
+        # Visualización de clusters
+        plt.figure(figsize=(15, 10))
+        
+        # Plotear clusters
+        gdf_clusters.plot(column=cluster_column, 
+                           cmap='viridis', 
+                           edgecolor='black', 
+                           linewidth=0.5, 
+                           legend=True, 
+                           missing_kwds={'color': 'lightgrey'})
+        
+        plt.title(f'Clusters de Polígonos - {mobility_metric}')
+        plt.axis('off')
+        plt.tight_layout()
+        
+        # Guardar mapa de clusters
+        plt.savefig(os.path.join(clustering_dir, f'polygon_clusters_map_{mobility_metric}.png'), 
+                    dpi=300, 
+                    bbox_inches='tight')
+        plt.close()
+        
+        # Guardar GeoJSON con clusters
+        gdf_clusters.to_file(
+            os.path.join(clustering_dir, f'polygon_clusters_{mobility_metric}.geojson'), 
+            driver='GeoJSON'
+        )
+        
+        # Almacenar en diccionario
+        clustering_geojsons[mobility_metric] = gdf_clusters
+    
+    return clustering_geojsons
+import os
+import pandas as pd
+import numpy as np
+import scipy.stats as stats
+import seaborn as sns
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geojson_file):
+    """
+    Realiza un análisis estadístico detallado de polígonos usando métricas originales.
+    """
+    # Ruta base para guardar resultados
+    output_dir = "Poligonos_Medellin/Resultados/disaggregated measures"
+    clustering_dir = os.path.join(output_dir, "clustering")
+    os.makedirs(clustering_dir, exist_ok=True)
+
+    # Preparar DataFrame con métricas de polígonos
+    polygon_metrics = []
+    for (poly_id, subpoly), stats_dict in polygon_stats_dict.items():
+        poly_metrics = stats_dict.copy()
+        poly_metrics['poly_id'] = poly_id
+        poly_metrics['subpoly'] = subpoly
+        polygon_metrics.append(poly_metrics)
+    
+    df_polygon_metrics = pd.DataFrame(polygon_metrics)
+    
+    # Combinar métricas de polígonos con datos de movilidad
+    df_merged = pd.merge(df_polygon_metrics, mobility_data, left_on=['poly_id'], right_on=['indexA'])
+    
+    # Métricas de polígono para análisis
+    structural_metrics = [
+        'n', 'm', 'k_avg', 'edge_length_total', 'edge_length_avg', 
+        'streets_per_node_avg', 'intersection_count', 'street_length_total', 
+        'street_segment_count', 'street_length_avg', 'circuity_avg', 
+        'intersection_density_km2', 'street_density_km2', 'area_km2'
+    ]
+    
+    # Métricas de movilidad
+    mobility_metrics = [
+        'p_walk', 'p_tpc', 'p_sitva', 'p_auto', 'p_moto', 'p_taxi', 'p_bike'
+    ]
+    
+    # Inicializar diccionario para almacenar resultados de clustering
+    all_clustering_results = {}
+    
+    # Realizar clustering para cada métrica de movilidad
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.cluster import KMeans
+    
+    for mobility_metric in mobility_metrics:
+        # Preparar características para clustering
+        clustering_features = structural_metrics + [mobility_metric]
+        
+        # Escalar todas las características
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(df_merged[clustering_features])
+        
+        # K-means clustering
+        kmeans = KMeans(n_clusters=4, random_state=42).fit(X_scaled)
+        
+        # Crear columna de cluster en df_merged
+        cluster_column = f'cluster_{mobility_metric}'
+        df_merged[cluster_column] = kmeans.labels_
+        
+        # Perfiles de movilidad por cluster
+        cluster_mobility_profiles = df_merged.groupby(cluster_column)[mobility_metrics].mean()
+        print(f"Perfiles de Movilidad por Cluster para {mobility_metric}:")
+        print(cluster_mobility_profiles)
+        
+        # Visualización de clusters
+        plt.figure(figsize=(10, 6))
+        scatter_colors = ['blue', 'green', 'red', 'purple']
+        for i in range(4):
+            cluster_data = df_merged[df_merged[cluster_column] == i]
+            plt.scatter(cluster_data['street_density_km2'], cluster_data[mobility_metric], 
+                        label=f'Cluster {i}', color=scatter_colors[i], alpha=0.7)
+        
+        plt.xlabel('Densidad de Calles (km²)')
+        plt.ylabel(f'Proporción de Viajes en {mobility_metric}')
+        plt.title(f'Clusters de Polígonos - {mobility_metric}')
+        plt.legend()
+        plt.tight_layout()
+        
+        # Guardar imagen de clustering
+        plt.savefig(os.path.join(clustering_dir, f'polygon_clusters_{mobility_metric}.png'))
+        plt.close()
+        
+        # Guardar datos de clusters
+        df_merged[['poly_id', cluster_column] + structural_metrics + mobility_metrics].to_csv(
+            os.path.join(clustering_dir, f'polygon_cluster_data_{mobility_metric}.csv'), 
+            index=False
+        )
+        
+        # Guardar perfiles de movilidad por cluster
+        cluster_mobility_profiles.to_csv(
+            os.path.join(clustering_dir, f'cluster_mobility_profiles_{mobility_metric}.csv')
+        )
+        
+        # Almacenar resultados
+        all_clustering_results[mobility_metric] = {
+            'cluster_mobility_profiles': cluster_mobility_profiles,
+            'cluster_labels': df_merged[cluster_column]
+        }
+    
+    # Visualización final de clusters usando GeoJSON
+    gdf_clusters = enhanced_polygon_clustering_visualization(
+        df_merged, 
+        geojson_file, 
+        mobility_data
+    )
+    
+    return {
+        'all_clustering_results': all_clustering_results,
+        'merged_dataframe': df_merged
+    }
+# Ejemplo de uso (comentado)
+geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+df_mobility = prepare_mobility_data()
+stats_dict = load_polygon_stats_from_txt(stats_txt)
+results = polygon_detailed_statistical_analysis(stats_dict, df_mobility,geojson_file)
+
+
+
+
+
+
+
