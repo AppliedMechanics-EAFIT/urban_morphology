@@ -1,0 +1,41 @@
+Distribución de Patrones Originales por Cluster:
+
+Cluster 1 (gridiron):
+gridiron: 107 (62.21%)
+hibrido: 35 (20.35%)
+organico: 30 (17.44%)
+
+Cluster 0 (organico):
+organico: 83 (55.70%)
+hibrido: 32 (21.48%)
+cul_de_sac: 27 (18.12%)
+gridiron: 7 (4.70%)
+
+Cluster 2 (cul_de_sac):
+cul_de_sac: 15 (48.39%)
+hibrido: 14 (45.16%)
+organico: 1 (3.23%)
+gridiron: 1 (3.23%)
+
+Cluster 3 (gridiron):
+gridiron: 63 (51.22%)
+hibrido: 41 (33.33%)
+organico: 19 (15.45%)
+
+Confusion Matrix:
+[[ 15   0   0  27]
+ [  1 170   0   7]
+ [ 14  76   0  32]
+ [  1  49   0  83]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+  cul_de_sac       0.48      0.36      0.41        42
+    gridiron       0.58      0.96      0.72       178
+     hibrido       1.00      0.00      0.00       122
+    organico       0.56      0.62      0.59       133
+
+    accuracy                           0.56       475
+   macro avg       0.65      0.48      0.43       475
+weighted avg       0.67      0.56      0.47       475

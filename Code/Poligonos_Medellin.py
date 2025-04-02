@@ -400,6 +400,8 @@ def load_polygon_stats_from_txt(stats_txt):
 
     return stats_dict
 
+
+
 def classify_polygon(poly_stats):
     """
     Clasifica un polígono (o sub-polígono) en:
@@ -490,6 +492,118 @@ def classify_polygon(poly_stats):
     # D. Caso general => híbrido
     return "hibrido"
 
+
+
+# def classify_polygon(poly_stats):
+#     """
+#     Clasifica un polígono (o sub-polígono) en:
+#       'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
+#     basado en la teoría de patrones urbanos y métricas morfológicas.
+
+#     Parámetros:
+#     -----------
+#     poly_stats : dict con claves:
+#       - "streets_per_node_avg" (float): Promedio de calles por nodo
+#       - "streets_per_node_counts" (str o dict): Conteo de nodos por número de calles
+#       - "streets_per_node_proportions" (str o dict): Proporción de nodos por número de calles
+#       - "intersection_density_km2" (float): Densidad de intersecciones por km²
+#       - "circuity_avg" (float): Sinuosidad promedio de segmentos
+#       - "k_avg" (float): Grado promedio de nodos
+#       - "street_density_km2" (float): Densidad de calles por km²
+#       - "orientation_entropy" (float, opcional): Entropía de orientación de segmentos
+#       - "edge_length_avg" (float, opcional): Longitud promedio de aristas
+#       - "street_length_avg" (float, opcional): Longitud promedio de calles
+
+#     Retorna:
+#     --------
+#     str : 'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
+#     """
+#     import ast
+    
+#     # -------------------------------------------------------------------
+#     # 1. Parsear fields que podrían venir como string en lugar de dict
+#     # -------------------------------------------------------------------
+#     spn_counts_str = poly_stats.get("streets_per_node_counts", "{}")
+#     spn_props_str = poly_stats.get("streets_per_node_proportions", "{}")
+
+#     if isinstance(spn_counts_str, str):
+#         try:
+#             spn_counts = ast.literal_eval(spn_counts_str)
+#         except:
+#             spn_counts = {}
+#     else:
+#         spn_counts = spn_counts_str
+
+#     if isinstance(spn_props_str, str):
+#         try:
+#             spn_props = ast.literal_eval(spn_props_str)
+#         except:
+#             spn_props = {}
+#     else:
+#         spn_props = spn_props_str
+
+#     # -------------------------------------------------------------------
+#     # 2. Extraer Variables Numéricas Principales
+#     # -------------------------------------------------------------------
+#     # Conectividad y estructura nodal
+#     streets_per_node = float(poly_stats.get("streets_per_node_avg", 0.0))
+#     k_avg = float(poly_stats.get("k_avg", 0.0))
+    
+#     # Densidades
+#     intersection_density = float(poly_stats.get("intersection_density_km2", 0.0))
+#     street_density = float(poly_stats.get("street_density_km2", 0.0))
+    
+#     # Geometría
+#     circuity = float(poly_stats.get("circuity_avg", 1.0))
+#     edge_length_avg = float(poly_stats.get("edge_length_avg", 0.0))
+#     street_length_avg = float(poly_stats.get("street_length_avg", 0.0))
+    
+#     # Entropía de orientación (0=alineado, 1=diverso)
+#     orientation_entropy = float(poly_stats.get("orientation_entropy", 0.5))
+    
+#     # Proporciones de nodos por grado
+#     prop_deg1 = float(spn_props.get('1', 0.0))  # callejones sin salida
+#     prop_deg3 = float(spn_props.get('3', 0.0))  # intersecciones en T
+#     prop_deg4 = float(spn_props.get('4', 0.0))  # intersecciones en cruz
+
+#     # -------------------------------------------------------------------
+#     # 3. Clasificación por Patrones Urbanos
+#     # -------------------------------------------------------------------
+    
+#     # A. Patrón Cul-de-sac / Suburban
+#     # Características: Alta proporción de callejones sin salida, baja conectividad,
+#     # estructura jerárquica y arborescente, baja densidad de intersecciones
+#     if (prop_deg1 >= 0.35 or 
+#         (streets_per_node < 2.4 and intersection_density < 40) or
+#         (prop_deg1 >= 0.25 and circuity > 1.1 and streets_per_node < 2.5)):
+#         return "cul_de_sac"
+
+#     # B. Patrón Gridiron / Reticular
+#     # Características: Baja sinuosidad, alta proporción de cruces (nodos grado 4),
+#     # buena conectividad, orientación consistente (baja entropía de orientación)
+#     if ((circuity < 1.05 and prop_deg4 >= 0.25) or
+#         (streets_per_node >= 2.8 and orientation_entropy < 0.6 and prop_deg4 > prop_deg3) or
+#         (intersection_density >= 70 and circuity < 1.08 and prop_deg1 < 0.15)):
+#         return "gridiron"
+
+#     # C. Patrón Orgánico / Irregular
+#     # Características: Alta sinuosidad, predominio de intersecciones en T,
+#     # alta entropía de orientación, irregularidad geométrica
+#     if ((circuity > 1.08 and orientation_entropy > 0.7) or
+#         (prop_deg3 > prop_deg4 * 1.5 and circuity > 1.05) or
+#         (orientation_entropy > 0.8 and street_density > 15000 and circuity > 1.05)):
+#         return "organico"
+
+#     # D. Patrón Híbrido (mezcla de tipos o casos especiales)
+#     # Incluyendo subdivisión si se detectan características específicas
+#     if (streets_per_node > 2.7 and intersection_density > 50 and 
+#         0.15 < prop_deg1 < 0.25 and 0.2 < prop_deg4 < 0.3):
+#         # Híbrido con tendencia a retícula
+#         return "hibrido"
+    
+#     # Caso general - Híbrido no específico
+#     return "hibrido"
+
 def add_classification_to_gdf(geojson_path, stats_dict):
     """
     Carga el geojson como gdf, crea una columna 'class' con
@@ -547,10 +661,10 @@ def plot_polygons_classification_png(
 
     # Mapear cada clase a un color
     color_map = {
-        "cul_de_sac":  "red",
-        "gridiron":    "green",
-        "organico":    "blue",
-        "hibrido":     "orange",
+        'cul_de_sac': '#FF6B6B',   # Rojo suave
+        'gridiron': '#4ECDC4',     # Verde azulado
+        'organico': '#45B7D1',     # Azul claro
+        'hibrido': '#FDCB6E', 
         "desconocido": "gray"
     }
 
@@ -1743,16 +1857,879 @@ def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geo
         'all_clustering_results': all_clustering_results,
         'merged_dataframe': df_merged
     }
-# Ejemplo de uso (comentado)
+# # Ejemplo de uso (comentado)
+# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+# stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+# df_mobility = prepare_mobility_data()
+# stats_dict = load_polygon_stats_from_txt(stats_txt)
+# results = polygon_detailed_statistical_analysis(stats_dict, df_mobility,geojson_file)
+
+
+
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+
+def street_pattern_clustering(stats_dict, geojson_file):
+    """
+    Realiza clustering de patrones de calles basado únicamente en propiedades estructurales de polígonos.
+    """
+    # Ruta base para guardar resultados
+    output_dir = "Poligonos_Medellin/Resultados/street_pattern_clustering"
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Preparar DataFrame con métricas de polígonos
+    polygon_metrics = []
+    for (poly_id, subpoly), stats_dict in stats_dict.items():
+        poly_metrics = stats_dict.copy()
+        poly_metrics['poly_id'] = poly_id
+        poly_metrics['subpoly'] = subpoly
+        polygon_metrics.append(poly_metrics)
+    
+    df_polygon_metrics = pd.DataFrame(polygon_metrics)
+
+    # Métricas estructurales para clustering
+    structural_metrics = [
+        'n',  # número de nodos
+        'm',  # número de bordes
+        'k_avg',  # grado promedio de nodos
+        'edge_length_total',  # longitud total de bordes
+        'edge_length_avg',  # longitud promedio de bordes
+        'streets_per_node_avg',  # calles por nodo en promedio
+        'intersection_count',  # número de intersecciones
+        'street_length_total',  # longitud total de calles
+        'street_segment_count',  # número de segmentos de calle
+        'street_length_avg',  # longitud promedio de calles
+        'circuity_avg',  # promedio de circuosidad
+        'intersection_density_km2',  # densidad de intersecciones por km²
+        'street_density_km2',  # densidad de calles por km²
+        'area_km2'  # área del polígono
+    ]
+
+    # Preparar características para clustering
+    X = df_polygon_metrics[structural_metrics]
+    
+    # Escalar todas las características
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # K-means clustering (puedes ajustar el número de clusters)
+    n_clusters = 4
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(X_scaled)
+    
+    # Añadir etiquetas de cluster al DataFrame
+    df_polygon_metrics['street_pattern_cluster'] = kmeans.labels_
+
+    # Cargar GeoJSON
+    gdf = gpd.read_file(geojson_file)
+    
+    # Crear mapeo de clusters por ID de polígono
+    cluster_map = dict(zip(df_polygon_metrics['poly_id'], df_polygon_metrics['street_pattern_cluster']))
+    
+    # Asignar clusters al GeoDataFrame
+    gdf['street_pattern_cluster'] = gdf.index.map(cluster_map)
+
+    # Análisis de características por cluster
+    cluster_profiles = df_polygon_metrics.groupby('street_pattern_cluster')[structural_metrics].mean()
+    print("Perfiles de Clusters de Patrones de Calles:")
+    print(cluster_profiles)
+
+    # Guardar perfiles de clusters
+    cluster_profiles.to_csv(os.path.join(output_dir, 'street_pattern_cluster_profiles.csv'))
+
+    # Visualización de clusters
+    plt.figure(figsize=(15, 10))
+    
+    # Plotear clusters
+    gdf.plot(column='street_pattern_cluster', 
+             cmap='viridis', 
+             edgecolor='black', 
+             linewidth=0.5, 
+             legend=True, 
+             missing_kwds={'color': 'lightgrey'})
+    
+    plt.title('Clusters de Patrones de Calles en Medellín')
+    plt.axis('off')
+    plt.tight_layout()
+    
+    # Guardar mapa de clusters
+    plt.savefig(os.path.join(output_dir, 'street_pattern_clusters_map.png'), 
+                dpi=300, 
+                bbox_inches='tight')
+    plt.close()
+
+    # Guardar GeoJSON con clusters
+    gdf.to_file(
+        os.path.join(output_dir, 'street_pattern_clusters.geojson'), 
+        driver='GeoJSON'
+    )
+
+    return {
+        'cluster_profiles': cluster_profiles,
+        'clustered_geodataframe': gdf,
+        'original_metrics': df_polygon_metrics
+    }
+
+# # Ejemplo de uso (descomentar y ajustar rutas si es necesario)
+# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+# stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+# stats_dict = load_polygon_stats_from_txt(stats_txt)
+# results = street_pattern_clustering(stats_dict, geojson_file)
+
+
+
+
+
+import os
+import pandas as pd
+import numpy as np
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from sklearn.metrics import confusion_matrix, classification_report
+
+import os
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
+
+
+
+
+import ast
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import DBSCAN, KMeans
+from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
+from sklearn.decomposition import PCA
+
+import os
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import ast
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import os
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import ast
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from matplotlib import colors as mcolors
+
+
+
+def prepare_clustering_features_improved(stats_dict):
+    """
+    Prepara características para clustering con selección mejorada de features
+    e inclusión explícita de un índice de conectividad basado en streets_per_node_proportions.
+    """
+    import numpy as np
+    import ast
+    
+    feature_names = [
+        # 'edge_length_total',      # Longitud total de enlaces
+        # 'street_length_total',    # Longitud total de calles
+        'n',                      # Número de nodos
+        'm',                      # Número de enlaces
+        'k_avg',                  # Grado promedio
+        'edge_length_avg',        # Longitud promedio de enlaces
+        'streets_per_node_avg',   # Promedio de calles por nodo
+        'intersection_count',     # Número de intersecciones
+        'street_segment_count',   # Número de segmentos de calle
+        'street_length_avg',      # Longitud promedio de calle
+        'circuity_avg',           # Circuidad promedio
+        'intersection_density_km2',  # Densidad de intersecciones por km²
+        'network_connectivity_index'  # ÍNDICE DE CONECTIVIDAD AÑADIDO AQUÍ
+    ]
+    
+    X = []
+    poly_ids = []
+    
+    # Extraer características
+    for poly_id, stats in stats_dict.items():
+        feature_vector = []
+        valid_entry = True
+        
+        # Procesar características estándar (todas menos la última que es network_connectivity_index)
+        for feature in feature_names[:-1]:
+            value = stats.get(feature, 0)
+            
+            # Verificar valores atípicos
+            if value is None or (isinstance(value, (int, float)) and (np.isnan(value) or np.isinf(value))):
+                valid_entry = False
+                break
+                
+            feature_vector.append(float(value))
+        
+        # Si la entrada es válida hasta ahora, calculamos y añadimos el índice de conectividad
+        if valid_entry:
+            # Calcular índice de conectividad a partir de streets_per_node_proportions o streets_per_node_counts
+            connectivity_index = 0.0
+            
+            try:
+                # Intentamos procesar streets_per_node_proportions primero
+                if 'streets_per_node_proportions' in stats:
+                    # Convertir a diccionario si es string
+                    if isinstance(stats['streets_per_node_proportions'], str):
+                        try:
+                            streets_prop = ast.literal_eval(stats['streets_per_node_proportions'])
+                        except:
+                            # Si falla la conversión, intentamos con streets_per_node_counts
+                            if 'streets_per_node_counts' in stats and isinstance(stats['streets_per_node_counts'], str):
+                                try:
+                                    streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
+                                    # Convertir counts a proportions
+                                    total_nodes = sum(streets_counts.values())
+                                    streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
+                                except:
+                                    streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
+                            else:
+                                streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
+                    else:
+                        streets_prop = stats['streets_per_node_proportions']
+                
+                # Alternativa: Si no tenemos proportions pero sí tenemos counts
+                elif 'streets_per_node_counts' in stats:
+                    if isinstance(stats['streets_per_node_counts'], str):
+                        try:
+                            streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
+                            # Convertir counts a proportions
+                            total_nodes = sum(streets_counts.values())
+                            streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
+                        except:
+                            streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
+                    else:
+                        streets_counts = stats['streets_per_node_counts']
+                        total_nodes = sum(streets_counts.values())
+                        streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
+                else:
+                    # Si no tenemos ni proportions ni counts
+                    streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
+                
+                # Extraer proporciones por tipo de nodo (con valores predeterminados si no existen)
+                dead_end_prop = streets_prop.get(1, 0.0)  # Calles sin salida
+                continuing_road_prop = streets_prop.get(2, 0.0)  # Continuación de calle
+                t_intersection_prop = streets_prop.get(3, 0.0)  # Intersección en T
+                cross_intersection_prop = streets_prop.get(4, 0.0)  # Intersección en cruz
+                
+                # Fórmula ponderada que da más importancia a cruces complejos
+                # y penaliza calles sin salida
+                connectivity_index = (
+                    (1 * dead_end_prop) +         # Peso más bajo para calles sin salida
+                    (2 * continuing_road_prop) +   # Peso medio-bajo para continuaciones
+                    (3 * t_intersection_prop) +    # Peso medio-alto para intersecciones en T
+                    (4 * cross_intersection_prop)  # Peso más alto para intersecciones en cruz
+                ) / 4.0  # Normalizado entre 0-1
+                
+            except Exception as e:
+                print(f"Error calculando índice de conectividad para {poly_id}: {e}")
+                # En caso de error, usamos un valor aproximado basado en streets_per_node_avg
+                connectivity_index = min(1.0, stats.get('streets_per_node_avg', 2.5) / 4.0)
+            
+            # Añadir el índice de conectividad al vector de características
+            feature_vector.append(float(connectivity_index))
+            
+            # Si el vector tiene todas las características requeridas, lo añadimos al conjunto de datos
+            if len(feature_vector) == len(feature_names):
+                X.append(feature_vector)
+                poly_ids.append(poly_id)
+    
+    # Verificar que tenemos suficientes muestras
+    if len(X) < 2:
+        print(f"ADVERTENCIA: Solo se encontraron {len(X)} muestras válidas para clustering.")
+    
+    # Imprimir las características para verificación
+    print("Características utilizadas:", feature_names)
+    
+    return np.array(X), poly_ids, feature_names
+
+def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
+    """
+    Encuentra el número óptimo de clusters usando silhouette score,
+    calinski-harabasz index y modularity score (para redes).
+    """
+    from sklearn.metrics import silhouette_score, calinski_harabasz_score
+    import networkx as nx
+    from networkx.algorithms.community import modularity
+    from sklearn.cluster import KMeans
+    import numpy as np
+    import matplotlib.pyplot as plt
+    
+    results = []
+    
+    for k in range(min_k, max_k + 1):
+        # Usar KMeans++ para mejor inicialización
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10, init='k-means++')
+        labels = kmeans.fit_predict(X_scaled)
+        
+        # Calcular métricas
+        silhouette = silhouette_score(X_scaled, labels)
+        calinski = calinski_harabasz_score(X_scaled, labels)
+        
+        # Construir grafo basado en similitudes de clustering
+        G = nx.Graph()
+        for i in range(len(labels)):
+            G.add_node(i, cluster=labels[i])
+        
+        # Agregar conexiones basadas en proximidad de clusters
+        for i in range(len(labels)):
+            for j in range(i + 1, len(labels)):
+                if labels[i] == labels[j]:
+                    G.add_edge(i, j)
+        
+        communities = {c: set(np.where(labels == c)[0]) for c in set(labels)}.values()
+        mod_score = modularity(G, communities)
+        
+        results.append({
+            'k': k,
+            'silhouette': silhouette,
+            'calinski': calinski,
+            'modularity': mod_score,
+            'inertia': kmeans.inertia_
+        })
+        
+        print(f"K={k}, Silhouette={silhouette:.4f}, Calinski-Harabasz={calinski:.1f}, Modularity={mod_score:.4f}")
+    
+    # Visualizar resultados
+    fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+    
+    # Silhouette score (mayor es mejor)
+    axs[0, 0].plot([r['k'] for r in results], [r['silhouette'] for r in results], 'o-', color='blue')
+    axs[0, 0].set_xlabel('Número de clusters')
+    axs[0, 0].set_ylabel('Silhouette Score')
+    axs[0, 0].set_title('Silhouette Score (mayor es mejor)')
+    
+    # Calinski-Harabasz (mayor es mejor)
+    axs[0, 1].plot([r['k'] for r in results], [r['calinski'] for r in results], 'o-', color='green')
+    axs[0, 1].set_xlabel('Número de clusters')
+    axs[0, 1].set_ylabel('Calinski-Harabasz Index')
+    axs[0, 1].set_title('Calinski-Harabasz Index (mayor es mejor)')
+    
+    # Modularity Score (mayor es mejor)
+    axs[1, 0].plot([r['k'] for r in results], [r['modularity'] for r in results], 'o-', color='red')
+    axs[1, 0].set_xlabel('Número de clusters')
+    axs[1, 0].set_ylabel('Modularity Score')
+    axs[1, 0].set_title('Modularity Score (mayor es mejor)')
+    
+    # Inertia (método del codo)
+    axs[1, 1].plot([r['k'] for r in results], [r['inertia'] for r in results], 'o-', color='purple')
+    axs[1, 1].set_xlabel('Número de clusters')
+    axs[1, 1].set_ylabel('Inertia')
+    axs[1, 1].set_title('Método del codo')
+    
+    plt.tight_layout()
+    plt.savefig('cluster_metrics.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Normalizar métricas para combinarlas
+    sil_norm = [r['silhouette'] / max([r['silhouette'] for r in results]) for r in results]
+    cal_norm = [r['calinski'] / max([r['calinski'] for r in results]) for r in results]
+    mod_norm = [r['modularity'] / max([r['modularity'] for r in results]) for r in results]
+    
+    # Calcular score combinado
+    combined_scores = [(s + c + m) / 3 for s, c, m in zip(sil_norm, cal_norm, mod_norm)]
+    
+    # Encontrar k óptimo por score combinado
+    optimal_k_idx = np.argmax(combined_scores)
+    optimal_k = results[optimal_k_idx]['k']
+    
+    print(f"\nK óptimo según score combinado: {optimal_k}")
+    return optimal_k
+
+def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True, visualize=True):
+    """
+    Realiza clustering mejorado con KMeans y análisis de características importantes
+    """
+    from sklearn.decomposition import PCA
+    from sklearn.manifold import TSNE
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.cluster import KMeans
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import pandas as pd
+    
+    # Eliminar filas con NaN o infinitos
+    valid_rows = ~np.any(np.isnan(X) | np.isinf(X), axis=1)
+    X_clean = X[valid_rows]
+    if X_clean.shape[0] < X.shape[0]:
+        print(f"Eliminadas {X.shape[0] - X_clean.shape[0]} filas con valores no válidos")
+    
+    # Normalizar características
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X_clean)
+    
+    # Reducción de dimensionalidad
+    if use_pca:
+        # Determinar número óptimo de componentes (varianza explicada > 0.95)
+        full_pca = PCA().fit(X_scaled)
+        cum_var = np.cumsum(full_pca.explained_variance_ratio_)
+        n_components = np.argmax(cum_var >= 0.95) + 1
+        n_components = max(2, min(n_components, X_scaled.shape[1]))
+        
+        pca = PCA(n_components=n_components)
+        X_reduced = pca.fit_transform(X_scaled)
+        
+        # Análisis de componentes principales
+        print(f"\nAnálisis PCA con {n_components} componentes:")
+        print(f"Varianza explicada: {pca.explained_variance_ratio_}")
+        print(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}")
+        
+        # Visualizar contribución de características a componentes
+        plt.figure(figsize=(12, 8))
+        components = pd.DataFrame(
+            pca.components_.T,
+            columns=[f'PC{i+1}' for i in range(n_components)],
+            index=feature_names
+        )
+        
+        sns.heatmap(components, cmap='coolwarm', annot=True, fmt=".2f")
+        plt.title('Contribución de variables a componentes principales')
+        plt.tight_layout()
+        plt.savefig('pca_components_contributions.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    else:
+        X_reduced = X_scaled
+    
+    # Encontrar número óptimo de clusters si no se proporciona
+    if n_clusters is None:
+        # Asumimos que la función find_optimal_k_improved está definida en otro lugar
+        n_clusters = find_optimal_k_improved(X_reduced, max_k=8, min_k=3)
+    
+    print(f"\nRealizando clustering KMeans con {n_clusters} clusters")
+    
+    # Usar KMeans con inicialización k-means++ y múltiples inicios
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10, init='k-means++')
+    cluster_labels = kmeans.fit_predict(X_reduced)
+    
+    # Analizar centros de clusters
+    if use_pca:
+        # Proyectar centros al espacio original
+        centers_pca = kmeans.cluster_centers_
+        centers_original = pca.inverse_transform(centers_pca)
+        centers_original = scaler.inverse_transform(centers_original)
+    else:
+        centers_original = scaler.inverse_transform(kmeans.cluster_centers_)
+    
+    # Crear DataFrame de centros
+    centers_df = pd.DataFrame(centers_original, columns=feature_names)
+    centers_df.index = [f'Cluster {i}' for i in range(n_clusters)]
+    
+    print("\nCaracterísticas de los centros de clusters:")
+    print(centers_df)
+    
+    # Analizar variables más discriminantes entre clusters
+    cluster_importance = {}
+    for feature in feature_names:
+        # Calcular varianza entre clusters para esta característica
+        values = centers_df[feature].values
+        variance = np.var(values)
+        max_diff = np.max(values) - np.min(values)
+        importance = variance * max_diff  # Ponderación por rango
+        cluster_importance[feature] = importance
+    
+    sorted_features = sorted(cluster_importance.items(), key=lambda x: x[1], reverse=True)
+    
+    print("\nCaracterísticas más importantes para diferenciar clusters:")
+    for feature, importance in sorted_features[:5]:
+        print(f"{feature}: {importance:.4f}")
+    
+    # Visualizar clusters
+    if visualize:
+        # CORRECCIÓN: En lugar de usar t-SNE, que puede no preservar distancias globales,
+        # usar PCA para visualización si el número de características es alto
+        if X_reduced.shape[1] > 2:
+            # Para visualización, usamos PCA directamente desde los datos escalados
+            viz_pca = PCA(n_components=2)
+            X_viz = viz_pca.fit_transform(X_scaled)
+            
+            plt.figure(figsize=(10, 8))
+            scatter = plt.scatter(X_viz[:, 0], X_viz[:, 1], c=cluster_labels, 
+                                 cmap='viridis', s=50, alpha=0.8)
+            
+            # Transformar centros de clusters a 2D para visualización
+            if use_pca:
+                # Primero a espacio escalado
+                centers_scaled = scaler.transform(centers_original)
+                # Luego proyectar a 2D con el mismo PCA de visualización
+                centers_viz = viz_pca.transform(centers_scaled)
+            else:
+                centers_viz = viz_pca.transform(kmeans.cluster_centers_)
+            
+            # Mostrar centros en la visualización
+            plt.scatter(centers_viz[:, 0], centers_viz[:, 1], 
+                       c='red', s=200, alpha=0.8, marker='X')
+            
+            # Añadir etiquetas de clusters
+            for i, (x, y) in enumerate(centers_viz):
+                plt.annotate(f'Cluster {i}', (x, y), fontsize=12, 
+                             ha='center', va='center', color='white',
+                             bbox=dict(boxstyle="round,pad=0.3", fc='black', alpha=0.7))
+            
+            plt.colorbar(scatter, label='Cluster')
+            plt.title('Visualización de clusters usando PCA')
+            plt.xlabel('PC1')
+            plt.ylabel('PC2')
+            plt.tight_layout()
+            plt.savefig('cluster_visualization_pca.png', dpi=300, bbox_inches='tight')
+            plt.close()
+            
+            # Adicionalmente, podemos usar t-SNE como visualización complementaria
+            # pero con parámetros más adecuados
+            if X_clean.shape[0] > 5:  # Solo si hay suficientes datos
+                perplexity = min(30, max(5, X_clean.shape[0] // 10))
+                tsne = TSNE(n_components=2, random_state=42, perplexity=perplexity,
+                           learning_rate='auto', init='pca')
+                X_tsne = tsne.fit_transform(X_scaled)
+                
+                plt.figure(figsize=(10, 8))
+                scatter = plt.scatter(X_tsne[:, 0], X_tsne[:, 1], 
+                                     c=cluster_labels, cmap='viridis', s=50, alpha=0.8)
+                
+                plt.colorbar(scatter, label='Cluster')
+                plt.title('Visualización de clusters usando t-SNE')
+                plt.xlabel('t-SNE 1')
+                plt.ylabel('t-SNE 2')
+                plt.tight_layout()
+                plt.savefig('cluster_visualization_tsne_improved.png', dpi=300, bbox_inches='tight')
+                plt.close()
+        else:
+            # Si ya tenemos 2 dimensiones, usar directamente
+            plt.figure(figsize=(10, 8))
+            scatter = plt.scatter(X_reduced[:, 0], X_reduced[:, 1], 
+                                 c=cluster_labels, cmap='viridis', s=50, alpha=0.8)
+            
+            plt.colorbar(scatter, label='Cluster')
+            plt.title('Visualización de clusters')
+            plt.xlabel('Dimensión 1')
+            plt.ylabel('Dimensión 2')
+            plt.tight_layout()
+            plt.savefig('cluster_visualization_direct.png', dpi=300, bbox_inches='tight')
+            plt.close()
+        
+        # Visualizar distribución de características más importantes por cluster
+        # Definir número de filas y columnas
+        
+        number_of_graphs =  len(feature_names)
+
+        if number_of_graphs > 14:
+            rows, cols = 5, 3
+
+        elif number_of_graphs < 14:
+            rows, cols = 4, 3
+
+        # Obtener las características principales
+        top_features = [f[0] for f in sorted_features[:number_of_graphs]]
+
+        # Crear la figura y los ejes en una cuadrícula de 3x3
+        fig, axes = plt.subplots(rows, cols, figsize=(15, 13))  # Ajustar tamaño si es necesario
+
+        # Convertir los ejes en un arreglo unidimensional para facilitar la iteración
+        axes = axes.flatten()
+
+        # Crear DataFrame con datos originales y etiquetas de cluster
+        data_df = pd.DataFrame(X_clean, columns=feature_names)
+        data_df['cluster'] = cluster_labels
+
+        for i, feature in enumerate(top_features):
+            sns.boxplot(x='cluster', y=feature, data=data_df, ax=axes[i])
+            axes[i].set_title(f'Distribución de {feature}')
+            axes[i].set_xlabel('Cluster')
+            axes[i].set_ylabel(feature)
+
+        # Ajustar el diseño
+        plt.tight_layout()
+        plt.savefig('feature_distributions_by_cluster.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    return n_clusters, cluster_labels, centers_df, sorted_features
+
+def urban_pattern_clustering(
+    stats_dict, 
+    classify_func, 
+    geojson_file,
+    n_clusters=None,
+    output_dir="Resultados/urbano_pattern_cluster"
+):
+    """
+    Versión mejorada para clustering de patrones urbanos
+    """
+    import os
+    import pandas as pd
+    import geopandas as gpd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    from sklearn.metrics import confusion_matrix, classification_report
+    import numpy as np
+    
+    # Crear directorio para resultados
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Cargar GeoDataFrame
+    gdf = gpd.read_file(geojson_file)
+    print(f"GeoDataFrame cargado con {len(gdf)} polígonos")
+    
+    # Preparar características mejoradas para clustering
+    X, poly_ids, feature_names = prepare_clustering_features_improved(stats_dict)
+    print(f"Características preparadas para {len(X)} polígonos con {len(feature_names)} variables")
+    
+    # Realizar clustering mejorado
+    n_clusters, cluster_labels, centers_df, important_features = optimal_clustering_improved(
+        X, feature_names, n_clusters=n_clusters
+    )
+    
+    # Clasificación original de patrones
+    original_patterns = []
+    valid_poly_ids = []
+    
+    for poly_id in poly_ids:
+        poly_stats = stats_dict[poly_id]
+        category = classify_func(poly_stats)
+        original_patterns.append(category)
+        valid_poly_ids.append(poly_id)
+    
+    # Crear DataFrame con resultados
+    results_df = pd.DataFrame({
+        'poly_id': [pid[0] for pid in valid_poly_ids],
+        'subpoly_id': [pid[1] for pid in valid_poly_ids],
+        'original_pattern': original_patterns,
+        'cluster': cluster_labels
+    })
+    
+    # Análisis de relación entre patrones originales y clusters
+    pattern_cluster_matrix = pd.crosstab(
+        results_df['original_pattern'], 
+        results_df['cluster'],
+        normalize='columns'
+    ) * 100
+    
+    print("\nDistribución de patrones por cluster (%):")
+    print(pattern_cluster_matrix)
+    
+    # Visualizar matriz de patrones vs clusters como heatmap
+    plt.figure(figsize=(10, 6))
+    sns.heatmap(pattern_cluster_matrix, annot=True, fmt=".1f", cmap="YlGnBu")
+    plt.title('Distribución de patrones urbanos por cluster (%)')
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'pattern_cluster_heatmap.png'), dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Determinar el patrón dominante para cada cluster
+    cluster_dominant_pattern = {}
+    for cluster in range(n_clusters):
+        if cluster in pattern_cluster_matrix.columns:
+            dominant_pattern = pattern_cluster_matrix[cluster].idxmax()
+            percentage = pattern_cluster_matrix.loc[dominant_pattern, cluster]
+            cluster_dominant_pattern[cluster] = (dominant_pattern, percentage)
+    
+    # Asignar nombres distintivos a los clusters
+    cluster_names = {}
+    named_patterns = set()
+    
+    for cluster, (pattern, percentage) in cluster_dominant_pattern.items():
+        if pattern in named_patterns:
+            # Si ya existe un cluster con este patrón, agregar un sufijo
+            similar_clusters = [c for c, (p, _) in cluster_dominant_pattern.items() if p == pattern]
+            suffix = len([c for c in similar_clusters if c < cluster]) + 1
+            
+            # Analizar diferencias con otros clusters del mismo patrón
+            distinctive_features = []
+            for feature, _ in important_features[:3]:
+                feature_value = centers_df.loc[f'Cluster {cluster}', feature]
+                avg_value = centers_df.loc[[f'Cluster {c}' for c in similar_clusters if c != cluster], feature].mean()
+                if feature_value > avg_value * 1.2:
+                    distinctive_features.append(f"alto_{feature.split('_')[0]}")
+                elif feature_value < avg_value * 0.8:
+                    distinctive_features.append(f"bajo_{feature.split('_')[0]}")
+            
+            if distinctive_features:
+                cluster_names[cluster] = f"{pattern}_{distinctive_features[0]}"
+            else:
+                cluster_names[cluster] = f"{pattern}_{suffix}"
+        else:
+            cluster_names[cluster] = pattern
+            named_patterns.add(pattern)
+    
+    # Filtrar y preparar GeoDataFrame para visualización
+    poly_id_map = {pid[0]: i for i, pid in enumerate(valid_poly_ids)}
+    valid_indices = [i for i in poly_id_map.keys() if i < len(gdf)]
+    gdf_filtered = gdf.loc[valid_indices].copy()
+    
+    # Añadir resultados al GeoDataFrame
+    gdf_filtered['original_pattern'] = gdf_filtered.index.map(
+        lambda idx: results_df[results_df['poly_id'] == idx]['original_pattern'].values[0] 
+        if idx in poly_id_map and any(results_df['poly_id'] == idx) else 'unknown'
+    )
+    
+    gdf_filtered['cluster'] = gdf_filtered.index.map(
+        lambda idx: results_df[results_df['poly_id'] == idx]['cluster'].values[0] 
+        if idx in poly_id_map and any(results_df['poly_id'] == idx) else -1
+    )
+    
+    gdf_filtered['cluster_name'] = gdf_filtered['cluster'].map(
+        lambda c: cluster_names.get(c, f"cluster_{c}") if c != -1 else 'unknown'
+    )
+    
+    # Definir esquema de colores mejorado para patrones urbanos
+    # Usando colores distintivos y temáticos para cada tipo
+    color_map = {
+        'cul_de_sac': '#FF6B6B',   # Rojo para callejones sin salida
+        'gridiron': '#006400',     # Verde oscuro para grid
+        'organico': '#45B7D1',     # Azul para orgánico
+        'hibrido': '#FDCB6E',      # Amarillo para híbrido
+        'unknown': '#CCCCCC'       # Gris para desconocidos
+    }
+    
+    # Añadir colores para nombres de cluster
+    for cluster, name in cluster_names.items():
+        pattern = name.split('_')[0]
+        if pattern in color_map:
+            base_color = np.array(mcolors.to_rgb(color_map[pattern]))
+            # Ajustar color ligeramente para distinguir patrones similares
+            if '_' in name and pattern in named_patterns:
+                # Oscurecer o aclarar el color según el sufijo
+                suffix = name.split('_')[1]
+                if suffix.startswith('alto'):
+                    # Más claro
+                    adjusted_color = base_color + (1 - base_color) * 0.3
+                elif suffix.startswith('bajo'):
+                    # Más oscuro
+                    adjusted_color = base_color * 0.7
+                else:
+                    # Alternar entre tonos
+                    factor = int(suffix) * 0.15 if suffix.isdigit() else 0.2
+                    adjusted_color = base_color + np.array([0, factor, -factor])
+                
+                # Recortar valores a rango válido
+                adjusted_color = np.clip(adjusted_color, 0, 1)
+                color_map[name] = mcolors.to_hex(adjusted_color)
+            else:
+                color_map[name] = color_map[pattern]
+    
+    # Visualización de comparación
+    fig, axes = plt.subplots(1, 2, figsize=(18, 10))
+    
+    # Función para asignar colores
+    def get_color(value, color_map):
+        return color_map.get(value, '#CCCCCC')
+    
+    # Mapa de patrones originales
+    gdf_filtered['color_pattern'] = gdf_filtered['original_pattern'].apply(
+        lambda x: get_color(x, color_map)
+    )
+    
+    gdf_filtered.plot(color=gdf_filtered['color_pattern'], 
+                     ax=axes[0],
+                     edgecolor='black', 
+                     linewidth=0.5)
+    
+    # Crear leyenda para patrones
+    from matplotlib.patches import Patch
+    pattern_legend_elements = [
+        Patch(facecolor=color_map[pattern], edgecolor='black', label=pattern)
+        for pattern in sorted(list(set(gdf_filtered['original_pattern'])))
+        if pattern in color_map
+    ]
+    axes[0].legend(handles=pattern_legend_elements, loc='lower right', title="Patrones originales")
+    axes[0].set_title('Patrones de calle teóricos', fontsize=14)
+    axes[0].axis('off')
+    
+    # Mapa de clusters
+    gdf_filtered['color_cluster'] = gdf_filtered['cluster_name'].apply(
+        lambda x: get_color(x, color_map)
+    )
+    
+    gdf_filtered.plot(color=gdf_filtered['color_cluster'], 
+                     ax=axes[1],
+                     edgecolor='black', 
+                     linewidth=0.5)
+    
+    # Crear leyenda para clusters
+    cluster_legend_elements = [
+        Patch(facecolor=get_color(name, color_map), edgecolor='black', label=name)
+        for name in sorted(list(set(gdf_filtered['cluster_name'])))
+        if name != 'unknown'
+    ]
+    axes[1].legend(handles=cluster_legend_elements, loc='lower right', title="Clusters identificados")
+    axes[1].set_title('Agrupación por características morfológicas', fontsize=14)
+    axes[1].axis('off')
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'urban_pattern_comparison.png'), 
+                dpi=300, 
+                bbox_inches='tight')
+    plt.close()
+    
+    # Análisis de características por tipo de patrón urbano
+    pattern_feature_summary = {}
+    
+    # Añadir valores normalizados de características al DataFrame
+    feature_data = pd.DataFrame(X, columns=feature_names)
+    feature_data['pattern'] = original_patterns
+    feature_data['cluster'] = cluster_labels
+    
+    # Calcular estadísticas por patrón
+    for pattern in set(original_patterns):
+        pattern_data = feature_data[feature_data['pattern'] == pattern]
+        pattern_feature_summary[pattern] = {
+            feature: pattern_data[feature].mean() for feature in feature_names
+        }
+    
+    # Crear DataFrame de resumen
+    summary_df = pd.DataFrame(pattern_feature_summary).T
+    
+    # Guardar resultados en formato Excel
+    with pd.ExcelWriter(os.path.join(output_dir, 'urban_pattern_analysis.xlsx')) as writer:
+        # Hoja 1: Resumen de patrones y características
+        summary_df.to_excel(writer, sheet_name='Pattern_Features')
+        
+        # Hoja 2: Matriz de confusión entre patrones y clusters
+        pattern_cluster_matrix.to_excel(writer, sheet_name='Pattern_Cluster_Matrix')
+        
+        # Hoja 3: Características de centros de clusters
+        centers_df.to_excel(writer, sheet_name='Cluster_Centers')
+        
+        # Hoja 4: Importancia de características
+        pd.DataFrame(important_features, columns=['Feature', 'Importance']).to_excel(
+            writer, sheet_name='Feature_Importance'
+        )
+    
+    # Guardar GeoJSON con resultados
+    gdf_filtered.to_file(
+        os.path.join(output_dir, 'urban_patterns_clustered.geojson'),
+        driver='GeoJSON'
+    )
+    
+    return {
+        'geodataframe': gdf_filtered,
+        'cluster_centers': centers_df,
+        'pattern_cluster_matrix': pattern_cluster_matrix,
+        'cluster_names': cluster_names,
+        'important_features': important_features,
+        'n_clusters': n_clusters
+    }
+
 geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
 stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
-df_mobility = prepare_mobility_data()
+
 stats_dict = load_polygon_stats_from_txt(stats_txt)
-results = polygon_detailed_statistical_analysis(stats_dict, df_mobility,geojson_file)
-
-
-
-
-
-
-
+resultados = urban_pattern_clustering(
+    stats_dict, 
+    classify_polygon, 
+    geojson_file,
+    n_clusters= None  # Automáticamente determinará el número óptimo
+)
