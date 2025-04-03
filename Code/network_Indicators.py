@@ -13,7 +13,7 @@ import numpy as np
 import scipy.stats as stats
 
 
-def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
+def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet):
     """
     Calculates specified centrality metric for a graph and saves an interactive HTML visualization. 
     Optimized for performance and large-scale network analysis.
@@ -32,7 +32,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
     # =============================================
     # 1. Centrality Calculation with Robust Handling
     # =============================================
-    def calculate_centrality(graph, metric):
+    def calculate_centrality(graph, metric, weight='length'):
         try:
             if metric == "degree":
                 return dict(graph.degree())
@@ -45,12 +45,12 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
                         undirected_graph[u][v]['weight'] += weight
                     else:
                         undirected_graph.add_edge(u, v, weight=weight)
-                
+
                 # Handle disconnected graphs
                 if not nx.is_connected(undirected_graph):
                     lcc = max(nx.connected_components(undirected_graph), key=len)
                     undirected_graph = undirected_graph.subgraph(lcc)
-                
+
                 try:
                     centrality = nx.eigenvector_centrality(
                         undirected_graph, 
@@ -65,18 +65,17 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
                         tol=1e-3,
                         weight='weight'
                     )
-                
+
                 # Map back to original graph
                 centrality = {node: centrality.get(node, 0.0) for node in graph.nodes()}
                 max_c = max(centrality.values(), default=1)
                 return {node: val / max_c for node, val in centrality.items()}
-            
             elif metric == "pagerank":
-                return nx.pagerank(graph)
+                return nx.pagerank(graph, weight=weight)
             elif metric == "betweenness":
-                return nx.betweenness_centrality(graph)
+                return nx.betweenness_centrality(graph, weight=weight)
             elif metric == "closeness":
-                return nx.closeness_centrality(graph)
+                return nx.closeness_centrality(graph, distance=weight)
             elif metric == "slc":
                 return calculate_slc(graph)
             elif metric == "lsc":
@@ -88,7 +87,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
             return {node: 0.0 for node in graph.nodes()}
 
     # Calculate centrality
-    centrality = calculate_centrality(graph, metric)
+    centrality = calculate_centrality(graph, metric, weight=weight)
 
     # =============================================
     # 2. Graph Preprocessing and Sampling
@@ -224,7 +223,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
     fig = go.Figure(data=[edge_trace, node_trace], layout=layout)
     
 
-# 7. Métricas Globales de Centralidad
+    # 7. Métricas Globales de Centralidad
     # =============================================
     shannon_entropy = calculate_shannon_entropy(centrality)
     freeman_centralization = calculate_freeman_centralization(centrality)
@@ -284,7 +283,7 @@ def plot_centrality(graph, metric, place_name, cmap=plt.cm.jet):
 
     print(f"Optimized visualization saved in: {ruta_completa}")
 
-def compute_edge_betweenness_data(graph, metric="betweenness"):
+def compute_edge_betweenness_data(graph, metric="betweenness", weight=None):
     """
     Calcula la centralidad de betweenness para cada edge del grafo (manteniéndolo como multigraph)
     y almacena en una lista de diccionarios, cada uno con:
@@ -294,13 +293,20 @@ def compute_edge_betweenness_data(graph, metric="betweenness"):
       - 'y': lista con [y_u, y_v] (ya proyectados).
       - 'hover': texto de hover info.
     
+    Parámetros:
+      - graph: Grafo de NetworkX
+      - metric: Métrica a calcular (solo 'betweenness' soportada)
+      - weight: Nombre del atributo de borde a usar como peso (ej. 'length', 'travel_time')
+               Si es None, todos los bordes tienen peso 1.
+    
     Se asume que el grafo tiene las posiciones de sus nodos en 'x' y 'y' (después de proyectar con osmnx).
     """
     if metric != "betweenness":
         raise ValueError("Solo se soporta la métrica 'betweenness' para edges.")
     
     # Calcular centralidad (las claves serán (u, v, k))
-    edge_centrality = nx.edge_betweenness_centrality(graph)
+    # Pasamos el parámetro weight para usar las distancias como pesos
+    edge_centrality = nx.edge_betweenness_centrality(graph, weight=weight)
     
     # Proyectar el grafo si no lo está
     try:
@@ -310,7 +316,7 @@ def compute_edge_betweenness_data(graph, metric="betweenness"):
         print(f"Warning during projection: {e}")
     
     # Extraer posiciones usando osmnx: desempaquetamos la tupla (nodos_gdf, edges_gdf)
-    nodes_gdf, _ = ox.graph_to_gdfs(graph, nodes=True, edges=True)
+    nodes_gdf, edges_gdf = ox.graph_to_gdfs(graph, nodes=True, edges=True)
     # Crear un diccionario: clave = id del nodo, valor = (y, x)
     positions = {node: (geom.y, geom.x) for node, geom in nodes_gdf.geometry.items()}
     
@@ -319,12 +325,22 @@ def compute_edge_betweenness_data(graph, metric="betweenness"):
         value = edge_centrality.get((u, v, k), 0.0)
         if u not in positions or v not in positions:
             continue
+        
         x_u, y_u = positions[u][1], positions[u][0]
         x_v, y_v = positions[v][1], positions[v][0]
+        
+        # Añadir información sobre el peso usado en el hover text si está disponible
+        weight_info = ""
+        if weight and (u, v, k) in graph.edges:
+            edge_data = graph.get_edge_data(u, v, k)
+            if weight in edge_data:
+                weight_info = f"<br>{weight}: {edge_data[weight]}"
+        
         hover_txt = (f"Edge: {u} - {v} (key: {k})<br>"
-                     f"Betweenness: {value:.4f}<br>"
+                     f"Betweenness: {value:.4f}{weight_info}<br>"
                      f"Node {u}: (Y: {positions[u][0]:.4f}, X: {positions[u][1]:.4f})<br>"
                      f"Node {v}: (Y: {positions[v][0]:.4f}, X: {positions[v][1]:.4f})")
+        
         edge_list.append({
             'u': u,
             'v': v,
@@ -334,6 +350,7 @@ def compute_edge_betweenness_data(graph, metric="betweenness"):
             'y': [y_u, y_v],
             'hover': hover_txt
         })
+    
     return edge_list
 
 def plot_edge_centrality(edge_list, place_name, cmap=cm.jet):

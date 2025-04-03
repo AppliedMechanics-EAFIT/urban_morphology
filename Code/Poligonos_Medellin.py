@@ -2050,7 +2050,7 @@ def prepare_clustering_features_improved(stats_dict):
         'edge_length_avg',        # Longitud promedio de enlaces
         'streets_per_node_avg',   # Promedio de calles por nodo
         'intersection_count',     # Número de intersecciones
-        'street_segment_count',   # Número de segmentos de calle
+        # 'street_segment_count',   # Número de segmentos de calle
         'street_length_avg',      # Longitud promedio de calle
         'circuity_avg',           # Circuidad promedio
         'intersection_density_km2',  # Densidad de intersecciones por km²

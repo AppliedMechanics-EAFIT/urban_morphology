@@ -33,6 +33,7 @@ cities = [
 # Avaliable metrics
 metrics = [ "eigenvector", "closeness","pagerank", "betweenness", "degree","slc" , "lsc"]
 
+
 for city in cities:
     place_name = city
     
@@ -42,14 +43,14 @@ for city in cities:
         # 1. Obtener grafo
         graph = ox.graph_from_place(place_name, network_type='drive')
         
-        # # 2. Procesar métricas de nodos
-        # for metric in metrics:
-        #     print(f"\nMétrica nodal: {metric.upper()}")
-        #     plot_centrality(graph, metric, place_name)
+        # 2. Procesar métricas de nodos
+        for metric in metrics:
+            print(f"\nMétrica nodal: {metric.upper()}")
+            plot_centrality(graph, metric, place_name, weight='length')
             
         # 3. Procesar métricas de aristas (edge centrality)
         print("\nCalculando centralidad de aristas (Edge Betweenness)")
-        edge_data = compute_edge_betweenness_data(graph, metric="betweenness")
+        edge_data = compute_edge_betweenness_data(graph, metric="betweenness", weight='length')
         plot_edge_centrality(edge_data, place_name)
             
     except Exception as e:
