@@ -12,11 +12,39 @@ import plotly.graph_objects as go
 import numpy as np
 import matplotlib.patches as mpatches
 import ast
-import numpy as np
 import seaborn as sns
 from scipy.stats import f_oneway, kruskal
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+import matplotlib.patches as mpatches
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from matplotlib import colors as mcolors
+from shapely.wkt import loads
+from shapely.geometry import shape
+import scipy.stats as stats
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def convert_shapefile_to_geojson(shapefile_paths, output_directory="Poligonos_Medellin/Json_files"):
@@ -1117,106 +1145,172 @@ def match_polygons_by_area(gdfA, gdfB, area_ratio_threshold=0.9, out_csv=None):
 
 
 
-def Excel_for_rural_and_urban_movility_data():
-    # Rutas
+
+
+
+
+
+
+def process_mobility_data(area_type='urban_and_rural'):
+    # Configurar rutas y opciones según el tipo de área
+    if area_type == 'urban':
+        a_path = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+        include_absolute = False
+        output_xlsx = "Poligonos_Medellin/Resultados/Statics_Results/URBAN/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
+        output_image = "Poligonos_Medellin/Resultados/Statics_Results/URBAN/map_poligonosA_urbano_classified.png"
+    else:
+        a_path = "Poligonos_Medellin/EOD_2017_SIT_only_AMVA.shp"
+        include_absolute = False
+        output_xlsx = "Poligonos_Medellin/Resultados/Statics_Results/URBAN_AND_RURAL/Poligonos_Clasificados_Movilidad_Urban_and_Rural.xlsx"
+        output_image = "Poligonos_Medellin/Resultados/Statics_Results/URBAN_AND_RURAL/map_poligonosA_classified_Urban_and_Rural.png"
+    
+    # Rutas comunes
     stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
     matches_csv = "Poligonos_Medellin/Resultados/Matchs_A_B/matches_by_area.csv"
     shpB = "Poligonos_Medellin/eod_gen_trips_mode.shp"
-    shpA = "Poligonos_Medellin/EOD_2017_SIT_only_AMVA.shp"
-
-    # 1) Cargar stats
+    
+    # 1) Cargar estadísticas
     stats_dict = load_polygon_stats_from_txt(stats_txt)
     print(f"Cargadas stats para {len(stats_dict)} polígonos (subpolígonos).")
-
-    # 2) Cargar matches CSV
-    df_matches = pd.read_csv(matches_csv)  # [indexA, indexB, area_ratio]
+    
+    # 2) Cargar emparejamientos
+    df_matches = pd.read_csv(matches_csv)
     print("Muestra df_matches:\n", df_matches.head(), "\n")
-
+    
     # 3) Leer shapefile B (movilidad)
     gdfB = gpd.read_file(shpB)
     print("Columnas B:", gdfB.columns)
-
-    # 4) Leer shapefile A (para graficar)
-    gdfA = gpd.read_file(shpA)
-
-    # 5) Armar DataFrame final
+    
+    # 4) Leer GeoDataFrame A (geometría)
+    gdfA = gpd.read_file(a_path)
+    print(f"Leídos {len(gdfA)} polígonos en {'GeoJSON URBANO' if area_type == 'urban' else 'SHP'}.")
+    
+    # 5) Construir DataFrame final
     final_rows = []
-    for i, row in df_matches.iterrows():
+    for _, row in df_matches.iterrows():
         idxA = row["indexA"]
         idxB = row["indexB"]
         ratio = row["area_ratio"]
-
-        # stats => (idxA,0)
+        
+        # Obtener estadísticas y clasificar patrón
         key_stats = (idxA, 0)
         poly_stats = stats_dict.get(key_stats, {})
         pattern = classify_polygon(poly_stats)
-
-        # Extraer movilidad de B
-        rowB = gdfB.loc[idxB]  # asumiendo gdfB.index coincide con indexB
-
-        # Columnas absolutas
-        auto_ = rowB.get("Auto", 0)
-        moto_ = rowB.get("Moto", 0)
-        taxi_ = rowB.get("Taxi", 0)
-        # Columnas proporcionales
-        p_walk_  = rowB.get("p_walk",  0)
-        p_tpc_   = rowB.get("p_tpc",   0)
+        
+        # Extraer datos de movilidad
+        rowB = gdfB.loc[idxB]
+        p_walk_ = rowB.get("p_walk", 0)
+        p_tpc_ = rowB.get("p_tpc", 0)
         p_sitva_ = rowB.get("p_sitva", 0)
-        p_auto_  = rowB.get("p_auto",  0)
-        p_moto_  = rowB.get("p_moto",  0)
-        p_taxi_  = rowB.get("p_taxi",  0)
-        p_bike_  = rowB.get("p_bike",  0)
-
-        final_rows.append({
+        p_auto_ = rowB.get("p_auto", 0)
+        p_moto_ = rowB.get("p_moto", 0)
+        p_taxi_ = rowB.get("p_taxi", 0)
+        p_bike_ = rowB.get("p_bike", 0)
+        
+        # Datos base para la fila
+        row_data = {
             "indexA": idxA,
             "indexB": idxB,
             "area_ratio": ratio,
             "street_pattern": pattern,
-            "Auto": auto_,
-            "Moto": moto_,
-            "Taxi": taxi_,
-            "p_walk":  p_walk_,
-            "p_tpc":   p_tpc_,
+            "p_walk": p_walk_,
+            "p_tpc": p_tpc_,
             "p_sitva": p_sitva_,
-            "p_auto":  p_auto_,
-            "p_moto":  p_moto_,
-            "p_taxi":  p_taxi_,
-            "p_bike":  p_bike_
-        })
-
-    df_final = pd.DataFrame(final_rows)
-    df_final = df_final[[
-        "indexA", "indexB", "area_ratio", "street_pattern", 
-        "Auto", "Moto", "Taxi",  # absolutos
-        "p_walk", "p_tpc", "p_sitva", "p_auto", "p_moto", "p_taxi", "p_bike"
-    ]]
-
-    output_xlsx = "Poligonos_Clasificados_Movilidad.xlsx"
+            "p_auto": p_auto_,
+            "p_moto": p_moto_,
+            "p_taxi": p_taxi_,
+            "p_bike": p_bike_
+        }
+        
+        # Agregar datos absolutos si corresponde
+        if include_absolute:
+            row_data.update({
+                "Auto": rowB.get("Auto", 0),
+                "Moto": rowB.get("Moto", 0),
+                "Taxi": rowB.get("Taxi", 0)
+            })
+        
+        final_rows.append(row_data)
+    
+    # Definir columnas del DataFrame final
+    columns = ["indexA", "indexB", "area_ratio", "street_pattern"]
+    if include_absolute:
+        columns += ["Auto", "Moto", "Taxi"]
+    columns += ["p_walk", "p_tpc", "p_sitva", "p_auto", "p_moto", "p_taxi", "p_bike"]
+    
+    df_final = pd.DataFrame(final_rows)[columns]
+    
+    # Guardar Excel
     df_final.to_excel(output_xlsx, index=False)
     print(f"Guardado Excel final en {output_xlsx} con {len(df_final)} filas.\n")
+    
+# 6) Graficar polígonos clasificados
+    gdfA["pattern"] = gdfA.index.map(df_final.set_index("indexA")["street_pattern"])
+    
+    # Mapeo de patrones a colores específicos
+    color_mapping = {
+        'gridiron': 'Green',
+        'cul_de_sac': 'Red',
+        'hibrido': 'Blue',
+        'organico': 'Yellow'
+    }
+    
+    # Convertir a categorías ordenadas
+    categories = ['gridiron', 'cul_de_sac', 'hibrido', 'organico']
+    gdfA['pattern'] = pd.Categorical(gdfA['pattern'], categories=categories)
+    
+    # Crear colormap personalizado
+    from matplotlib.colors import ListedColormap
+    cmap = ListedColormap([color_mapping[cat] for cat in categories])
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Graficar con bordes oscuros
+    gdfA.plot(
+        column="pattern",
+        ax=ax,
+        legend=True,
+        cmap=cmap,
+        edgecolor='black',  # Borde negro
+        linewidth=1,      # Grosor del borde
+    )
 
-    # 6) Graficar
-    # Asignar pattern a gdfA
-    gdfA["pattern"] = None
-    indexA_to_pattern = {}
-    for i, rowF in df_final.iterrows():
-        indexA_to_pattern[rowF["indexA"]] = rowF["street_pattern"]
+    
+    # Personalizar leyenda
+    legend = ax.get_legend()
+    legend.set_title('Patrón de Calles')
+    legend.set_bbox_to_anchor((1.05, 1))  # Mover leyenda a la derecha
 
-    for i in gdfA.index:
-        pat = indexA_to_pattern.get(i, None)
-        gdfA.loc[i,"pattern"] = pat
-
-    fig, ax = plt.subplots(figsize=(8,8))
+    title = "Polígonos A clasificados" if area_type != 'urban' else "GeoJSON Urbano - Polígonos Clasificados"
     gdfA.plot(column="pattern", ax=ax, legend=True, cmap="Set2")
-    ax.set_title("Polígonos A clasificados")
+    ax.set_title(title)
     plt.tight_layout()
-    plt.savefig("map_poligonosA_classified.png", dpi=300)
-    print("Mapa guardado en map_poligonosA_classified.png")
+    plt.savefig(output_image, dpi=300)
+    print(f"Mapa guardado en {output_image}")
 
 
-# # ==================== EJEMPLO DE USO ====================
+# # Ejemplo de uso
 # if __name__ == "__main__":
-#     Excel_for_rural_and_urban_movility_data()
+#     # Procesar datos urbanos y rurales
+#     process_mobility_data(area_type='urban_and_rural')
+    
+#     # Procesar solo datos urbanos
+#     process_mobility_data(area_type='urban')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1323,13 +1417,11 @@ def Statis_analisis(excel_file):
     print("\nInterpretación: Coeficientes que comparan cada categoría vs la base (cul_de_sac si code=0).")
     print("p-values indican si la proporción p_auto, etc. es significativa para distinguir el pattern.\n")
 
+
 # if __name__ == "__main__":
-#     Statis_analisis(excel_file)
-
-
-
-
-
+#     excel_file = "Poligonos_Medellin/Resultados/Statics_Results/URBAN_AND_RURAL/Poligonos_Clasificados_Movilidad_Urban_and_Rural.xlsx"
+#     excel_file = "Poligonos_Medellin/Resultados/Statics_Results/URBAN/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
+#    Statis_analisis(excel_file)
 
 
 
@@ -1390,38 +1482,9 @@ def filter_periphery_polygons(in_geojson, out_geojson, area_threshold=5.0):
 # geojson_file_filtered = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson "
 # plot_road_network_from_geojson(geojson_file_filtered, network_type='drive', simplify=True)
 
-
-
-
-
-
-
-
-
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
 #  =============================================================================
 # ------ CALCULO PARA MALLA SIMPLIFICADA DE AREA URBANA MEDELLIN ANTIOQUIA -----------
 #  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-#  =============================================================================
-
 
 # # Ejemplo de uso
 # if __name__ == "__main__":
@@ -1458,106 +1521,8 @@ def filter_periphery_polygons(in_geojson, out_geojson, area_threshold=5.0):
 #         simplify=False
 #     )
 
-# def Excel_for_urban_movility_data():
-#     # 1) Rutas ajustadas
-#     stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
-#     matches_csv = "Poligonos_Medellin/Resultados/Matchs_A_B/matches_by_area.csv"
-#     shpB = "Poligonos_Medellin/eod_gen_trips_mode.shp"
 
-#     # Importante: en vez del shapefile original,
-#     # usamos el GeoJSON filtrado “_URBANO.geojson”.
-#     geojsonA = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
 
-#     # 2) Cargar stats
-#     stats_dict = load_polygon_stats_from_txt(stats_txt)
-#     print(f"Cargadas stats para {len(stats_dict)} polígonos (subpolígono).")
-
-#     # 3) Cargar CSV de emparejamientos A-B
-#     df_matches = pd.read_csv(matches_csv)  # [indexA, indexB, area_ratio]
-#     print("Muestra df_matches:\n", df_matches.head(), "\n")
-
-#     # 4) Leer shapefile/GeoDataFrame B (movilidad)
-#     gdfB = gpd.read_file(shpB)
-#     print("Columnas B:", gdfB.columns)
-
-#     # 5) Leer AHORA el GeoJSON A “URBANO”
-#     gdfA = gpd.read_file(geojsonA)
-#     print(f"Leídos {len(gdfA)} polígonos en GeoJSON A URBANO.")
-
-#     # 6) Armar DataFrame final (como antes)
-#     final_rows = []
-#     for i, row in df_matches.iterrows():
-#         idxA = row["indexA"]
-#         idxB = row["indexB"]
-#         ratio = row["area_ratio"]
-
-#         # stats => (idxA,0)
-#         key_stats = (idxA, 0)
-#         poly_stats = stats_dict.get(key_stats, {})
-#         pattern = classify_polygon(poly_stats)
-
-#         # Extraer movilidad de B (asumiendo gdfB.index == indexB)
-#         rowB = gdfB.loc[idxB]
-
-          
-
-#         # Variables proporcionales
-#         p_walk_  = rowB.get("p_walk",  0)
-#         p_tpc_   = rowB.get("p_tpc",   0)
-#         p_sitva_ = rowB.get("p_sitva", 0)
-#         p_auto_  = rowB.get("p_auto",  0)
-#         p_moto_  = rowB.get("p_moto",  0)
-#         p_taxi_  = rowB.get("p_taxi",  0)
-#         p_bike_  = rowB.get("p_bike",  0)
-
-#         final_rows.append({
-#             "indexA": idxA,
-#             "indexB": idxB,
-#             "area_ratio": ratio,
-#             "street_pattern": pattern,
-#             "p_walk":  p_walk_,
-#             "p_tpc":   p_tpc_,
-#             "p_sitva": p_sitva_,
-#             "p_auto":  p_auto_,
-#             "p_moto":  p_moto_,
-#             "p_taxi":  p_taxi_,
-#             "p_bike":  p_bike_
-#         })
-
-#     df_final = pd.DataFrame(final_rows)
-#     df_final = df_final[[
-#         "indexA", "indexB", "area_ratio", "street_pattern", 
-#         "p_walk", "p_tpc", "p_sitva", "p_auto", "p_moto", "p_taxi", "p_bike"
-#     ]]
-
-#     output_xlsx = "Poligonos_Medellin/Resultados/Statics_Results/RURAL/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
-#     df_final.to_excel(output_xlsx, index=False)
-#     print(f"Guardado Excel final en {output_xlsx} con {len(df_final)} filas.\n")
-
-#     # 7) Graficar
-#     #   => asignar pattern a gdfA
-#     gdfA["pattern"] = None
-#     indexA_to_pattern = {}
-#     for i, rowF in df_final.iterrows():
-#         indexA_to_pattern[rowF["indexA"]] = rowF["street_pattern"]
-
-#     # Mapear pattern
-#     for i in gdfA.index:
-#         gdfA.loc[i,"pattern"] = indexA_to_pattern.get(i, None)
-
-#     fig, ax = plt.subplots(figsize=(8,8))
-#     gdfA.plot(column="pattern", ax=ax, legend=True, cmap="Set2")
-#     ax.set_title("GeoJSON Urbano - Polígonos Clasificados")
-#     plt.tight_layout()
-#     plt.savefig("map_poligonosA_urbano_classified.png", dpi=300)
-#     print("Mapa guardado en map_poligonosA_urbano_classified.png")
-
-# if __name__ == "__main__":
-#     Excel_for_urban_movility_data()
-
-# if __name__ == "__main__":
-#     excel_file = "Poligonos_Medellin/Resultados/Statics_Results/RURAL/Poligonos_Clasificados_Movilidad_URBANO.xlsx"
-#     Statis_analisis(excel_file)
 
 
 
@@ -1653,15 +1618,6 @@ def prepare_mobility_data(
 
     return df_final
 
-import json
-from shapely.wkt import loads
-from shapely.geometry import shape
-
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-
 def enhanced_polygon_clustering_visualization(df_merged, geojson_file, mobility_data):
     """
     Realiza visualizaciones de clusters de polígonos utilizando match_polygons_by_area.
@@ -1732,23 +1688,11 @@ def enhanced_polygon_clustering_visualization(df_merged, geojson_file, mobility_
                     bbox_inches='tight')
         plt.close()
         
-        # Guardar GeoJSON con clusters
-        gdf_clusters.to_file(
-            os.path.join(clustering_dir, f'polygon_clusters_{mobility_metric}.geojson'), 
-            driver='GeoJSON'
-        )
-        
         # Almacenar en diccionario
         clustering_geojsons[mobility_metric] = gdf_clusters
     
     return clustering_geojsons
-import os
-import pandas as pd
-import numpy as np
-import scipy.stats as stats
-import seaborn as sns
-import matplotlib.pyplot as plt
-import statsmodels.api as sm
+
 def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geojson_file):
     """
     Realiza un análisis estadístico detallado de polígonos usando métricas originales.
@@ -1786,11 +1730,7 @@ def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geo
     
     # Inicializar diccionario para almacenar resultados de clustering
     all_clustering_results = {}
-    
-    # Realizar clustering para cada métrica de movilidad
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.cluster import KMeans
-    
+        
     for mobility_metric in mobility_metrics:
         # Preparar características para clustering
         clustering_features = structural_metrics + [mobility_metric]
@@ -1857,7 +1797,8 @@ def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geo
         'all_clustering_results': all_clustering_results,
         'merged_dataframe': df_merged
     }
-# # Ejemplo de uso (comentado)
+
+# # Ejemplo de uso 
 # geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
 # stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
 # df_mobility = prepare_mobility_data()
@@ -1867,194 +1808,29 @@ def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geo
 
 
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-
-
-def street_pattern_clustering(stats_dict, geojson_file):
-    """
-    Realiza clustering de patrones de calles basado únicamente en propiedades estructurales de polígonos.
-    """
-    # Ruta base para guardar resultados
-    output_dir = "Poligonos_Medellin/Resultados/street_pattern_clustering"
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Preparar DataFrame con métricas de polígonos
-    polygon_metrics = []
-    for (poly_id, subpoly), stats_dict in stats_dict.items():
-        poly_metrics = stats_dict.copy()
-        poly_metrics['poly_id'] = poly_id
-        poly_metrics['subpoly'] = subpoly
-        polygon_metrics.append(poly_metrics)
-    
-    df_polygon_metrics = pd.DataFrame(polygon_metrics)
-
-    # Métricas estructurales para clustering
-    structural_metrics = [
-        'n',  # número de nodos
-        'm',  # número de bordes
-        'k_avg',  # grado promedio de nodos
-        'edge_length_total',  # longitud total de bordes
-        'edge_length_avg',  # longitud promedio de bordes
-        'streets_per_node_avg',  # calles por nodo en promedio
-        'intersection_count',  # número de intersecciones
-        'street_length_total',  # longitud total de calles
-        'street_segment_count',  # número de segmentos de calle
-        'street_length_avg',  # longitud promedio de calles
-        'circuity_avg',  # promedio de circuosidad
-        'intersection_density_km2',  # densidad de intersecciones por km²
-        'street_density_km2',  # densidad de calles por km²
-        'area_km2'  # área del polígono
-    ]
-
-    # Preparar características para clustering
-    X = df_polygon_metrics[structural_metrics]
-    
-    # Escalar todas las características
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-
-    # K-means clustering (puedes ajustar el número de clusters)
-    n_clusters = 4
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(X_scaled)
-    
-    # Añadir etiquetas de cluster al DataFrame
-    df_polygon_metrics['street_pattern_cluster'] = kmeans.labels_
-
-    # Cargar GeoJSON
-    gdf = gpd.read_file(geojson_file)
-    
-    # Crear mapeo de clusters por ID de polígono
-    cluster_map = dict(zip(df_polygon_metrics['poly_id'], df_polygon_metrics['street_pattern_cluster']))
-    
-    # Asignar clusters al GeoDataFrame
-    gdf['street_pattern_cluster'] = gdf.index.map(cluster_map)
-
-    # Análisis de características por cluster
-    cluster_profiles = df_polygon_metrics.groupby('street_pattern_cluster')[structural_metrics].mean()
-    print("Perfiles de Clusters de Patrones de Calles:")
-    print(cluster_profiles)
-
-    # Guardar perfiles de clusters
-    cluster_profiles.to_csv(os.path.join(output_dir, 'street_pattern_cluster_profiles.csv'))
-
-    # Visualización de clusters
-    plt.figure(figsize=(15, 10))
-    
-    # Plotear clusters
-    gdf.plot(column='street_pattern_cluster', 
-             cmap='viridis', 
-             edgecolor='black', 
-             linewidth=0.5, 
-             legend=True, 
-             missing_kwds={'color': 'lightgrey'})
-    
-    plt.title('Clusters de Patrones de Calles en Medellín')
-    plt.axis('off')
-    plt.tight_layout()
-    
-    # Guardar mapa de clusters
-    plt.savefig(os.path.join(output_dir, 'street_pattern_clusters_map.png'), 
-                dpi=300, 
-                bbox_inches='tight')
-    plt.close()
-
-    # Guardar GeoJSON con clusters
-    gdf.to_file(
-        os.path.join(output_dir, 'street_pattern_clusters.geojson'), 
-        driver='GeoJSON'
-    )
-
-    return {
-        'cluster_profiles': cluster_profiles,
-        'clustered_geodataframe': gdf,
-        'original_metrics': df_polygon_metrics
-    }
-
-# # Ejemplo de uso (descomentar y ajustar rutas si es necesario)
-# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
-# stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
-# stats_dict = load_polygon_stats_from_txt(stats_txt)
-# results = street_pattern_clustering(stats_dict, geojson_file)
-
-
-
-
-
-import os
-import pandas as pd
-import numpy as np
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from sklearn.metrics import confusion_matrix, classification_report
-
-import os
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
-
-
-
-
-import ast
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import DBSCAN, KMeans
-from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
-from sklearn.decomposition import PCA
-
-import os
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import ast
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.cluster import KMeans, DBSCAN
-from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-import os
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import ast
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.cluster import KMeans, DBSCAN
-from sklearn.metrics import silhouette_score, confusion_matrix, classification_report
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-from matplotlib import colors as mcolors
-
-
-
 def prepare_clustering_features_improved(stats_dict):
     """
-    Prepara características para clustering con selección mejorada de features
-    e inclusión explícita de un índice de conectividad basado en streets_per_node_proportions.
+    Prepara características para clustering con normalización por área para medidas absolutas
+    y conservación de métricas relativas.
     """
     import numpy as np
     import ast
     
     feature_names = [
-        # 'edge_length_total',      # Longitud total de enlaces
-        # 'street_length_total',    # Longitud total de calles
-        'n',                      # Número de nodos
-        'm',                      # Número de enlaces
-        'k_avg',                  # Grado promedio
-        'edge_length_avg',        # Longitud promedio de enlaces
-        'streets_per_node_avg',   # Promedio de calles por nodo
-        'intersection_count',     # Número de intersecciones
-        # 'street_segment_count',   # Número de segmentos de calle
-        'street_length_avg',      # Longitud promedio de calle
-        'circuity_avg',           # Circuidad promedio
-        'intersection_density_km2',  # Densidad de intersecciones por km²
-        'network_connectivity_index'  # ÍNDICE DE CONECTIVIDAD AÑADIDO AQUÍ
+        'edge_length_density',       # Longitud de enlaces por km² (normalizada)
+        'street_density_km2',        # Longitud de calles por km² (ya normalizada)
+        'node_density_km2',          # Densidad de nodos por km² (nueva)
+        'edge_density_km2',          # Densidad de enlaces por km² (nueva)
+        'k_avg',                     # Grado promedio (ya relativa)
+        'edge_length_avg',           # Longitud promedio de enlaces (ya relativa)
+        'streets_per_node_avg',      # Promedio de calles por nodo (ya relativa)
+        'intersection_density_km2',   # Densidad de intersecciones por km² (ya normalizada)
+        'segment_density_km2',       # Densidad de segmentos de calle por km² (nueva)
+        'street_length_avg',         # Longitud promedio de calle (ya relativa)
+        'circuity_avg',              # Circuidad promedio (ya relativa)
+        'network_connectivity_index' # Índice de conectividad (ya relativa)
+        # 'dead_end_proportion',       # Proporción de calles sin salida (nueva)
+        # 'grid_index'                 # Índice de cuadrícula (nueva)
     ]
     
     X = []
@@ -2065,93 +1841,135 @@ def prepare_clustering_features_improved(stats_dict):
         feature_vector = []
         valid_entry = True
         
-        # Procesar características estándar (todas menos la última que es network_connectivity_index)
-        for feature in feature_names[:-1]:
-            value = stats.get(feature, 0)
-            
-            # Verificar valores atípicos
-            if value is None or (isinstance(value, (int, float)) and (np.isnan(value) or np.isinf(value))):
-                valid_entry = False
-                break
+        try:
+            # Verificar que tenemos área para normalizar
+            area_km2 = stats.get('area_km2', 0)
+            if area_km2 <= 0:
+                print(f"Advertencia: área no válida para {poly_id}, omitiendo")
+                continue
                 
-            feature_vector.append(float(value))
-        
-        # Si la entrada es válida hasta ahora, calculamos y añadimos el índice de conectividad
-        if valid_entry:
+            # 1. edge_length_density (nueva: edge_length_total / area_km2)
+            edge_length_total = stats.get('edge_length_total', 0)
+            feature_vector.append(edge_length_total / area_km2)
+            
+            # 2. street_density_km2 (ya existe)
+            feature_vector.append(stats.get('street_density_km2', 0))
+            
+            # 3. node_density_km2 (nueva: n / area_km2)
+            n_nodes = stats.get('n', 0)
+            feature_vector.append(n_nodes / area_km2)
+            
+            # 4. edge_density_km2 (nueva: m / area_km2)
+            m_edges = stats.get('m', 0)
+            feature_vector.append(m_edges / area_km2)
+            
+            # 5-7. Métricas relativas (se mantienen igual)
+            feature_vector.append(stats.get('k_avg', 0))
+            feature_vector.append(stats.get('edge_length_avg', 0))
+            feature_vector.append(stats.get('streets_per_node_avg', 0))
+            
+            # 8. intersection_density_km2 (ya existe)
+            feature_vector.append(stats.get('intersection_density_km2', 0))
+            
+            # 9. segment_density_km2 (nueva: street_segment_count / area_km2)
+            segment_count = stats.get('street_segment_count', 0)
+            feature_vector.append(segment_count / area_km2)
+            
+            # 10-11. Métricas relativas (se mantienen igual)
+            feature_vector.append(stats.get('street_length_avg', 0))
+            feature_vector.append(stats.get('circuity_avg', 0))
+            
+            # 12. network_connectivity_index (mantener el cálculo existente)
             # Calcular índice de conectividad a partir de streets_per_node_proportions o streets_per_node_counts
             connectivity_index = 0.0
             
-            try:
-                # Intentamos procesar streets_per_node_proportions primero
-                if 'streets_per_node_proportions' in stats:
-                    # Convertir a diccionario si es string
-                    if isinstance(stats['streets_per_node_proportions'], str):
-                        try:
-                            streets_prop = ast.literal_eval(stats['streets_per_node_proportions'])
-                        except:
-                            # Si falla la conversión, intentamos con streets_per_node_counts
-                            if 'streets_per_node_counts' in stats and isinstance(stats['streets_per_node_counts'], str):
-                                try:
-                                    streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
-                                    # Convertir counts a proportions
-                                    total_nodes = sum(streets_counts.values())
-                                    streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
-                                except:
-                                    streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-                            else:
+            # Procesamiento de streets_per_node_proportions (mantener igual que en el código original)
+            if 'streets_per_node_proportions' in stats:
+                # Convertir a diccionario si es string
+                if isinstance(stats['streets_per_node_proportions'], str):
+                    try:
+                        streets_prop = ast.literal_eval(stats['streets_per_node_proportions'])
+                    except:
+                        # Si falla la conversión, intentamos con streets_per_node_counts
+                        if 'streets_per_node_counts' in stats and isinstance(stats['streets_per_node_counts'], str):
+                            try:
+                                streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
+                                # Convertir counts a proportions
+                                total_nodes = sum(streets_counts.values())
+                                streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
+                            except:
                                 streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-                    else:
-                        streets_prop = stats['streets_per_node_proportions']
-                
-                # Alternativa: Si no tenemos proportions pero sí tenemos counts
-                elif 'streets_per_node_counts' in stats:
-                    if isinstance(stats['streets_per_node_counts'], str):
-                        try:
-                            streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
-                            # Convertir counts a proportions
-                            total_nodes = sum(streets_counts.values())
-                            streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
-                        except:
+                        else:
                             streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-                    else:
-                        streets_counts = stats['streets_per_node_counts']
+                else:
+                    streets_prop = stats['streets_per_node_proportions']
+            
+            # Alternativa: Si no tenemos proportions pero sí tenemos counts
+            elif 'streets_per_node_counts' in stats:
+                if isinstance(stats['streets_per_node_counts'], str):
+                    try:
+                        streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
+                        # Convertir counts a proportions
                         total_nodes = sum(streets_counts.values())
                         streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
+                    except:
+                        streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
                 else:
-                    # Si no tenemos ni proportions ni counts
-                    streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-                
-                # Extraer proporciones por tipo de nodo (con valores predeterminados si no existen)
-                dead_end_prop = streets_prop.get(1, 0.0)  # Calles sin salida
-                continuing_road_prop = streets_prop.get(2, 0.0)  # Continuación de calle
-                t_intersection_prop = streets_prop.get(3, 0.0)  # Intersección en T
-                cross_intersection_prop = streets_prop.get(4, 0.0)  # Intersección en cruz
-                
-                # Fórmula ponderada que da más importancia a cruces complejos
-                # y penaliza calles sin salida
-                connectivity_index = (
-                    (1 * dead_end_prop) +         # Peso más bajo para calles sin salida
-                    (2 * continuing_road_prop) +   # Peso medio-bajo para continuaciones
-                    (3 * t_intersection_prop) +    # Peso medio-alto para intersecciones en T
-                    (4 * cross_intersection_prop)  # Peso más alto para intersecciones en cruz
-                ) / 4.0  # Normalizado entre 0-1
-                
-            except Exception as e:
-                print(f"Error calculando índice de conectividad para {poly_id}: {e}")
-                # En caso de error, usamos un valor aproximado basado en streets_per_node_avg
-                connectivity_index = min(1.0, stats.get('streets_per_node_avg', 2.5) / 4.0)
+                    streets_counts = stats['streets_per_node_counts']
+                    total_nodes = sum(streets_counts.values())
+                    streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
+            else:
+                # Si no tenemos ni proportions ni counts
+                streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
             
-            # Añadir el índice de conectividad al vector de características
-            feature_vector.append(float(connectivity_index))
+            # Extraer proporciones por tipo de nodo (con valores predeterminados si no existen)
+            dead_end_prop = streets_prop.get(1, 0.0)  # Calles sin salida
+            continuing_road_prop = streets_prop.get(2, 0.0)  # Continuación de calle
+            t_intersection_prop = streets_prop.get(3, 0.0)  # Intersección en T
+            cross_intersection_prop = streets_prop.get(4, 0.0)  # Intersección en cruz
             
-            # Si el vector tiene todas las características requeridas, lo añadimos al conjunto de datos
-            if len(feature_vector) == len(feature_names):
-                X.append(feature_vector)
-                poly_ids.append(poly_id)
+            # Fórmula ponderada que da más importancia a cruces complejos
+            # y penaliza calles sin salida
+            connectivity_index = (
+                (1 * dead_end_prop) +         # Peso más bajo para calles sin salida
+                (2 * continuing_road_prop) +   # Peso medio-bajo para continuaciones
+                (3 * t_intersection_prop) +    # Peso medio-alto para intersecciones en T
+                (4 * cross_intersection_prop)  # Peso más alto para intersecciones en cruz
+            ) / 4.0  # Normalizado entre 0-1
+            
+            feature_vector.append(connectivity_index)
+            
+            # # 13. dead_end_proportion (nueva)
+            # feature_vector.append(dead_end_prop)
+            
+            # # 14. grid_index (nueva: proporción de intersecciones de 4 vías)
+            # intersection_count = stats.get('intersection_count', 0)
+            # if intersection_count > 0:
+            #     # Estimamos el número de intersecciones de 4 vías
+            #     cross_intersections = int(cross_intersection_prop * n_nodes)
+            #     grid_index = cross_intersections / intersection_count
+            # else:
+            #     grid_index = 0
+            # feature_vector.append(grid_index)
+            
+            # Verificar valores atípicos en todo el vector
+            if any(np.isnan(val) or np.isinf(val) for val in feature_vector):
+                print(f"Advertencia: valores atípicos detectados para {poly_id}, omitiendo")
+                continue
+                
+            # Si llegamos hasta aquí, añadimos el vector al conjunto de datos
+            X.append(feature_vector)
+            poly_ids.append(poly_id)
+                
+        except Exception as e:
+            print(f"Error procesando {poly_id}: {e}")
+            continue
     
     # Verificar que tenemos suficientes muestras
     if len(X) < 2:
         print(f"ADVERTENCIA: Solo se encontraron {len(X)} muestras válidas para clustering.")
+    else:
+        print(f"Se prepararon {len(X)} muestras válidas para clustering.")
     
     # Imprimir las características para verificación
     print("Características utilizadas:", feature_names)
@@ -2425,37 +2243,36 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
         # Visualizar distribución de características más importantes por cluster
         # Definir número de filas y columnas
         
-        number_of_graphs =  len(feature_names)
+        number_of_graphs = len(feature_names)
 
-        if number_of_graphs > 14:
-            rows, cols = 5, 3
+        # Calcular dinámicamente las filas y columnas
+        cols = 5  # Número fijo de columnas
+        rows = int(np.ceil(number_of_graphs / cols))  # Calcula cuántas filas son necesarias
 
-        elif number_of_graphs < 14:
-            rows, cols = 4, 3
-
-        # Obtener las características principales
-        top_features = [f[0] for f in sorted_features[:number_of_graphs]]
-
-        # Crear la figura y los ejes en una cuadrícula de 3x3
-        fig, axes = plt.subplots(rows, cols, figsize=(15, 13))  # Ajustar tamaño si es necesario
-
-        # Convertir los ejes en un arreglo unidimensional para facilitar la iteración
-        axes = axes.flatten()
+        # Crear la figura con el número adecuado de subgráficos
+        fig, axes = plt.subplots(rows, cols, figsize=(25, rows * 5))  # Altura ajustada dinámicamente
+        axes = axes.flatten()  # Aplanar en una lista 1D
 
         # Crear DataFrame con datos originales y etiquetas de cluster
         data_df = pd.DataFrame(X_clean, columns=feature_names)
         data_df['cluster'] = cluster_labels
 
-        for i, feature in enumerate(top_features):
+        # Iterar sobre todas las características
+        for i, feature in enumerate(feature_names):
             sns.boxplot(x='cluster', y=feature, data=data_df, ax=axes[i])
             axes[i].set_title(f'Distribución de {feature}')
             axes[i].set_xlabel('Cluster')
             axes[i].set_ylabel(feature)
 
+        # Ocultar los ejes sobrantes si hay menos gráficos que subplots
+        for j in range(number_of_graphs, len(axes)):
+            fig.delaxes(axes[j])
+
         # Ajustar el diseño
         plt.tight_layout()
         plt.savefig('feature_distributions_by_cluster.png', dpi=300, bbox_inches='tight')
         plt.close()
+
     return n_clusters, cluster_labels, centers_df, sorted_features
 
 def urban_pattern_clustering(
@@ -2723,13 +2540,13 @@ def urban_pattern_clustering(
         'n_clusters': n_clusters
     }
 
-geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
-stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+# stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
 
-stats_dict = load_polygon_stats_from_txt(stats_txt)
-resultados = urban_pattern_clustering(
-    stats_dict, 
-    classify_polygon, 
-    geojson_file,
-    n_clusters= None  # Automáticamente determinará el número óptimo
-)
+# stats_dict = load_polygon_stats_from_txt(stats_txt)
+# resultados = urban_pattern_clustering(
+#     stats_dict, 
+#     classify_polygon, 
+#     geojson_file,
+#     n_clusters= None  # Automáticamente determinará el número óptimo
+# )
