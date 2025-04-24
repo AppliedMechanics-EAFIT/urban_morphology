@@ -103,3 +103,86 @@ for city in cities:
 # geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA.geojson"
 # plot_road_network_from_geojson(geojson_file, network_type='drive', simplify=True)
 
+
+
+
+geojson_files = {
+    "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
+    "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
+    "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
+    "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
+    "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA",
+    "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
+    "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM"
+}
+
+
+metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "slc", "lsc"]
+
+# Función para obtener el grafo desde un GeoJSON
+def graph_from_geojson(geojson_path):
+    """
+    Carga un grafo de OSM usando los límites de un archivo GeoJSON
+    """
+    # Cargar el GeoJSON
+    gdf = gpd.read_file(geojson_path)
+    
+    # Asegurarse que esté en EPSG:4326
+    if gdf.crs != "EPSG:4326":
+        gdf = gdf.to_crs(epsg=4326)
+    
+    # Obtener los límites (bbox) del GeoJSON
+    bounds = gdf.total_bounds  # [minx, miny, maxx, maxy]
+    
+    # Crear geometría de polígono para los límites
+    bbox = box(*bounds)
+    
+    # Extraer el nombre del archivo sin extensión
+    import os
+    place_name = os.path.splitext(os.path.basename(geojson_path))[0]
+    
+    # Descargar el grafo usando el polígono
+    G = ox.graph_from_polygon(bbox, network_type='drive')
+    
+    return G, place_name
+
+for geojson_path, pretty_name in geojson_files.items():
+    try:
+        print(f"\n{'='*40}\nProcessing: {pretty_name}\n{'='*40}")
+        
+        # 1. Get graph from GeoJSON
+        graph, _ = graph_from_geojson(geojson_path)  # ya no necesitas place_name aquí
+
+        # 2. Process node metrics
+        for metric in metrics:
+            print(f"\nNode metric: {metric.upper()}")
+            
+            #calculate and save centrality DATA
+            Numeric_coefficient_centrality(graph, metric, pretty_name)
+            # Usa el nombre bonito aquí
+            plot_geo_centrality_heatmap(
+                graph=graph,
+                metric=metric,
+                place_name=pretty_name,
+                weight='length',
+                cmap='jet',
+                resolution=1080,
+                log_scale=True,
+                road_opacity=0.25,
+                buffer_ratio=0.005,
+                smoothing=1.5
+            )
+            plot_centrality(
+                graph=graph,
+                metric=metric,
+                place_name=pretty_name,
+                weight='length'
+            )
+            
+    except Exception as e:
+        print(f"Error processing {pretty_name}: {e}")
+        continue
+
+
+
+
