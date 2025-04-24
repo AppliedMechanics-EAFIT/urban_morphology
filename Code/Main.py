@@ -1,13 +1,11 @@
 ## GitHub repository
 ## https://github.com/AppliedMechanics-EAFIT/urban_morphology
 ## Main file to executethe different programs and functions
-from Lecture import CiudadesABC,read_nodes_from_excel
-from network_Indicators import plot_centrality, coefficient_centrality,compute_edge_betweenness_data, plot_edge_centrality
-from cleaning_DATA_ABC import clean_and_filter_data
+from Lecture_and_Cleaning_ABC import CiudadesABC, read_nodes_from_excel,clean_and_filter_data
+from network_Indicators import plot_centrality, Numeric_coefficient_centrality,compute_edge_betweenness_data, plot_edge_centrality, plot_geo_centrality_heatmap
 import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
@@ -18,9 +16,8 @@ from osmnx import convert
 import geopandas as gpd
 from shapely.ops import unary_union, linemerge
 from shapely.geometry import LineString, MultiLineString, GeometryCollection
-from Poligonos_Medellin import plot_road_network_from_geojson, convert_shapefile_to_geojson
+# from Poligonos_Medellin import plot_road_network_from_geojson, convert_shapefile_to_geojson
 import json
-import plotly.graph_objects as go
 import numpy as np
 from shapely.geometry import Polygon, MultiPolygon
 from matplotlib import cm
@@ -30,33 +27,55 @@ cities = [
     "Pasto, Colombia",
 ]
 
-# Avaliable metrics
-metrics = [ "eigenvector", "closeness","pagerank", "betweenness", "degree","slc" , "lsc"]
+# Available metrics
+metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "slc", "lsc"]
 
 
+# Multi city analysis
 for city in cities:
     place_name = city
-    
-    try:
-        print(f"\n{'='*40}\nProcesando: {place_name}\n{'='*40}")
-        
-        # 1. Obtener grafo
-        graph = ox.graph_from_place(place_name, network_type='drive')
-        
-        # 2. Procesar métricas de nodos
-        for metric in metrics:
-            print(f"\nMétrica nodal: {metric.upper()}")
-            plot_centrality(graph, metric, place_name, weight='length')
-            
-        # 3. Procesar métricas de aristas (edge centrality)
-        print("\nCalculando centralidad de aristas (Edge Betweenness)")
-        edge_data = compute_edge_betweenness_data(graph, metric="betweenness", weight='length')
-        plot_edge_centrality(edge_data, place_name)
-            
-    except Exception as e:
-        print(f"Error en {place_name}: {str(e)}")
-        continue
 
+    try:
+        print(f"\n{'='*40}\nProcessing: {place_name}\n{'='*40}")
+
+        # 1. Get graph
+        graph = ox.graph_from_place(place_name, network_type='drive')
+
+        # 2. Process node metrics
+        for metric in metrics:
+            print(f"\nNode metric: {metric.upper()}")
+
+            # calculate and save centrality DATA
+            # Numeric_coefficient_centrality(graph, metric, place_name)
+            # Use the current metric and city in the functions
+            plot_geo_centrality_heatmap(
+                graph=graph,
+                metric=metric,
+                place_name=place_name,
+                weight='length',
+                cmap='inferno',
+                resolution=1080,  # High resolution for more detail
+                log_scale=True,
+                road_opacity=0.25,
+                buffer_ratio=0.005,
+                smoothing=1.5
+            )
+
+            # plot_centrality(
+            #     graph=graph,
+            #     metric=metric,
+            #     place_name=place_name,
+            #     weight='length'
+            # )
+
+        # # 3. Calculate edge centrality after node metrics
+        # print("\nCalculating edge centrality (Edge Betweenness)")
+        # edge_data = compute_edge_betweenness_data(graph, metric="betweenness", weight='length')
+        # plot_edge_centrality(edge_data, place_name)
+
+    except Exception as e:
+        print(f"Error processing {place_name}: {e}")
+        continue
 
 
 

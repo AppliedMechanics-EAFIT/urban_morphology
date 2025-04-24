@@ -11,28 +11,18 @@ from matplotlib.colors import Normalize, rgb2hex
 from matplotlib import cm
 import numpy as np
 import scipy.stats as stats
+import json
+import matplotlib.path as mpltPath
+from scipy.interpolate import griddata
+import shapely.geometry as sg
+from shapely.ops import unary_union
+from scipy.ndimage import gaussian_filter
+from scipy.spatial import ConvexHull
+from sklearn.preprocessing import MinMaxScaler
 
 
-def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet):
-    """
-    Calculates specified centrality metric for a graph and saves an interactive HTML visualization. 
-    Optimized for performance and large-scale network analysis.
 
-    Parameters:
-        graph (networkx.Graph): Input graph/networks
-        metric (str): Centrality metric to calculate ('closeness', 'eigenvector', 'pagerank', etc.)
-        place_name (str): Name of city/location for file naming
-        cmap (matplotlib.colors.Colormap, optional): Colormap for visualization gradient. Default: plt.cm.viridis
-
-    Returns:
-        None
-        
-    The function generates and saves an interactive plotly visualization as an HTML file.
-    """
-    # =============================================
-    # 1. Centrality Calculation with Robust Handling
-    # =============================================
-    def calculate_centrality(graph, metric, weight='length'):
+def calculate_centrality(graph, metric, weight='length'):
         try:
             if metric == "degree":
                 return dict(graph.degree())
@@ -75,7 +65,19 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
             elif metric == "betweenness":
                 return nx.betweenness_centrality(graph, weight=weight)
             elif metric == "closeness":
-                return nx.closeness_centrality(graph, distance=weight)
+                # Use 'distance' parameter correctly for closeness
+                if weight:
+                    # For closeness, we need to invert the weight logic
+                    # Create a copy of the graph with inverted weights for distance
+                    distance_graph = graph.copy()
+                    for u, v, d in distance_graph.edges(data=True):
+                        if weight in d:
+                            # Invert so larger values of weight = shorter distances
+                            d[weight] = 1.0 / (d[weight] + 0.00001)  # Avoid division by zero
+                    return nx.closeness_centrality(distance_graph, distance=weight)
+                else:
+                    print("Graph without wight")
+                    return nx.closeness_centrality(graph)
             elif metric == "slc":
                 return calculate_slc(graph)
             elif metric == "lsc":
@@ -85,9 +87,50 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
         except Exception as e:
             print(f"Error calculating centrality: {e}")
             return {node: 0.0 for node in graph.nodes()}
+        
+def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet):
+    """
+    Calculates specified centrality metric for a graph and saves an interactive HTML visualization. 
+    Optimized for performance and large-scale network analysis.
+
+    Parameters:
+        graph (networkx.Graph): Input graph/networks
+        metric (str): Centrality metric to calculate ('closeness', 'eigenvector', 'pagerank', etc.)
+        place_name (str): Name of city/location for file naming
+        cmap (matplotlib.colors.Colormap, optional): Colormap for visualization gradient. Default: plt.cm.viridis
+
+    Returns:
+        None
+        
+    The function generates and saves an interactive plotly visualization as an HTML file.
+    """
+    # =============================================
+    # 1. Centrality Calculation with Robust Handling
+    # =============================================
+    
 
     # Calculate centrality
     centrality = calculate_centrality(graph, metric, weight=weight)
+
+    # =============================================
+    # 1.5 Normalize centrality values to [0,1] range
+    # =============================================
+    print("Normalizing centrality values...")
+    values = list(centrality.values())
+    if not values:
+        print("Warning: Centrality calculation didn't produce values")
+        centrality = {node: 0.0 for node in graph.nodes()}
+    else:
+        max_cent = max(values)
+        min_cent = min(values)
+        range_cent = max_cent - min_cent
+        
+        if range_cent > 0:
+            # Normalizing to [0,1] range
+            centrality = {n: (v - min_cent) / range_cent for n, v in centrality.items()}
+        else:
+            # Handle case where all values are the same
+            centrality = {n: 0.5 for n in centrality}
 
     # =============================================
     # 2. Graph Preprocessing and Sampling
@@ -113,7 +156,7 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
     # 3. Efficient Node and Position Processing
     # =============================================
     nodes = list(graph.nodes())
-    
+
     # Vectorized position extraction with fallback
     try:
         positions = np.array([(graph.nodes[node]['y'], graph.nodes[node]['x']) for node in nodes])
@@ -126,10 +169,12 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
     # =============================================
     # Ensure centrality for all nodes with NumPy vectorization
     node_colors = np.array([centrality.get(node, 0.0) for node in nodes])
-    
-    # Normalize color scale
+
+    # Apply color normalization (values should already be in [0,1] range)
+    # This is only for mapping to colors, not changing the values
+    #norm = Normalize(vmin=0, vmax=1)  # Fixed range now that values are normalized
     norm = Normalize(vmin=node_colors.min(), vmax=node_colors.max())
-    
+
     # =============================================
     # 5. Plotly Visualization with Performance Tweaks
     # =============================================
@@ -138,7 +183,7 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
     EDGE_WIDTH = 0.6  # Thin edges for performance
     
     # Use ScatterGL for massive performance improvements
-    node_trace = go.Scattergl(
+    node_trace = go.Scatter(
         x=positions[:, 1],
         y=positions[:, 0],
         mode='markers',
@@ -216,13 +261,9 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
         uirevision='true'
     )
 
-
-
-    
     # Create figure and configure
     fig = go.Figure(data=[edge_trace, node_trace], layout=layout)
     
-
     # 7. Métricas Globales de Centralidad
     # =============================================
     shannon_entropy = calculate_shannon_entropy(centrality)
@@ -250,8 +291,6 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
         align='left'
     )
 
-
-
     config = {
         'scrollZoom': True,
         'displayModeBar': True,
@@ -262,11 +301,10 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
             'height': 1600
         },
         'responsive': True 
-
     }
 
     # Save HTML with optimizations
-    ruta_carpeta = f"Graphs_Cities/Graphs_for_{place_name}"
+    ruta_carpeta = f"Metrics_and_Graphs_Cities/{place_name}/Network_Graph"
     os.makedirs(ruta_carpeta, exist_ok=True)
     nombre_archivo = f"Centrality_{metric}_{place_name}.html"
     ruta_completa = os.path.join(ruta_carpeta, nombre_archivo)
@@ -539,17 +577,10 @@ def calculate_eigenvector_centrality(graph):
     
     return centrality
 
-def coefficient_centrality(graph, metric, ciudad):
+def Numeric_coefficient_centrality(graph, metric, place_name):
     # Calcular todas las métricas
-    metricas = {
-        "degree": dict(graph.degree()),
-        "betweenness": nx.betweenness_centrality(graph),
-        "closeness": nx.closeness_centrality(graph),
-        "pagerank": nx.pagerank(graph, alpha=0.85),
-        "eigenvector": calculate_eigenvector_centrality(graph) , 
-        "slc": calculate_slc(graph),
-        "lsc": calculate_lsc(graph, alpha=0.5)
-    }
+    metricas = calculate_centrality(graph, metric, weight='weight')
+
     
     # Crear libro de Excel
     wb = Workbook()
@@ -569,7 +600,7 @@ def coefficient_centrality(graph, metric, ciudad):
     
     # Escribir cabecera principal
     ws.merge_cells('A1:N1')
-    ws['A1'] = ciudad
+    ws['A1'] = place_name
     ws['A1'].alignment = Alignment(horizontal='center')
     
     # Escribir cabeceras de métricas
@@ -604,12 +635,12 @@ def coefficient_centrality(graph, metric, ciudad):
         ws.column_dimensions[get_column_letter(idx+1)].width = 15
     
     # Crear la carpeta si no existe
-    ruta_carpeta = "Metrics_City"
+    ruta_carpeta = f"Metrics_and_Graphs_Cities/{place_name}/Metrics"
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
     
     # Guardar archivo en la ruta especificada
-    nombre_archivo = f"Centralidades_{ciudad}.xlsx"
+    nombre_archivo = f"Centrality_{place_name}.xlsx"
     ruta_completa = os.path.join(ruta_carpeta, nombre_archivo)
     wb.save(ruta_completa)
     
@@ -700,6 +731,7 @@ def calculate_shannon_entropy(centrality_values):
     return entropy
 
 def calculate_freeman_centralization(centrality_values):
+
     """
     Calcula el índice de centralización de Freeman para una métrica de centralidad.
     
@@ -724,3 +756,313 @@ def calculate_freeman_centralization(centrality_values):
     freeman_index = actual_deviation / max_possible_deviation if max_possible_deviation > 0 else 0
     
     return freeman_index
+
+def plot_geo_centrality_heatmap(graph, metric, place_name, weight='length', cmap='inferno', 
+                            resolution=300, log_scale=True, road_opacity=0.3, 
+                            buffer_ratio=0.05, smoothing=1.0):
+    """
+    Creates a geographic centrality heatmap with proper city boundary and value assignment
+    
+    Parameters:
+    -----------
+    graph : networkx.Graph
+        The street network graph with x, y coordinates in node attributes
+    metric : str
+        Centrality metric: "closeness", "betweenness", or "pagerank"
+    place_name : str
+        Name of the location for the title and file naming
+    weight : str, default='length'
+        Edge attribute to use as weight in centrality calculations
+    cmap : str, default='inferno'
+        Colormap for the heatmap
+    resolution : int, default=300
+        Resolution of the interpolation grid
+    log_scale : bool, default=True
+        Whether to apply log transformation to centrality values
+    road_opacity : float, default=0.3
+        Opacity of road network lines
+    buffer_ratio : float, default=0.05
+        Buffer around the road network to define the city boundary (as proportion of total extent)
+    smoothing : float, default=1.0
+        Smoothing factor for the interpolation
+        
+    Returns:
+    --------
+    fig : plotly.graph_objects.Figure
+        The plotly figure object
+    """
+    
+    # Calculate centrality
+    centrality = calculate_centrality(graph, metric, weight=weight)
+    
+    # 2. Extract node coordinates and centrality values
+    coords = []
+    values = []
+    
+    for node in graph.nodes():
+        if 'x' in graph.nodes[node] and 'y' in graph.nodes[node]:
+            try:
+                x = float(graph.nodes[node]['x'])
+                y = float(graph.nodes[node]['y'])
+                val = centrality.get(node, 0)
+                
+                if np.isfinite(x) and np.isfinite(y) and np.isfinite(val):
+                    coords.append([x, y])
+                    values.append(val)
+            except (ValueError, TypeError):
+                continue
+    
+    if len(coords) < 10:
+        raise ValueError("Insufficient valid coordinates in graph")
+    
+    coords = np.array(coords)
+    values = np.array(values)
+    
+    print(f"Extracted {len(coords)} valid nodes with coordinates")
+    
+    # 3. Extract the road network geometry to define city boundary
+    lines = []
+    for u, v in graph.edges():
+        if ('x' in graph.nodes[u] and 'y' in graph.nodes[u] and 
+            'x' in graph.nodes[v] and 'y' in graph.nodes[v]):
+            try:
+                x1, y1 = float(graph.nodes[u]['x']), float(graph.nodes[u]['y'])
+                x2, y2 = float(graph.nodes[v]['x']), float(graph.nodes[v]['y'])
+                
+                if (np.isfinite(x1) and np.isfinite(y1) and 
+                    np.isfinite(x2) and np.isfinite(y2)):
+                    lines.append(sg.LineString([(x1, y1), (x2, y2)]))
+            except (ValueError, TypeError):
+                continue
+    
+    # Create a boundary from road network with buffer
+    if not lines:
+        raise ValueError("No valid edges found in graph")
+    
+    # Create a proper boundary using the road network
+    road_network = unary_union(lines)
+    
+    # Calculate buffer distance based on the network's bounding box
+    minx, miny, maxx, maxy = road_network.bounds
+    width = maxx - minx
+    height = maxy - miny
+    buffer_distance = max(width, height) * buffer_ratio
+    
+    # Create buffered boundary
+    boundary = road_network.buffer(buffer_distance)
+    
+    # Ensure boundary is valid and simplify for performance
+    if not boundary.is_valid:
+        boundary = boundary.buffer(0)  # Fix invalid geometries
+    boundary = boundary.simplify(buffer_distance/10)
+    
+    print(f"Created city boundary with buffer distance: {buffer_distance:.6f}")
+    
+    # 4. Normalize centrality values (before interpolation)
+    if len(values) > 0:
+        if log_scale and np.min(values) >= 0:
+            # Add small constant to avoid log(0)
+            min_positive = np.min(values[values > 0]) if np.any(values > 0) else 1e-6
+            values = np.log1p(values + min_positive/10)
+        
+        # Normalize to [0,1] range
+        values = (values - np.min(values)) / (np.max(values) - np.min(values) + 1e-10)
+    
+    # 5. Create proper interpolation grid that covers the boundary
+    bounds = boundary.bounds
+    x_min, y_min, x_max, y_max = bounds
+    
+    # Add small padding
+    padding = 0.01
+    width = x_max - x_min
+    height = y_max - y_min
+    
+    x_min -= width * padding
+    x_max += width * padding
+    y_min -= height * padding
+    y_max += height * padding
+    
+    # Create grid
+    x_grid = np.linspace(x_min, x_max, resolution)
+    y_grid = np.linspace(y_min, y_max, resolution)
+    xx, yy = np.meshgrid(x_grid, y_grid)
+    
+    # 6. Perform correct interpolation using natural neighbor or linear interpolation
+    grid_points = np.vstack([xx.ravel(), yy.ravel()]).T
+    
+    print("Performing interpolation...")
+    try:
+        # Use natural neighbor interpolation for better results
+        z = griddata(coords, values, grid_points, method='linear', fill_value=np.nan)
+        z = z.reshape(xx.shape)
+        
+        # Apply Gaussian smoothing for visual appeal, adjustable via parameter
+        if smoothing > 0:
+            z = gaussian_filter(z, sigma=smoothing)
+    except Exception as e:
+        print(f"Interpolation error: {str(e)}")
+        # Create empty grid as fallback
+        z = np.zeros(xx.shape) * np.nan
+    
+    # 7. Mask points outside city boundary
+    print("Masking areas outside city boundary...")
+    mask = np.zeros_like(xx, dtype=bool)
+    
+    # Convert boundary to Path for efficient point-in-polygon tests
+    if isinstance(boundary, sg.Polygon):
+        exterior = list(boundary.exterior.coords)
+        path = mpltPath.Path(exterior)
+        mask = path.contains_points(grid_points).reshape(xx.shape)
+    elif isinstance(boundary, sg.MultiPolygon):
+        # Handle multiple polygons
+        for poly in boundary.geoms:
+            exterior = list(poly.exterior.coords)
+            path = mpltPath.Path(exterior)
+            mask = mask | path.contains_points(grid_points).reshape(xx.shape)
+    
+    # Apply mask
+    z = np.where(mask, z, np.nan)
+    
+    # 8. Create the heatmap visualization
+    print("Creating visualization...")
+    fig = go.Figure()
+    
+    # Add the heatmap trace
+    fig.add_trace(go.Heatmap(
+        x=x_grid,
+        y=y_grid,
+        z=z,
+        colorscale=cmap,
+        zsmooth='best',
+        hoverinfo='none',
+        colorbar=dict(
+            title=f'{metric.capitalize()} Centrality',
+            thickness=25,
+            len=0.75,
+            title_font=dict(size=16, color='white'),
+            tickfont=dict(color='white')
+        ),
+        zauto=True
+    ))
+    
+    # Add road network overlay
+    edge_x = []
+    edge_y = []
+    
+    for line in lines:
+        coords = list(line.coords)
+        for i in range(len(coords) - 1):
+            edge_x.extend([coords[i][0], coords[i+1][0], None])
+            edge_y.extend([coords[i][1], coords[i+1][1], None])
+    
+    if edge_x:
+        fig.add_trace(go.Scattergl(
+            x=edge_x,
+            y=edge_y,
+            mode='lines',
+            line=dict(color=f'rgba(255,255,255,{road_opacity})', width=1.0),
+            hoverinfo='none',
+            showlegend=False
+        ))
+    
+    # 9. Set layout with proper sizing and aspect ratio
+    # Calculate aspect ratio based on boundary dimensions
+    
+    fig.update_layout(
+        title={
+            'text': f'{metric.capitalize()} Centrality - {place_name}',
+            'font': {'size': 24, 'color': 'white'},
+            'x': 0.5,
+            'xanchor': 'center',
+            'y': 0.98
+        },
+        margin=dict(l=10, r=10, t=80, b=10),
+        paper_bgcolor='rgba(0,0,0,1)',
+        plot_bgcolor='rgba(0,0,0,1)',
+        xaxis=dict(
+            showgrid=False, 
+            zeroline=False, 
+            showticklabels=False,
+            range=[x_min, x_max]
+        ),
+        yaxis=dict(
+            showgrid=False, 
+            zeroline=False, 
+            showticklabels=False, 
+            scaleanchor="x",
+            scaleratio=1,
+            range=[y_min, y_max]
+        )
+    )
+    
+   # Save results
+   # Save results
+    output_dir = f"Metrics_and_Graphs_Cities/{place_name}/Heatmap_Graph"
+    os.makedirs(output_dir, exist_ok=True)
+
+    try:
+        filename = f"{output_dir}/Heatmap_{metric}_{place_name.replace(' ', '_').replace(',', '')}.html"
+        
+        # Increase figure size by 25% more than previous solution
+        fig.update_layout(
+            width=1800,  # Increased from 1200
+            height=900,  # Increased from 800
+            autosize=False
+        )
+        
+        # Keep the original Plotly HTML generation
+        html_string = fig.to_html(
+            include_plotlyjs="cdn",
+            full_html=False,
+            config={
+                'displayModeBar': True,
+                'responsive': True,
+                'toImageButtonOptions': {
+                    'format': 'svg',
+                    'filename': f"{metric}_{place_name}",
+                }
+            }
+        )
+        
+        # Modified HTML template with proper centering
+        with open(filename, 'w') as f:
+            f.write(f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>{metric.capitalize()} Centrality - {place_name}</title>
+                <style>
+                    html, body {{
+                        background-color: black;
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                        height: 100%;
+                        color: white;
+                        overflow: hidden;
+                    }}
+                    #graph-container {{
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 100%;
+                        height: 100%;
+                    }}
+                    .js-plotly-plot {{
+                        margin: 0 auto;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div id="graph-container">
+                    {html_string}
+                </div>
+            </body>
+            </html>
+            """)
+        
+        print(f"Saved to {filename}")
+    except Exception as e:
+        print(f"Error saving file: {str(e)}")
+    return fig

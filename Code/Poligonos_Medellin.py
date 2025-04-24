@@ -30,13 +30,56 @@ import scipy.stats as stats
 from matplotlib.colors import ListedColormap
 from networkx.algorithms.community import modularity
 from matplotlib.patches import Patch
+from math import degrees, atan2
+import fiona
+import warnings
+warnings.filterwarnings('ignore', category=FutureWarning)
 
 
 
 
 
+# # Ruta a la carpeta .gdb (¡no un archivo específico!)
+# gdb_path = "Pasto/AJUSTE_POT_PASTO_2023.gdb"
 
-def convert_shapefile_to_geojson(shapefile_paths, output_directory="Poligonos_Medellin/Json_files"):
+# # Crear carpeta de salida para geojson (opcional)
+# output_dir = "GeoJSON_Export"
+# os.makedirs(output_dir, exist_ok=True)
+
+# # 1. Listar capas disponibles
+# print("\n📁 Buscando capas en la GDB...")
+# layers = fiona.listlayers(gdb_path)
+# print(f"✔️ Capas encontradas ({len(layers)}):")
+# for i, layer in enumerate(layers):
+#     print(f"{i+1}. {layer}")
+
+# # 2. Leer, mostrar y visualizar cada capa
+# for layer in layers:
+#     print(f"\n🔍 Leyendo capa: {layer}")
+#     gdf = gpd.read_file(gdb_path, layer=layer)
+
+#     # Mostrar propiedades
+#     print("📌 Columnas:", gdf.columns.tolist())
+#     print("📐 Total de geometrías:", len(gdf))
+#     print("🌐 Sistema de coordenadas (CRS):", gdf.crs)
+#     print(gdf.head())
+
+#     # 3. Visualizar
+#     gdf.plot(figsize=(8, 6), edgecolor="black", cmap="Set2")
+#     plt.title(f"Capa: {layer}")
+#     plt.xlabel("Longitud")
+#     plt.ylabel("Latitud")
+#     plt.tight_layout()
+#     plt.show()
+
+#     # 4. Guardar como GeoJSON
+#     output_path = os.path.join(output_dir, f"{layer}.geojson")
+#     gdf.to_file(output_path, driver="GeoJSON")
+#     print(f"💾 Guardado como GeoJSON: {output_path}")
+
+
+
+def convert_shapefile_to_geojson(shapefile_paths, output_directory):
     # Ensure the output directory exists
     os.makedirs(output_directory, exist_ok=True)
 
@@ -64,6 +107,12 @@ def convert_shapefile_to_geojson(shapefile_paths, output_directory="Poligonos_Me
         geojson_data[shapefile_path] = output_path
 
     return geojson_data
+
+
+
+
+
+
 
 def plot_road_network_from_geojson(geojson_path, network_type, simplify=True):
     """
@@ -1478,7 +1527,7 @@ def prepare_mobility_data(
     matches_csv="Poligonos_Medellin/Resultados/Matchs_A_B/matches_by_area.csv", 
     shpB="Poligonos_Medellin/eod_gen_trips_mode.shp", 
     geojsonA="Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
-):
+ ):
     """
     Prepara un DataFrame de movilidad a partir de múltiples fuentes de datos.
     
@@ -1748,192 +1797,6 @@ def polygon_detailed_statistical_analysis(polygon_stats_dict, mobility_data, geo
 
 
 
-# def prepare_clustering_features_improved(stats_dict):
-#     """
-#     Prepara características para clustering con normalización por área para medidas absolutas
-#     y conservación de métricas relativas.
-#     """
-    
-#     feature_names = [
-#         'edge_length_density',       # Longitud de enlaces por km² (normalizada)
-#         'street_density_km2',        # Longitud de calles por km² (ya normalizada)
-#         'node_density_km2',          # Densidad de nodos por km² (nueva)
-#         'edge_density_km2',          # Densidad de enlaces por km² (nueva)
-#         'k_avg',                     # Grado promedio (ya relativa)
-#         'edge_length_avg',           # Longitud promedio de enlaces (ya relativa)
-#         'streets_per_node_avg',      # Promedio de calles por nodo (ya relativa)
-#         'intersection_density_km2',   # Densidad de intersecciones por km² (ya normalizada)
-#         'segment_density_km2',       # Densidad de segmentos de calle por km² (nueva)
-#         'street_length_avg',         # Longitud promedio de calle (ya relativa)
-#         'circuity_avg',              # Circuidad promedio (ya relativa)
-#         'network_connectivity_index' # Índice de conectividad (ya relativa)
-#     ]
-
-#     X = []
-#     poly_ids = []
-    
-#     # Extraer características
-#     for poly_id, stats in stats_dict.items():
-#         feature_vector = []
-#         valid_entry = True
-        
-#         try:
-#             # Verificar que tenemos área para normalizar
-#             area_km2 = stats.get('area_km2', 0)
-#             if area_km2 <= 0:
-#                 print(f"Advertencia: área no válida para {poly_id}, omitiendo")
-#                 continue
-                
-#             # 1. edge_length_density (nueva: edge_length_total / area_km2)
-#             edge_length_total = stats.get('edge_length_total', 0)
-#             feature_vector.append(edge_length_total / area_km2)
-            
-#             # 2. street_density_km2 (ya existe)
-#             feature_vector.append(stats.get('street_density_km2', 0))
-            
-#             # 3. node_density_km2 (nueva: n / area_km2)
-#             n_nodes = stats.get('n', 0)
-#             feature_vector.append(n_nodes / area_km2)
-            
-#             # 4. edge_density_km2 (nueva: m / area_km2)
-#             m_edges = stats.get('m', 0)
-#             feature_vector.append(m_edges / area_km2)
-            
-#             # 5-7. Métricas relativas (se mantienen igual)
-#             feature_vector.append(stats.get('k_avg', 0))
-#             feature_vector.append(stats.get('edge_length_avg', 0))
-#             feature_vector.append(stats.get('streets_per_node_avg', 0))
-            
-#             # 8. intersection_density_km2 (ya existe)
-#             feature_vector.append(stats.get('intersection_density_km2', 0))
-            
-#             # 9. segment_density_km2 (nueva: street_segment_count / area_km2)
-#             segment_count = stats.get('street_segment_count', 0)
-#             feature_vector.append(segment_count / area_km2)
-            
-#             # 10-11. Métricas relativas (se mantienen igual)
-#             feature_vector.append(stats.get('street_length_avg', 0))
-#             feature_vector.append(stats.get('circuity_avg', 0))
-            
-#             # 12. network_connectivity_index (mantener el cálculo existente)
-#             # Calcular índice de conectividad a partir de streets_per_node_proportions o streets_per_node_counts
-#             connectivity_index = 0.0
-            
-#             # Procesamiento de streets_per_node_proportions (mantener igual que en el código original)
-#             if 'streets_per_node_proportions' in stats:
-#                 # Convertir a diccionario si es string
-#                 if isinstance(stats['streets_per_node_proportions'], str):
-#                     try:
-#                         streets_prop = ast.literal_eval(stats['streets_per_node_proportions'])
-#                     except:
-#                         # Si falla la conversión, intentamos con streets_per_node_counts
-#                         if 'streets_per_node_counts' in stats and isinstance(stats['streets_per_node_counts'], str):
-#                             try:
-#                                 streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
-#                                 # Convertir counts a proportions
-#                                 total_nodes = sum(streets_counts.values())
-#                                 streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
-#                             except:
-#                                 streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-#                         else:
-#                             streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-#                 else:
-#                     streets_prop = stats['streets_per_node_proportions']
-            
-#             # Alternativa: Si no tenemos proportions pero sí tenemos counts
-#             elif 'streets_per_node_counts' in stats:
-#                 if isinstance(stats['streets_per_node_counts'], str):
-#                     try:
-#                         streets_counts = ast.literal_eval(stats['streets_per_node_counts'])
-#                         # Convertir counts a proportions
-#                         total_nodes = sum(streets_counts.values())
-#                         streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
-#                     except:
-#                         streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-#                 else:
-#                     streets_counts = stats['streets_per_node_counts']
-#                     total_nodes = sum(streets_counts.values())
-#                     streets_prop = {k: v/total_nodes for k, v in streets_counts.items()} if total_nodes else {1: 0.3, 3: 0.6, 4: 0.1}
-#             else:
-#                 # Si no tenemos ni proportions ni counts
-#                 streets_prop = {1: 0.3, 3: 0.6, 4: 0.1}  # Valores predeterminados
-            
-#             # Extraer proporciones por tipo de nodo (con valores predeterminados si no existen)
-#             dead_end_prop = streets_prop.get(1, 0.0)  # Calles sin salida
-#             continuing_road_prop = streets_prop.get(2, 0.0)  # Continuación de calle
-#             t_intersection_prop = streets_prop.get(3, 0.0)  # Intersección en T
-#             cross_intersection_prop = streets_prop.get(4, 0.0)  # Intersección en cruz
-            
-#             # Fórmula ponderada que da más importancia a cruces complejos
-#             # y penaliza calles sin salida
-#             connectivity_index = (
-#                 (1 * dead_end_prop) +         # Peso más bajo para calles sin salida
-#                 (2 * continuing_road_prop) +   # Peso medio-bajo para continuaciones
-#                 (3 * t_intersection_prop) +    # Peso medio-alto para intersecciones en T
-#                 (4 * cross_intersection_prop)  # Peso más alto para intersecciones en cruz
-#             ) / 4.0  # Normalizado entre 0-1
-            
-#             feature_vector.append(connectivity_index)
-                        
-#             # Verificar valores atípicos en todo el vector
-#             if any(np.isnan(val) or np.isinf(val) for val in feature_vector):
-#                 print(f"Advertencia: valores atípicos detectados para {poly_id}, omitiendo")
-#                 continue
-                
-#             # Si llegamos hasta aquí, añadimos el vector al conjunto de datos
-#             X.append(feature_vector)
-#             poly_ids.append(poly_id)
-                
-#         except Exception as e:
-#             print(f"Error procesando {poly_id}: {e}")
-#             continue
-    
-#     # Verificar que tenemos suficientes muestras
-#     if len(X) < 2:
-#         print(f"ADVERTENCIA: Solo se encontraron {len(X)} muestras válidas para clustering.")
-#     else:
-#         print(f"Se prepararon {len(X)} muestras válidas para clustering.")
-    
-#     # Imprimir las características para verificación
-#     print("Características utilizadas:", feature_names)
-    
-#     return np.array(X), poly_ids, feature_names
-
-
-
-import geopandas as gpd
-import networkx as nx
-import osmnx as ox
-import numpy as np
-import ast
-from math import degrees, atan2
-import matplotlib.pyplot as plt
-import pandas as pd
-import os
-
-# Configurar para no mostrar advertencias innecesarias
-import warnings
-warnings.filterwarnings('ignore', category=FutureWarning)
-
-# 1. Cargar el GeoJSON
-print("Cargando archivo GeoJSON...")
-geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
-gdf = gpd.read_file(geojson_file)
-print(f"GeoDataFrame cargado con {len(gdf)} polígonos")
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 3. Funciones para calcular características
 def calculate_angle_features(G):
     """
     Calcula características basadas en ángulos de los segmentos viales
@@ -2050,63 +1913,155 @@ def calculate_dead_end_features(G):
     
     return dead_end_ratio, cv_distances
 
-print("Procesando polígonos y generando grafos de red vial...")
-graph_dict = {}  # Diccionario para almacenar los grafos
-stats_dict = {}  # Diccionario para almacenar estadísticas
-
-# Verificar versión de OSMnx para determinar los parámetros correctos
-print(f"Versión de OSMnx: {ox.__version__}")
-
-# Procesar cada polígono
-for idx, row in gdf.iterrows():
-    try:
-        poly_id = row['poly_id'] if 'poly_id' in gdf.columns else str(idx)
-        geometry = row.geometry
+def procesar_poligonos_y_generar_grafos(gdf):
+    """
+    Procesa polígonos y genera grafos de red vial para cada uno.
+    
+    Args:
+        gdf: GeoDataFrame con polígonos a procesar
         
-        # Asegurarnos de que el polígono es válido
-        if geometry is None or not geometry.is_valid:
-            print(f"Polígono {poly_id} no válido, omitiendo")
-            continue
+    Returns:
+        graph_dict: Diccionario con los grafos generados (clave: poly_id, valor: grafo)
+    """
+    print("Procesando polígonos y generando grafos de red vial...")
+    graph_dict = {}  # Diccionario para almacenar los grafos
+    
+    # Verificar versión de OSMnx para determinar los parámetros correctos
+    print(f"Versión de OSMnx: {ox.__version__}")
+    total_polygons = len(gdf)
+
+    # Procesar cada polígono
+    for idx, row in gdf.iterrows():
         
-        # Intentar obtener la red vial del polígono
+
         try:
-            # Obtener la red vial del polígono adaptándonos a la versión de OSMnx
-            try:
-                # Primero intentamos con el parámetro clean_periphery
-                G = ox.graph_from_polygon(geometry, network_type='drive', simplify=True, clean_periphery=True)
-            except TypeError:
-                # Si falla, probamos sin ese parámetro
-                G = ox.graph_from_polygon(geometry, network_type='drive', simplify=True)
-            
-            # Si el grafo está vacío, omitir este polígono
-            if G.number_of_nodes() == 0 or G.number_of_edges() == 0:
-                print(f"Polígono {poly_id} generó un grafo vacío, omitiendo")
+            poly_id = row['poly_id'] if 'poly_id' in gdf.columns else str(idx)
+            geometry = row.geometry
+            # print(f"Procesando polígono {idx+1}/{total_polygons} (ID: {poly_id})")
+            # Asegurarnos de que el polígono es válido
+            if geometry is None or not geometry.is_valid:
+                print(f"Polígono {poly_id} no válido, omitiendo")
                 continue
             
-            # Añadir proyección para asegurar que tenemos coordenadas x,y
-            G = ox.project_graph(G)
-            
-            # Almacenar el grafo en el diccionario
-            graph_dict[poly_id] = G
-            
-            # Después de procesar todos los polígonos
-
-            
+            # Intentar obtener la red vial del polígono
+            try:
+                # Obtener la red vial del polígono adaptándonos a la versión de OSMnx
+                try:
+                    # Primero intentamos con el parámetro clean_periphery
+                    G = ox.graph_from_polygon(geometry, network_type='drive', simplify=True, clean_periphery=True)
+                except TypeError:
+                    # Si falla, probamos sin ese parámetro
+                    G = ox.graph_from_polygon(geometry, network_type='drive', simplify=True)
+                
+                # Si el grafo está vacío, omitir este polígono
+                if G.number_of_nodes() == 0 or G.number_of_edges() == 0:
+                    print(f"Polígono {poly_id} generó un grafo vacío, omitiendo")
+                    continue
+                
+                # Añadir proyección para asegurar que tenemos coordenadas x,y
+                G = ox.project_graph(G)
+                
+                # Almacenar el grafo en el diccionario
+                graph_dict[poly_id] = G
+                
+            except Exception as e:
+                print(f"Error al obtener grafo para polígono {poly_id}: {e}")
+                continue
+                
         except Exception as e:
-            print(f"Error al obtener grafo para polígono {poly_id}: {e}")
+            print(f"Error general procesando polígono {idx}: {e}")
             continue
-            
-    except Exception as e:
-        print(f"Error general procesando polígono {idx}: {e}")
-        continue
 
-print(f"Procesamiento completado. Se generaron {len(graph_dict)} grafos válidos.")
-print("Claves disponibles en graph_dict:")
-print(list(graph_dict.keys())[:10])  # Muestra las primeras 10 claves
-# Verificar versión de OSMnx para determinar los parámetros correctos
-print(f"Versión de OSMnx: {ox.__version__}")
+    print(f"Procesamiento completado. Se generaron {len(graph_dict)} grafos válidos.")
+    
+    return graph_dict
 
-def prepare_clustering_features_improved(stats_dict, graph_dict):  # Asegúrate de usar el mismo nombre aquí
+def preprocess_to_dimensionless(X_array, feature_names):
+    """
+    Transforma todas las variables a formas adimensionales sin usar valores de referencia fijos,
+    sino utilizando estadísticas de los propios datos.
+    
+    Parámetros:
+    - X_array: Array NumPy con los datos originales
+    - feature_names: Lista con los nombres de las características
+    
+    Retorna:
+    - X_preprocessed: Array NumPy con los datos pre-procesados completamente adimensionales
+    """
+    
+    # Crear una copia para no modificar los datos originales
+    X_preprocessed = X_array.copy()
+    
+    # Mapeo de cada característica a su tipo para pre-procesamiento específico
+    feature_types = {
+        # Densidades (con unidades km^-2)
+        'edge_length_density': 'density',
+        'street_density_km2': 'density',
+        'node_density_km2': 'density',
+        'edge_density_km2': 'density',
+        'intersection_density_km2': 'density',
+        'segment_density_km2': 'density',
+        
+        # Longitudes (con unidades de metros)
+        'edge_length_avg': 'length',
+        'street_length_avg': 'length',
+        
+        # Variables ya adimensionales
+        'k_avg': 'dimensionless',
+        'streets_per_node_avg': 'dimensionless',
+        'network_connectivity_index': 'dimensionless',
+        'circuity_avg': 'circuity',
+        'orthogonal_proportion': 'dimensionless',
+        'angle_coefficient_variation': 'dimensionless',
+        'dead_end_ratio': 'dimensionless',
+        'cv_dead_end_distances': 'dimensionless',
+        
+        # Ángulos (con unidades de grados)
+        'mean_intersection_angle': 'angle',
+        'std_intersection_angle': 'angle_deviation'
+    }
+    
+    # Separar variables por tipo
+    density_indices = [i for i, name in enumerate(feature_names) if feature_types.get(name) == 'density']
+    length_indices = [i for i, name in enumerate(feature_names) if feature_types.get(name) == 'length']
+    angle_indices = [i for i, name in enumerate(feature_names) if feature_types.get(name) == 'angle']
+    deviation_indices = [i for i, name in enumerate(feature_names) if feature_types.get(name) == 'angle_deviation']
+    circuity_indices = [i for i, name in enumerate(feature_names) if feature_types.get(name) == 'circuity']
+    
+    # 1. Transformar densidades: dividir por la densidad máxima o mediana de cada tipo
+    if density_indices:
+        for i in density_indices:
+            # Usar percentil 95 como referencia para evitar outliers extremos
+            reference = np.percentile(X_preprocessed[:, i][X_preprocessed[:, i] > 0], 95)
+            if reference > 0:
+                X_preprocessed[:, i] = X_preprocessed[:, i] / reference
+    
+    # 2. Transformar longitudes: dividir por la longitud máxima o mediana
+    if length_indices:
+        for i in length_indices:
+            # Usar percentil 95 como referencia para evitar outliers extremos
+            reference = np.percentile(X_preprocessed[:, i][X_preprocessed[:, i] > 0], 95)
+            if reference > 0:
+                X_preprocessed[:, i] = X_preprocessed[:, i] / reference
+    
+    # 3. Transformar ángulos: expresar como fracción de un círculo completo
+    if angle_indices:
+        for i in angle_indices:
+            X_preprocessed[:, i] = X_preprocessed[:, i] / 360.0
+    
+    # 4. Transformar desviaciones de ángulos: expresar como fracción de un ángulo recto
+    if deviation_indices:
+        for i in deviation_indices:
+            X_preprocessed[:, i] = X_preprocessed[:, i] / 90.0
+    
+    # 5. Transformar circuidad: restar 1.0 para que el ideal sea 0
+    if circuity_indices:
+        for i in circuity_indices:
+            X_preprocessed[:, i] = X_preprocessed[:, i] - 1.0
+    
+    return X_preprocessed
+
+def prepare_clustering_features_improved(stats_dict, graph_dict):  
     """
     Prepara características para clustering con normalización por área para medidas absolutas
     y conservación de métricas relativas, incluyendo características de ángulos y calles sin salida.
@@ -2115,11 +2070,7 @@ def prepare_clustering_features_improved(stats_dict, graph_dict):  # Asegúrate 
     - stats_dict: Diccionario con estadísticas por polígono
     - graph_dict: Diccionario con los grafos NetworkX por polígono (donde la clave es poly_id)
     """
-      # Al inicio de la función, imprime información de diagnóstico
-    print(f"Número de polígonos en stats_dict: {len(stats_dict)}")
-    print(f"Número de polígonos en graph_dict: {len(graph_dict)}")
-    print(f"Primeras 5 claves en stats_dict: {list(stats_dict.keys())[:5]}")
-    print(f"Primeras 5 claves en graph_dict: {list(graph_dict.keys())[:5]}")
+      
     feature_names = [
         'edge_length_density',        # Longitud de enlaces por km² (normalizada)
         'street_density_km2',         # Longitud de calles por km² (ya normalizada)
@@ -2313,34 +2264,19 @@ def prepare_clustering_features_improved(stats_dict, graph_dict):  # Asegúrate 
     # Imprimir las características para verificación
     print("Características utilizadas:", feature_names)
     
-    return np.array(X), poly_ids, feature_names
 
+    # Dentro de tu función, justo antes del return:
+    X_array = np.array(X)
 
-
-# Imprimir las claves de un polígono para diagnóstico
-if stats_dict:
-    example_poly_id = list(stats_dict.keys())[0]
-    print("\nDiagnóstico - Claves disponibles en un polígono de ejemplo:")
-    print(f"Polígono {example_poly_id} tiene las siguientes claves:")
-    for key, value in stats_dict[example_poly_id].items():
-        print(f"  - {key}: {value}")
+    # Aplicar pre-procesamiento para hacer todas las variables adimensionales
+    X_preprocessed = preprocess_to_dimensionless(X_array, feature_names)
     
-    # Verificación específica de nuevas características
-    new_features = [
-        'mean_intersection_angle', 'std_intersection_angle', 
-        'orthogonal_proportion', 'angle_coefficient_variation',
-        'dead_end_ratio', 'cv_dead_end_distances'
-    ]
-    
-    print("\nVerificación de nuevas características:")
-    for feature in new_features:
-        if feature in stats_dict[example_poly_id]:
-            value = stats_dict[example_poly_id][feature]
-            print(f"  - {feature}: {value}")
-        else:
-            print(f"  - {feature}: NO DISPONIBLE")
+    # Luego aplicar StandardScaler para normalización estadística final
+    scaler = StandardScaler()
+    X_normalized = scaler.fit_transform(X_preprocessed)
 
 
+    return X_normalized, poly_ids, feature_names
 
 def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
     """
@@ -2412,7 +2348,7 @@ def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
     axs[1, 1].set_title('Método del codo')
     
     plt.tight_layout()
-    plt.savefig('cluster_metrics.png', dpi=300, bbox_inches='tight')
+    plt.savefig('Resultados/urbano_pattern_cluster/cluster_metrics.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     # Normalizar métricas para combinarlas
@@ -2430,12 +2366,232 @@ def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
     print(f"\nK óptimo según score combinado: {optimal_k}")
     return optimal_k
 
-def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True, visualize=True):
+# def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True, visualize=True):
+#     """
+#     Realiza clustering mejorado con KMeans y análisis de características importantes
+#     """
+    
+#     # Eliminar filas con NaN o infinitos
+#     valid_rows = ~np.any(np.isnan(X) | np.isinf(X), axis=1)
+#     X_clean = X[valid_rows]
+#     if X_clean.shape[0] < X.shape[0]:
+#         print(f"Eliminadas {X.shape[0] - X_clean.shape[0]} filas con valores no válidos")
+    
+#     # Normalizar características
+#     scaler = StandardScaler()
+#     X_scaled = scaler.fit_transform(X_clean)
+    
+#     # Reducción de dimensionalidad
+#     if use_pca:
+#         # Determinar número óptimo de componentes (varianza explicada > 0.95)
+#         full_pca = PCA().fit(X_scaled)
+#         cum_var = np.cumsum(full_pca.explained_variance_ratio_)
+#         n_components = np.argmax(cum_var >= 0.95) + 1
+#         n_components = max(2, min(n_components, X_scaled.shape[1]))
+        
+#         pca = PCA(n_components=n_components)
+#         X_reduced = pca.fit_transform(X_scaled)
+        
+#         # Análisis de componentes principales
+#         print(f"\nAnálisis PCA con {n_components} componentes:")
+#         print(f"Varianza explicada: {pca.explained_variance_ratio_}")
+#         print(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}")
+        
+#         # Visualizar contribución de características a componentes
+#         plt.figure(figsize=(12, 8))
+#         components = pd.DataFrame(
+#             pca.components_.T,
+#             columns=[f'PC{i+1}' for i in range(n_components)],
+#             index=feature_names
+#         )
+        
+#         sns.heatmap(components, cmap='coolwarm', annot=True, fmt=".2f")
+#         plt.title('Contribución de variables a componentes principales')
+#         plt.tight_layout()
+#         plt.savefig('Resultados/urbano_pattern_cluster/pca_components_contributions.png', dpi=300, bbox_inches='tight')
+#         plt.close()
+#     else:
+#         X_reduced = X_scaled
+    
+#     # Encontrar número óptimo de clusters si no se proporciona
+#     if n_clusters is None:
+#         # Asumimos que la función find_optimal_k_improved está definida en otro lugar
+#         n_clusters = find_optimal_k_improved(X_reduced, max_k=8, min_k=3)
+    
+#     print(f"\nRealizando clustering KMeans con {n_clusters} clusters")
+    
+#     # Usar KMeans con inicialización k-means++ y múltiples inicios
+#     kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10, init='k-means++')
+#     cluster_labels = kmeans.fit_predict(X_reduced)
+    
+#     # Analizar centros de clusters
+#     if use_pca:
+#         # Proyectar centros al espacio original
+#         centers_pca = kmeans.cluster_centers_
+#         centers_original = pca.inverse_transform(centers_pca)
+#         centers_original = scaler.inverse_transform(centers_original)
+#     else:
+#         centers_original = scaler.inverse_transform(kmeans.cluster_centers_)
+    
+#     # Crear DataFrame de centros
+#     centers_df = pd.DataFrame(centers_original, columns=feature_names)
+#     centers_df.index = [f'Cluster {i}' for i in range(n_clusters)]
+    
+#     print("\nCaracterísticas de los centros de clusters:")
+#     print(centers_df)
+    
+#     # Analizar variables más discriminantes entre clusters
+#     cluster_importance = {}
+#     for feature in feature_names:
+#         # Calcular varianza entre clusters para esta característica
+#         values = centers_df[feature].values
+#         variance = np.var(values)
+#         max_diff = np.max(values) - np.min(values)
+#         importance = variance * max_diff  # Ponderación por rango
+#         cluster_importance[feature] = importance
+    
+#     sorted_features = sorted(cluster_importance.items(), key=lambda x: x[1], reverse=True)
+    
+#     print("\nCaracterísticas más importantes para diferenciar clusters:")
+#     for feature, importance in sorted_features[:5]:
+#         print(f"{feature}: {importance:.4f}")
+    
+#     # Visualizar clusters
+#     if visualize:
+#         # CORRECCIÓN: En lugar de usar t-SNE, que puede no preservar distancias globales,
+#         # usar PCA para visualización si el número de características es alto
+#         if X_reduced.shape[1] > 2:
+#             # Para visualización, usamos PCA directamente desde los datos escalados
+#             viz_pca = PCA(n_components=2)
+#             X_viz = viz_pca.fit_transform(X_scaled)
+            
+#             plt.figure(figsize=(10, 8))
+#             scatter = plt.scatter(X_viz[:, 0], X_viz[:, 1], c=cluster_labels, 
+#                                  cmap='viridis', s=50, alpha=0.8)
+            
+#             # Transformar centros de clusters a 2D para visualización
+#             if use_pca:
+#                 # Primero a espacio escalado
+#                 centers_scaled = scaler.transform(centers_original)
+#                 # Luego proyectar a 2D con el mismo PCA de visualización
+#                 centers_viz = viz_pca.transform(centers_scaled)
+#             else:
+#                 centers_viz = viz_pca.transform(kmeans.cluster_centers_)
+            
+#             # Mostrar centros en la visualización
+#             plt.scatter(centers_viz[:, 0], centers_viz[:, 1], 
+#                        c='red', s=200, alpha=0.8, marker='X')
+            
+#             # Añadir etiquetas de clusters
+#             for i, (x, y) in enumerate(centers_viz):
+#                 plt.annotate(f'Cluster {i}', (x, y), fontsize=12, 
+#                              ha='center', va='center', color='white',
+#                              bbox=dict(boxstyle="round,pad=0.3", fc='black', alpha=0.7))
+            
+#             plt.colorbar(scatter, label='Cluster')
+#             plt.title('Visualización de clusters usando PCA')
+#             plt.xlabel('PC1')
+#             plt.ylabel('PC2')
+#             plt.tight_layout()
+#             plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_pca.png', dpi=300, bbox_inches='tight')
+#             plt.close()
+            
+#             # Adicionalmente, podemos usar t-SNE como visualización complementaria
+#             # pero con parámetros más adecuados
+#             if X_clean.shape[0] > 5:  # Solo si hay suficientes datos
+#                 perplexity = min(30, max(5, X_clean.shape[0] // 10))
+#                 tsne = TSNE(n_components=2, random_state=42, perplexity=perplexity,
+#                            learning_rate='auto', init='pca')
+#                 X_tsne = tsne.fit_transform(X_scaled)
+                
+#                 plt.figure(figsize=(10, 8))
+#                 scatter = plt.scatter(X_tsne[:, 0], X_tsne[:, 1], 
+#                                      c=cluster_labels, cmap='viridis', s=50, alpha=0.8)
+                
+#                 plt.colorbar(scatter, label='Cluster')
+#                 plt.title('Visualización de clusters usando t-SNE')
+#                 plt.xlabel('t-SNE 1')
+#                 plt.ylabel('t-SNE 2')
+#                 plt.tight_layout()
+#                 plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_tsne_improved.png', dpi=300, bbox_inches='tight')
+#                 plt.close()
+#         else:
+#             # Si ya tenemos 2 dimensiones, usar directamente
+#             plt.figure(figsize=(10, 8))
+#             scatter = plt.scatter(X_reduced[:, 0], X_reduced[:, 1], 
+#                                  c=cluster_labels, cmap='viridis', s=50, alpha=0.8)
+            
+#             plt.colorbar(scatter, label='Cluster')
+#             plt.title('Visualización de clusters')
+#             plt.xlabel('Dimensión 1')
+#             plt.ylabel('Dimensión 2')
+#             plt.tight_layout()
+#             plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_direct.png', dpi=300, bbox_inches='tight')
+#             plt.close()
+        
+#         # Visualizar distribución de características más importantes por cluster
+#         # Definir número de filas y columnas
+        
+#         number_of_graphs = len(feature_names)
+
+#         # Calcular dinámicamente las filas y columnas
+#         cols = 5  # Número fijo de columnas
+#         rows = int(np.ceil(number_of_graphs / cols))  # Calcula cuántas filas son necesarias
+
+#         # Crear la figura con el número adecuado de subgráficos
+#         fig, axes = plt.subplots(rows, cols, figsize=(25, rows * 5))  # Altura ajustada dinámicamente
+#         axes = axes.flatten()  # Aplanar en una lista 1D
+
+#         # Crear DataFrame con datos originales y etiquetas de cluster
+#         data_df = pd.DataFrame(X_clean, columns=feature_names)
+#         data_df['cluster'] = cluster_labels
+
+#         # Iterar sobre todas las características
+#         for i, feature in enumerate(feature_names):
+#             sns.boxplot(x='cluster', y=feature, data=data_df, ax=axes[i])
+#             axes[i].set_title(f'Distribución de {feature}')
+#             axes[i].set_xlabel('Cluster')
+#             axes[i].set_ylabel(feature)
+
+#         # Ocultar los ejes sobrantes si hay menos gráficos que subplots
+#         for j in range(number_of_graphs, len(axes)):
+#             fig.delaxes(axes[j])
+
+#         # Ajustar el diseño
+#         plt.tight_layout()
+#         plt.savefig('Resultados/urbano_pattern_cluster/feature_distributions_by_cluster.png', dpi=300, bbox_inches='tight')
+#         plt.close()
+
+#     return n_clusters, cluster_labels, centers_df, sorted_features
+
+
+def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True, 
+                               pca_variance_threshold=0.95, max_pca_components=8, 
+                               visualize=True, use_elbow_method=False):
     """
     Realiza clustering mejorado con KMeans y análisis de características importantes
+    
+    Parámetros:
+    -----------
+    X : array
+        Datos de entrada
+    feature_names : list
+        Nombres de las características
+    n_clusters : int, opcional
+        Número de clusters. Si es None, se determina automáticamente
+    use_pca : bool, por defecto True
+        Si se debe usar PCA para reducción de dimensionalidad
+    pca_variance_threshold : float, por defecto 0.95
+        Umbral de varianza explicada acumulada para seleccionar componentes
+    max_pca_components : int, por defecto 5
+        Número máximo de componentes PCA a usar
+    visualize : bool, por defecto True
+        Si se deben generar visualizaciones
+    use_elbow_method : bool, por defecto False
+        Si se debe usar el método del codo para determinar componentes
     """
     
-    # Eliminar filas con NaN o infinitos
+    # Eliminar filas con NaN o infinitos (tu código original)
     valid_rows = ~np.any(np.isnan(X) | np.isinf(X), axis=1)
     X_clean = X[valid_rows]
     if X_clean.shape[0] < X.shape[0]:
@@ -2447,33 +2603,122 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
     
     # Reducción de dimensionalidad
     if use_pca:
-        # Determinar número óptimo de componentes (varianza explicada > 0.95)
+        # Determinar número óptimo de componentes
         full_pca = PCA().fit(X_scaled)
         cum_var = np.cumsum(full_pca.explained_variance_ratio_)
-        n_components = np.argmax(cum_var >= 0.95) + 1
-        n_components = max(2, min(n_components, X_scaled.shape[1]))
         
+        # Visualizar la varianza explicada acumulada (scree plot)
+        if visualize:
+            plt.figure(figsize=(10, 6))
+            plt.plot(range(1, len(cum_var) + 1), cum_var, marker='o', linestyle='-')
+            plt.axhline(y=pca_variance_threshold, color='r', linestyle='--', 
+                      label=f'Umbral ({pca_variance_threshold})')
+            plt.title('Varianza explicada acumulada vs Número de componentes')
+            plt.xlabel('Número de componentes')
+            plt.ylabel('Varianza acumulada explicada')
+            plt.grid(True)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig('Resultados/urbano_pattern_cluster/pca_variance_explained.png', dpi=300)
+            plt.close()
+        
+        # Método del codo para PCA si se solicita
+        if use_elbow_method:
+            # Calcular "aceleración" de la curva de varianza
+            npc = len(full_pca.explained_variance_ratio_)
+            acceleration = np.diff(np.diff(cum_var)) + 0.001  # Evitar dividir por cero
+            k_elbow = np.argmax(acceleration) + 1  # El punto donde la aceleración es máxima
+            n_components = min(k_elbow + 1, max_pca_components)  # +1 porque los índices comienzan en 0
+            
+            if visualize:
+                plt.figure(figsize=(10, 6))
+                plt.plot(range(1, npc-1), acceleration, marker='o', linestyle='-')
+                plt.axvline(x=k_elbow, color='r', linestyle='--', 
+                          label=f'Punto de inflexión (k={k_elbow+1})')
+                plt.title('Método del codo: Aceleración de la varianza explicada')
+                plt.xlabel('Número de componentes')
+                plt.ylabel('Aceleración de varianza')
+                plt.grid(True)
+                plt.legend()
+                plt.tight_layout()
+                plt.savefig('Resultados/urbano_pattern_cluster/pca_elbow_method.png', dpi=300)
+                plt.close()
+        else:
+            # Criterio basado en umbral de varianza
+            n_components = np.argmax(cum_var >= pca_variance_threshold) + 1
+        
+        # Aplicar restricciones al número de componentes
+        n_components = max(2, min(n_components, min(max_pca_components, X_scaled.shape[1])))
+        
+        print(f"\nSeleccionados {n_components} componentes PCA")
+        print(f"Varianza explicada por estos componentes: {cum_var[n_components-1]:.4f}")
+        
+        # Realizar PCA con el número óptimo de componentes
         pca = PCA(n_components=n_components)
         X_reduced = pca.fit_transform(X_scaled)
         
         # Análisis de componentes principales
         print(f"\nAnálisis PCA con {n_components} componentes:")
-        print(f"Varianza explicada: {pca.explained_variance_ratio_}")
+        for i, var in enumerate(pca.explained_variance_ratio_):
+            print(f"  PC{i+1}: {var:.4f} de varianza explicada")
         print(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}")
+   
+        # Guardar información de los componentes PCA en un archivo de texto
+        with open('Resultados/urbano_pattern_cluster/pca_analysis.txt', 'w') as f:
+            f.write(f"ANÁLISIS DE COMPONENTES PRINCIPALES (PCA)\n")
+            f.write(f"======================================\n\n")
+            f.write(f"Número de componentes seleccionados: {n_components}\n")
+            f.write(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}\n\n")
+            
+            f.write("VARIANZA EXPLICADA POR COMPONENTE:\n")
+            for i, var in enumerate(pca.explained_variance_ratio_):
+                f.write(f"  PC{i+1}: {var:.4f} ({var*100:.2f}%)\n")
+            f.write("\n")
+            
+            f.write("CONTRIBUCIÓN DE VARIABLES A COMPONENTES:\n")
+            # Crear un DataFrame con las contribuciones de las características a cada componente
+            components_df = pd.DataFrame(
+                pca.components_.T,
+                columns=[f'PC{i+1}' for i in range(n_components)],
+                index=feature_names
+            )
+            
+            # Para cada componente, listar las variables más influyentes
+            for i in range(n_components):
+                pc_name = f'PC{i+1}'
+                f.write(f"\n{pc_name} - Explica {pca.explained_variance_ratio_[i]*100:.2f}% de la varianza:\n")
+                
+                # Ordenar características por su contribución absoluta a este componente
+                component_contrib = components_df[pc_name].abs().sort_values(ascending=False)
+                
+                # Encontrar variables con mayor contribución (positiva y negativa)
+                for feature, value in zip(components_df.index, components_df[pc_name]):
+                    contribution = abs(value)
+                    # Mostrar solo contribuciones significativas (ajustar umbral según necesidad)
+                    if contribution > 0.2:  # Umbral arbitrario, ajustar según sea necesario
+                        direction = "positiva" if value > 0 else "negativa"
+                        f.write(f"  - {feature}: {value:.4f} (contribución {direction})\n")
+            
+            f.write("\n\nINTERPRETACIÓN DE COMPONENTES:\n")
+            f.write("La interpretación de cada componente debe hacerse considerando las variables\n")
+            f.write("con mayor contribución (positiva o negativa). Variables con contribuciones del\n")
+            f.write("mismo signo están correlacionadas positivamente en ese componente, mientras que\n")
+            f.write("variables con signos opuestos están correlacionadas negativamente.\n")
         
         # Visualizar contribución de características a componentes
-        plt.figure(figsize=(12, 8))
-        components = pd.DataFrame(
-            pca.components_.T,
-            columns=[f'PC{i+1}' for i in range(n_components)],
-            index=feature_names
-        )
-        
-        sns.heatmap(components, cmap='coolwarm', annot=True, fmt=".2f")
-        plt.title('Contribución de variables a componentes principales')
-        plt.tight_layout()
-        plt.savefig('pca_components_contributions.png', dpi=300, bbox_inches='tight')
-        plt.close()
+        if visualize:
+            plt.figure(figsize=(12, 8))
+            components = pd.DataFrame(
+                pca.components_.T,
+                columns=[f'PC{i+1}' for i in range(n_components)],
+                index=feature_names
+            )
+            
+            sns.heatmap(components, cmap='coolwarm', annot=True, fmt=".2f")
+            plt.title('Contribución de variables a componentes principales')
+            plt.tight_layout()
+            plt.savefig('Resultados/urbano_pattern_cluster/pca_components_contributions.png', dpi=300, bbox_inches='tight')
+            plt.close()
     else:
         X_reduced = X_scaled
     
@@ -2557,7 +2802,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
             plt.xlabel('PC1')
             plt.ylabel('PC2')
             plt.tight_layout()
-            plt.savefig('cluster_visualization_pca.png', dpi=300, bbox_inches='tight')
+            plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_pca.png', dpi=300, bbox_inches='tight')
             plt.close()
             
             # Adicionalmente, podemos usar t-SNE como visualización complementaria
@@ -2577,7 +2822,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
                 plt.xlabel('t-SNE 1')
                 plt.ylabel('t-SNE 2')
                 plt.tight_layout()
-                plt.savefig('cluster_visualization_tsne_improved.png', dpi=300, bbox_inches='tight')
+                plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_tsne_improved.png', dpi=300, bbox_inches='tight')
                 plt.close()
         else:
             # Si ya tenemos 2 dimensiones, usar directamente
@@ -2590,7 +2835,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
             plt.xlabel('Dimensión 1')
             plt.ylabel('Dimensión 2')
             plt.tight_layout()
-            plt.savefig('cluster_visualization_direct.png', dpi=300, bbox_inches='tight')
+            plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_direct.png', dpi=300, bbox_inches='tight')
             plt.close()
         
         # Visualizar distribución de características más importantes por cluster
@@ -2623,18 +2868,20 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
 
         # Ajustar el diseño
         plt.tight_layout()
-        plt.savefig('feature_distributions_by_cluster.png', dpi=300, bbox_inches='tight')
+        plt.savefig('Resultados/urbano_pattern_cluster/feature_distributions_by_cluster.png', dpi=300, bbox_inches='tight')
         plt.close()
 
     return n_clusters, cluster_labels, centers_df, sorted_features
 
+
 def urban_pattern_clustering(
     stats_dict, 
+    graph_dict,
     classify_func, 
     geojson_file,
     n_clusters=None,
     output_dir="Resultados/urbano_pattern_cluster"
-):
+    ):
     """
     Versión mejorada para clustering de patrones urbanos
     """
@@ -2885,13 +3132,23 @@ def urban_pattern_clustering(
         'n_clusters': n_clusters
     }
 
+
+
+
+# 1. Cargar el GeoJSON
+print("Cargando archivo GeoJSON...")
 geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+gdf = gpd.read_file(geojson_file)
+print(f"GeoDataFrame cargado con {len(gdf)} polígonos")
 stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+graph_dict = procesar_poligonos_y_generar_grafos(gdf)
+
 
 stats_dict = load_polygon_stats_from_txt(stats_txt)
 resultados = urban_pattern_clustering(
     stats_dict, 
+    graph_dict,
     classify_polygon, 
     geojson_file,
-    n_clusters= None  # Automáticamente determinará el número óptimo
+    n_clusters= None # Automáticamente determinará el número óptimo
 )
