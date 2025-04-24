@@ -39,45 +39,113 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 
 
 
-# # Ruta a la carpeta .gdb (¡no un archivo específico!)
-# gdb_path = "Pasto/AJUSTE_POT_PASTO_2023.gdb"
+def process_selected_layers(gdb_path, layer_indices=None, layer_names=None, save_geojson=True, visualize=True):
+    """
+    Process only selected layers from a geodatabase.
+    
+    Parameters:
+    -----------
+    gdb_path : str
+        Path to the geodatabase folder
+    layer_indices : list of int, optional
+        List of layer indices to process (1-indexed as shown in the listing)
+    layer_names : list of str, optional
+        List of specific layer names to process
+    save_geojson : bool, default True
+        Whether to save layers as GeoJSON files
+    visualize : bool, default True
+        Whether to visualize the layers
+        
+    Returns:
+    --------
+    dict
+        Dictionary of loaded GeoDataFrames with layer names as keys
+    """
+  
+    
+    # Create output folder for geojson if needed
+    if save_geojson:
+        output_dir = "GeoJSON_Export"
+        os.makedirs(output_dir, exist_ok=True)
+    
+    # List available layers
+    print("\nSearching for layers in the GDB...")
+    all_layers = fiona.listlayers(gdb_path)
+    print(f"Layers found ({len(all_layers)}):")
+    for i, layer in enumerate(all_layers):
+        print(f"{i+1}. {layer}")
+    
+    # Determine which layers to process
+    selected_layers = []
+    
+    if layer_indices:
+        # Convert 1-indexed to 0-indexed
+        selected_layers.extend([all_layers[i-1] for i in layer_indices if 1 <= i <= len(all_layers)])
+    
+    if layer_names:
+        # Add layers specified by name
+        selected_layers.extend([layer for layer in layer_names if layer in all_layers])
+    
+    # Remove duplicates while preserving order
+    selected_layers = list(dict.fromkeys(selected_layers))
+    
+    if not selected_layers:
+        print("No valid layers selected.")
+        return {}
+    
+    # Process selected layers
+    print(f"\nProcessing {len(selected_layers)} selected layers:")
+    results = {}
+    
+    for layer in selected_layers:
+        print(f"\nReading layer: {layer}")
+        gdf = gpd.read_file(gdb_path, layer=layer)
+        results[layer] = gdf
+        
+        # Show properties
+        print("Columns:", gdf.columns.tolist())
+        print("Total geometries:", len(gdf))
+        print("Coordinate Reference System (CRS):", gdf.crs)
+        print(gdf.head())
+        
+        # Visualize if requested
+        if visualize:
+            gdf.plot(figsize=(8, 6), edgecolor="black", cmap="Set2")
+            plt.title(f"Layer: {layer}")
+            plt.xlabel("Longitude")
+            plt.ylabel("Latitude")
+            plt.tight_layout()
+            plt.show()
+        
+        # Save as GeoJSON if requested
+        if save_geojson:
+            output_path = os.path.join(output_dir, f"{layer}.geojson")
+            gdf.to_file(output_path, driver="GeoJSON")
+            print(f"Saved as GeoJSON: {output_path}")
+    
+    return results
 
-# # Crear carpeta de salida para geojson (opcional)
-# output_dir = "GeoJSON_Export"
-# os.makedirs(output_dir, exist_ok=True)
+# Example 1: Process layers by index numbers (as shown in the listing)
+gdb_path = "Pasto/AJUSTE_POT_PASTO_2023.gdb"
+layer_data = process_selected_layers(gdb_path, layer_indices=[1, 2, 5, 6])
 
-# # 1. Listar capas disponibles
-# print("\n📁 Buscando capas en la GDB...")
-# layers = fiona.listlayers(gdb_path)
-# print(f"✔️ Capas encontradas ({len(layers)}):")
-# for i, layer in enumerate(layers):
-#     print(f"{i+1}. {layer}")
+# # Example 2: Process layers by name
+# layer_data = process_selected_layers(gdb_path, layer_names=["Poblaciones", "Canales"])
 
-# # 2. Leer, mostrar y visualizar cada capa
-# for layer in layers:
-#     print(f"\n🔍 Leyendo capa: {layer}")
-#     gdf = gpd.read_file(gdb_path, layer=layer)
+# # Example 3: Mix of indices and names
+# layer_data = process_selected_layers(gdb_path, 
+#                                     layer_indices=[1, 5], 
+#                                     layer_names=["Vias_contexto"])
 
-#     # Mostrar propiedades
-#     print("📌 Columnas:", gdf.columns.tolist())
-#     print("📐 Total de geometrías:", len(gdf))
-#     print("🌐 Sistema de coordenadas (CRS):", gdf.crs)
-#     print(gdf.head())
+# # Example 4: No visualization, just data loading
+# layer_data = process_selected_layers(gdb_path, 
+#                                     layer_indices=[1, 2, 5, 6], 
+#                                     visualize=False)
 
-#     # 3. Visualizar
-#     gdf.plot(figsize=(8, 6), edgecolor="black", cmap="Set2")
-#     plt.title(f"Capa: {layer}")
-#     plt.xlabel("Longitud")
-#     plt.ylabel("Latitud")
-#     plt.tight_layout()
-#     plt.show()
-
-#     # 4. Guardar como GeoJSON
-#     output_path = os.path.join(output_dir, f"{layer}.geojson")
-#     gdf.to_file(output_path, driver="GeoJSON")
-#     print(f"💾 Guardado como GeoJSON: {output_path}")
-
-
+# # Example 5: No GeoJSON saving
+# layer_data = process_selected_layers(gdb_path, 
+#                                     layer_indices=[1, 2, 5, 6], 
+#                                     save_geojson=False)
 
 def convert_shapefile_to_geojson(shapefile_paths, output_directory):
     # Ensure the output directory exists
@@ -3135,20 +3203,20 @@ def urban_pattern_clustering(
 
 
 
-# 1. Cargar el GeoJSON
-print("Cargando archivo GeoJSON...")
-geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
-gdf = gpd.read_file(geojson_file)
-print(f"GeoDataFrame cargado con {len(gdf)} polígonos")
-stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
-graph_dict = procesar_poligonos_y_generar_grafos(gdf)
+# # 1. Cargar el GeoJSON
+# print("Cargando archivo GeoJSON...")
+# geojson_file = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+# gdf = gpd.read_file(geojson_file)
+# print(f"GeoDataFrame cargado con {len(gdf)} polígonos")
+# stats_txt = "Poligonos_Medellin/Resultados/poligonos_stats_ordenado.txt"
+# graph_dict = procesar_poligonos_y_generar_grafos(gdf)
 
 
-stats_dict = load_polygon_stats_from_txt(stats_txt)
-resultados = urban_pattern_clustering(
-    stats_dict, 
-    graph_dict,
-    classify_polygon, 
-    geojson_file,
-    n_clusters= None # Automáticamente determinará el número óptimo
-)
+# stats_dict = load_polygon_stats_from_txt(stats_txt)
+# resultados = urban_pattern_clustering(
+#     stats_dict, 
+#     graph_dict,
+#     classify_polygon, 
+#     geojson_file,
+#     n_clusters= None # Automáticamente determinará el número óptimo
+# )

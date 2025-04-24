@@ -1,0 +1,32 @@
+{
+"type": "FeatureCollection",
+"name": "Sitios_de_referencia_R",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3115" } },
+"features": [
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Canchala" }, "geometry": { "type": "Point", "coordinates": [ 980237.066899999976158, 624245.70549999922514 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia Cujacal" }, "geometry": { "type": "Point", "coordinates": [ 980705.264899999834597, 627756.987199999392033 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia del Rosario" }, "geometry": { "type": "Point", "coordinates": [ 979409.055399999953806, 623268.578999999910593 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia del Encano" }, "geometry": { "type": "Point", "coordinates": [ 991185.636400000192225, 620162.285599999129772 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Jamondino" }, "geometry": { "type": "Point", "coordinates": [ 979640.049399999901652, 622715.933800000697374 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Jongovito" }, "geometry": { "type": "Point", "coordinates": [ 975844.188500000163913, 623178.768300000578165 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Capilla del divino Jesus de la Pascua" }, "geometry": { "type": "Point", "coordinates": [ 973469.421799999661744, 628302.949200000613928 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Morasurco" }, "geometry": { "type": "Point", "coordinates": [ 977757.186900000087917, 631778.122700000181794 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Capilla de San Fernando" }, "geometry": { "type": "Point", "coordinates": [ 983533.14670000039041, 624900.269500000402331 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia Santa Barbara" }, "geometry": { "type": "Point", "coordinates": [ 974585.563000000081956, 611122.285900000482798 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Genoy" }, "geometry": { "type": "Point", "coordinates": [ 971323.74280000012368, 632065.58669999986887 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Gualmatan" }, "geometry": { "type": "Point", "coordinates": [ 973186.953700000420213, 621347.58699999935925 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Botanilla" }, "geometry": { "type": "Point", "coordinates": [ 976473.978000000119209, 620569.007099999114871 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de pejendino" }, "geometry": { "type": "Point", "coordinates": [ 981392.042500000447035, 624622.252499999478459 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Buesaquillo" }, "geometry": { "type": "Point", "coordinates": [ 981370.414599999785423, 625135.795800000429153 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Capilla del Señor de la Buena Esperanza" }, "geometry": { "type": "Point", "coordinates": [ 984769.104700000025332, 626086.692700000479817 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Catambuco" }, "geometry": { "type": "Point", "coordinates": [ 975193.340099999681115, 620690.02280000038445 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de la Laguna" }, "geometry": { "type": "Point", "coordinates": [ 985305.021999999880791, 624954.004000000655651 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Mapachico" }, "geometry": { "type": "Point", "coordinates": [ 972947.039900000207126, 629036.752800000831485 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Tescual" }, "geometry": { "type": "Point", "coordinates": [ 977876.411500000394881, 628444.289200000464916 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Puerres" }, "geometry": { "type": "Point", "coordinates": [ 979946.444199999794364, 624214.150000000372529 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Obonuco" }, "geometry": { "type": "Point", "coordinates": [ 974483.364400000311434, 623685.288599999621511 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Anganoy" }, "geometry": { "type": "Point", "coordinates": [ 975307.190799999982119, 626009.396099999547005 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia del Socorro" }, "geometry": { "type": "Point", "coordinates": [ 979551.089700000360608, 610626.21199999935925 ] } },
+{ "type": "Feature", "properties": { "Nombre": "Iglesia de Mocondino" }, "geometry": { "type": "Point", "coordinates": [ 980961.194099999964237, 624059.637000000104308 ] } }
+]
+}
