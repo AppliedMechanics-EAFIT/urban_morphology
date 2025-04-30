@@ -1,0 +1,58 @@
+EXPLICACIÓN DETALLADA DE CLUSTERS
+================================
+
+Cluster 0: gridiron
+Patrón dominante: gridiron (97.7%)
+Comparación con otros clusters de tipo 'gridiron':
+  - std_intersection_angle: 0.544 (mayor que el promedio de -0.288 por 288.9%, z-score: 0.87)
+  - angle_coefficient_variation: 0.382 (mayor que el promedio de -0.400 por 195.5%, z-score: 0.64)
+  - edge_length_density: 0.609 (mayor que el promedio de 0.141 por 333.0%, z-score: 0.61)
+  - cv_dead_end_distances: -0.115 (menor que el promedio de 0.153 por 175.5%, z-score: -0.58)
+  - dead_end_ratio: -0.143 (menor que el promedio de 0.227 por 162.8%, z-score: -0.54)
+
+--------------------------------------------------
+
+Cluster 1: gridiron_bajo_mean
+Patrón dominante: gridiron (54.1%)
+Comparación con otros clusters de tipo 'gridiron':
+  - edge_length_density: -0.743 (menor que el promedio de 0.141 por 628.0%, z-score: -1.15)
+  - circuity_avg: 0.593 (mayor que el promedio de -0.134 por 541.7%, z-score: 1.15)
+  - streets_per_node_avg: -0.786 (menor que el promedio de 0.221 por 455.0%, z-score: -1.13)
+  - edge_density_km2: -0.846 (menor que el promedio de 0.246 por 443.6%, z-score: -1.12)
+  - network_connectivity_index: -0.779 (menor que el promedio de 0.228 por 441.7%, z-score: -1.12)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_mean':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 2: gridiron_alto_mean
+Patrón dominante: gridiron (97.8%)
+Comparación con otros clusters de tipo 'gridiron':
+  - cv_dead_end_distances: 0.684 (mayor que el promedio de 0.153 por 348.5%, z-score: 1.15)
+  - dead_end_ratio: 1.015 (mayor que el promedio de 0.227 por 347.1%, z-score: 1.15)
+  - k_avg: -1.567 (menor que el promedio de -0.351 por 346.5%, z-score: -1.15)
+  - angle_coefficient_variation: -1.803 (menor que el promedio de -0.400 por 350.6%, z-score: -1.15)
+  - mean_intersection_angle: 1.867 (mayor que el promedio de 0.422 por 342.0%, z-score: 1.13)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_alto_mean':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
+
+--------------------------------------------------
+
+
+RESUMEN DE TODOS LOS CLUSTERS
+=========================
+
+Cluster | Nombre | Patrón Base | Característica Distintiva
+------------------------------------------------------------
+0 | gridiron | gridiron | N/A
+1 | gridiron_bajo_mean | gridiron | bajo
+2 | gridiron_alto_mean | gridiron | alto
+
+
+NOTA SOBRE NOMENCLATURA:
+- 'alto_[característica]': Indica que este cluster tiene valores significativamente mayores
+  que el promedio de otros clusters del mismo patrón base para esta característica.
+- 'bajo_[característica]': Indica que este cluster tiene valores significativamente menores
+  que el promedio de otros clusters del mismo patrón base para esta característica.

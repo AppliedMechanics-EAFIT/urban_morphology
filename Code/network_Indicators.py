@@ -183,7 +183,7 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
     EDGE_WIDTH = 0.6  # Thin edges for performance
     
     # Use ScatterGL for massive performance improvements
-    node_trace = go.Scatter(
+    node_trace = go.Scattergl(
         x=positions[:, 1],
         y=positions[:, 0],
         mode='markers',

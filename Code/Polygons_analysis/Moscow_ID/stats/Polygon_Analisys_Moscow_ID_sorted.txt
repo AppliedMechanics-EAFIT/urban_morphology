@@ -1,0 +1,114 @@
+=== Polígono 0 - SubPolígono 0 ===
+n: 167
+m: 361
+k_avg: 4.323353293413174
+edge_length_total: 119233.87582015985
+edge_length_avg: 330.2877446541824
+streets_per_node_avg: 2.437125748502994
+streets_per_node_counts: {0: 0, 1: 52, 2: 0, 3: 105, 4: 10}
+streets_per_node_proportions: {0: 0.0, 1: 0.31137724550898205, 2: 0.0, 3: 0.6287425149700598, 4: 0.059880239520958084}
+intersection_count: 115
+street_length_total: 59708.753566319574
+street_segment_count: 185
+street_length_avg: 322.7500192774031
+circuity_avg: 1.0959118008420043
+self_loop_proportion: 0.005405405405405406
+intersection_density_km2: 0.859901591044059
+street_density_km2: 446.4665407907464
+area_km2: 133.73623353850465
+
+=== Polígono 1 - SubPolígono 0 ===
+n: 165
+m: 444
+k_avg: 5.381818181818182
+edge_length_total: 51690.928169493316
+edge_length_avg: 116.42100939075071
+streets_per_node_avg: 2.9757575757575756
+streets_per_node_counts: {0: 0, 1: 22, 2: 1, 3: 101, 4: 41}
+streets_per_node_proportions: {0: 0.0, 1: 0.13333333333333333, 2: 0.006060606060606061, 3: 0.6121212121212121, 4: 0.24848484848484848}
+intersection_count: 143
+street_length_total: 26258.223907300406
+street_segment_count: 229
+street_length_avg: 114.66473321965243
+circuity_avg: 1.034461698960703
+self_loop_proportion: 0.0
+intersection_density_km2: 25.441627018965
+street_density_km2: 4671.691879930117
+area_km2: 5.620709709068655
+
+=== Polígono 2 - SubPolígono 0 ===
+n: 111
+m: 284
+k_avg: 5.117117117117117
+edge_length_total: 39946.17823978017
+edge_length_avg: 140.65555718232454
+streets_per_node_avg: 3.171171171171171
+streets_per_node_counts: {0: 0, 1: 13, 2: 2, 3: 49, 4: 47}
+streets_per_node_proportions: {0: 0.0, 1: 0.11711711711711711, 2: 0.018018018018018018, 3: 0.44144144144144143, 4: 0.42342342342342343}
+intersection_count: 98
+street_length_total: 21174.82147428381
+street_segment_count: 156
+street_length_avg: 135.73603509156288
+circuity_avg: 1.058778491559689
+self_loop_proportion: 0.00641025641025641
+intersection_density_km2: 1.2370175728390884
+street_density_km2: 267.2819006675466
+area_km2: 79.22280341990572
+
+=== Polígono 3 - SubPolígono 0 ===
+n: 204
+m: 467
+k_avg: 4.578431372549019
+edge_length_total: 138992.64350762698
+edge_length_avg: 297.62878695423336
+streets_per_node_avg: 2.588235294117647
+streets_per_node_counts: {0: 0, 1: 57, 2: 3, 3: 111, 4: 33}
+streets_per_node_proportions: {0: 0.0, 1: 0.27941176470588236, 2: 0.014705882352941176, 3: 0.5441176470588235, 4: 0.16176470588235295}
+intersection_count: 147
+street_length_total: 71199.60064532352
+street_segment_count: 248
+street_length_avg: 287.09516389243356
+circuity_avg: 1.1061973567216008
+self_loop_proportion: 0.0
+intersection_density_km2: 1.1575417244531607
+street_density_km2: 560.6565204854704
+area_km2: 126.9932624410968
+
+=== Polígono 4 - SubPolígono 0 ===
+n: 86
+m: 192
+k_avg: 4.465116279069767
+edge_length_total: 32326.704031956855
+edge_length_avg: 168.36825016644195
+streets_per_node_avg: 2.453488372093023
+streets_per_node_counts: {0: 0, 1: 30, 2: 1, 3: 41, 4: 14}
+streets_per_node_proportions: {0: 0.0, 1: 0.3488372093023256, 2: 0.011627906976744186, 3: 0.47674418604651164, 4: 0.16279069767441862}
+intersection_count: 56
+street_length_total: 16205.959416828877
+street_segment_count: 97
+street_length_avg: 167.07174656524614
+circuity_avg: 1.0442970565538705
+self_loop_proportion: 0.010309278350515464
+intersection_density_km2: 3.411067402317435
+street_density_km2: 987.1360694647187
+area_km2: 16.41714847439084
+
+=== Polígono 5 - SubPolígono 0 ===
+n: 428
+m: 1003
+k_avg: 4.686915887850467
+edge_length_total: 226405.93636018786
+edge_length_avg: 225.72875010985828
+streets_per_node_avg: 2.5186915887850465
+streets_per_node_counts: {0: 0, 1: 128, 2: 0, 3: 250, 4: 50}
+streets_per_node_proportions: {0: 0.0, 1: 0.29906542056074764, 2: 0.0, 3: 0.5841121495327103, 4: 0.11682242990654206}
+intersection_count: 300
+street_length_total: 113444.38777679522
+street_segment_count: 510
+street_length_avg: 222.4399760329318
+circuity_avg: 1.1022583256344067
+self_loop_proportion: 0.0058823529411764705
+intersection_density_km2: 1.7819387950823709
+street_density_km2: 673.8365188794658
+area_km2: 168.35595073630594
+

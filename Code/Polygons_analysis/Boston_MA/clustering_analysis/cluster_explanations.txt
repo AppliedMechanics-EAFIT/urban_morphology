@@ -1,0 +1,130 @@
+EXPLICACIÓN DETALLADA DE CLUSTERS
+================================
+
+Cluster 0: gridiron
+Patrón dominante: gridiron (89.5%)
+Comparación con otros clusters de tipo 'gridiron':
+  - cv_dead_end_distances: 1.510 (mayor que el promedio de -0.068 por 2317.5%, z-score: 1.97)
+  - dead_end_ratio: 1.018 (mayor que el promedio de 0.165 por 515.2%, z-score: 1.20)
+  - angle_coefficient_variation: 0.078 (mayor que el promedio de -0.911 por 108.6%, z-score: 0.57)
+
+--------------------------------------------------
+
+Cluster 1: organico
+Patrón dominante: organico (60.7%)
+  Este es el único cluster con este patrón base.
+
+Características principales:
+  - circuity_avg: 1.424
+  - edge_length_avg: 1.356
+  - street_length_avg: 1.320
+  - dead_end_ratio: 0.609
+  - cv_dead_end_distances: 0.322
+
+--------------------------------------------------
+
+Cluster 2: gridiron_bajo_street
+Patrón dominante: gridiron (63.9%)
+Comparación con otros clusters de tipo 'gridiron':
+  - circuity_avg: 0.274 (mayor que el promedio de -0.245 por 211.7%, z-score: 1.71)
+  - dead_end_ratio: -0.610 (menor que el promedio de 0.165 por 468.8%, z-score: -1.09)
+  - k_avg: 0.526 (mayor que el promedio de -0.745 por 170.6%, z-score: 1.01)
+  - street_density_km2: -0.748 (menor que el promedio de 0.058 por 1382.7%, z-score: -0.68)
+  - streets_per_node_avg: -0.727 (menor que el promedio de -0.011 por 6527.7%, z-score: -0.67)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 3: gridiron_alto_street
+Patrón dominante: gridiron (100.0%)
+Comparación con otros clusters de tipo 'gridiron':
+  - street_length_avg: 11.877 (mayor que el promedio de 1.531 por 676.0%, z-score: 2.26)
+  - edge_length_avg: 11.695 (mayor que el promedio de 1.508 por 675.4%, z-score: 2.26)
+  - network_connectivity_index: -7.629 (menor que el promedio de -0.835 por 813.7%, z-score: -2.23)
+  - mean_intersection_angle: -4.918 (menor que el promedio de -0.231 por 2031.8%, z-score: -2.05)
+  - orthogonal_proportion: -3.074 (menor que el promedio de -0.041 por 7384.6%, z-score: -2.04)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_alto_street':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
+
+--------------------------------------------------
+
+Cluster 4: gridiron_bajo_street
+Patrón dominante: gridiron (76.9%)
+Comparación con otros clusters de tipo 'gridiron':
+  - angle_coefficient_variation: -3.554 (menor que el promedio de -0.911 por 290.1%, z-score: -1.51)
+  - mean_intersection_angle: 2.680 (mayor que el promedio de -0.231 por 1261.9%, z-score: 1.27)
+  - orthogonal_proportion: 1.771 (mayor que el promedio de -0.041 por 4412.6%, z-score: 1.22)
+  - edge_length_density: -1.353 (menor que el promedio de -0.063 por 2032.2%, z-score: -1.12)
+  - streets_per_node_avg: 1.062 (mayor que el promedio de -0.011 por 9778.2%, z-score: 1.00)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 5: gridiron_bajo_street
+Patrón dominante: gridiron (91.8%)
+Comparación con otros clusters de tipo 'gridiron':
+  - streets_per_node_avg: 0.845 (mayor que el promedio de -0.011 por 7807.2%, z-score: 0.80)
+  - angle_coefficient_variation: 0.318 (mayor que el promedio de -0.911 por 134.8%, z-score: 0.70)
+  - circuity_avg: -0.448 (menor que el promedio de -0.245 por 82.6%, z-score: -0.67)
+  - std_intersection_angle: 0.332 (mayor que el promedio de -1.145 por 129.0%, z-score: 0.58)
+  - network_connectivity_index: 0.913 (mayor que el promedio de -0.835 por 209.4%, z-score: 0.57)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 6: gridiron_bajo_street
+Patrón dominante: gridiron (95.0%)
+Comparación con otros clusters de tipo 'gridiron':
+  - street_density_km2: 2.270 (mayor que el promedio de 0.058 por 3794.3%, z-score: 1.87)
+  - node_density_km2: 2.382 (mayor que el promedio de 0.032 por 7313.5%, z-score: 1.84)
+  - segment_density_km2: 2.384 (mayor que el promedio de -0.009 por 26594.5%, z-score: 1.78)
+  - intersection_density_km2: 2.402 (mayor que el promedio de -0.009 por 27805.1%, z-score: 1.75)
+  - edge_length_density: 1.923 (mayor que el promedio de -0.063 por 3131.2%, z-score: 1.72)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 7: gridiron_bajo_street
+Patrón dominante: gridiron (92.3%)
+Comparación con otros clusters de tipo 'gridiron':
+  - dead_end_ratio: -0.546 (menor que el promedio de 0.165 por 430.3%, z-score: -1.00)
+  - k_avg: 0.411 (mayor que el promedio de -0.745 por 155.1%, z-score: 0.92)
+  - edge_length_density: 0.754 (mayor que el promedio de -0.063 por 1287.8%, z-score: 0.71)
+  - angle_coefficient_variation: 0.290 (mayor que el promedio de -0.911 por 131.8%, z-score: 0.69)
+  - edge_density_km2: 0.742 (mayor que el promedio de -0.122 por 710.1%, z-score: 0.63)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+
+RESUMEN DE TODOS LOS CLUSTERS
+=========================
+
+Cluster | Nombre | Patrón Base | Característica Distintiva
+------------------------------------------------------------
+0 | gridiron | gridiron | N/A
+1 | organico | organico | N/A
+2 | gridiron_bajo_street | gridiron | bajo
+3 | gridiron_alto_street | gridiron | alto
+4 | gridiron_bajo_street | gridiron | bajo
+5 | gridiron_bajo_street | gridiron | bajo
+6 | gridiron_bajo_street | gridiron | bajo
+7 | gridiron_bajo_street | gridiron | bajo
+
+
+NOTA SOBRE NOMENCLATURA:
+- 'alto_[característica]': Indica que este cluster tiene valores significativamente mayores
+  que el promedio de otros clusters del mismo patrón base para esta característica.
+- 'bajo_[característica]': Indica que este cluster tiene valores significativamente menores
+  que el promedio de otros clusters del mismo patrón base para esta característica.
