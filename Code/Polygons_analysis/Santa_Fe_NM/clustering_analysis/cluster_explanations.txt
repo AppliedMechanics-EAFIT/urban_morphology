@@ -1,9 +1,9 @@
-EXPLICACI覰 DETALLADA DE CLUSTERS
+EXPLICACI脫N DETALLADA DE CLUSTERS
 ================================
 
 Cluster 0: organico
-Patr髇 dominante: organico (90.9%)
-Comparaci髇 con otros clusters de tipo 'organico':
+Patr贸n dominante: organico (90.9%)
+Comparaci贸n con otros clusters de tipo 'organico':
   - k_avg: 0.236 (mayor que el promedio de -0.417 por 156.7%, z-score: 1.05)
   - dead_end_ratio: -0.722 (menor que el promedio de -0.068 por 966.4%, z-score: -0.64)
   - intersection_density_km2: -1.092 (menor que el promedio de -0.591 por 85.0%, z-score: -0.62)
@@ -13,22 +13,22 @@ Comparaci髇 con otros clusters de tipo 'organico':
 --------------------------------------------------
 
 Cluster 1: organico_bajo_edge
-Patr髇 dominante: organico (87.5%)
-Comparaci髇 con otros clusters de tipo 'organico':
+Patr贸n dominante: organico (87.5%)
+Comparaci贸n con otros clusters de tipo 'organico':
   - cv_dead_end_distances: 1.554 (mayor que el promedio de 0.026 por 5860.6%, z-score: 1.49)
   - intersection_density_km2: 0.612 (mayor que el promedio de -0.591 por 203.7%, z-score: 1.48)
   - segment_density_km2: 0.639 (mayor que el promedio de -0.592 por 208.0%, z-score: 1.48)
   - edge_density_km2: 0.623 (mayor que el promedio de -0.610 por 202.1%, z-score: 1.48)
   - node_density_km2: 0.637 (mayor que el promedio de -0.609 por 204.6%, z-score: 1.47)
 
-EXPLICACI覰 DEL NOMBRE 'organico_bajo_edge':
-  Este cluster representa una variante del patr髇 base 'organico' con la caracter韘tica distintiva 'bajo'.
+EXPLICACI脫N DEL NOMBRE 'organico_bajo_edge':
+  Este cluster representa una variante del patr贸n base 'organico' con la caracter铆stica distintiva 'bajo'.
 
 --------------------------------------------------
 
 Cluster 2: gridiron
-Patr髇 dominante: gridiron (85.7%)
-Comparaci髇 con otros clusters de tipo 'gridiron':
+Patr贸n dominante: gridiron (85.7%)
+Comparaci贸n con otros clusters de tipo 'gridiron':
   - intersection_density_km2: 1.550 (mayor que el promedio de 0.540 por 187.2%, z-score: 1.15)
   - node_density_km2: 1.542 (mayor que el promedio de 0.524 por 194.5%, z-score: 1.15)
   - segment_density_km2: 1.544 (mayor que el promedio de 0.513 por 200.7%, z-score: 1.15)
@@ -38,58 +38,58 @@ Comparaci髇 con otros clusters de tipo 'gridiron':
 --------------------------------------------------
 
 Cluster 3: organico_alto_edge
-Patr髇 dominante: organico (100.0%)
-Comparaci髇 con otros clusters de tipo 'organico':
+Patr贸n dominante: organico (100.0%)
+Comparaci贸n con otros clusters de tipo 'organico':
   - edge_length_avg: 6.114 (mayor que el promedio de 1.462 por 318.2%, z-score: 1.50)
   - street_length_avg: 6.108 (mayor que el promedio de 1.464 por 317.2%, z-score: 1.50)
   - circuity_avg: 5.136 (mayor que el promedio de 1.272 por 303.9%, z-score: 1.48)
   - mean_intersection_angle: -4.179 (menor que el promedio de -0.836 por 399.6%, z-score: -1.45)
   - std_intersection_angle: -3.784 (menor que el promedio de -1.041 por 263.6%, z-score: -1.44)
 
-EXPLICACI覰 DEL NOMBRE 'organico_alto_edge':
-  Este cluster representa una variante del patr髇 base 'organico' con la caracter韘tica distintiva 'alto'.
+EXPLICACI脫N DEL NOMBRE 'organico_alto_edge':
+  Este cluster representa una variante del patr贸n base 'organico' con la caracter铆stica distintiva 'alto'.
 
 --------------------------------------------------
 
 Cluster 4: gridiron_bajo_edge
-Patr髇 dominante: gridiron (50.0%)
-Comparaci髇 con otros clusters de tipo 'gridiron':
+Patr贸n dominante: gridiron (50.0%)
+Comparaci贸n con otros clusters de tipo 'gridiron':
   - circuity_avg: -0.260 (mayor que el promedio de -0.484 por 46.3%, z-score: 1.13)
   - std_intersection_angle: 0.146 (menor que el promedio de 0.755 por 80.7%, z-score: -1.11)
   - streets_per_node_avg: 0.071 (menor que el promedio de 0.543 por 86.9%, z-score: -1.00)
   - orthogonal_proportion: 0.034 (menor que el promedio de 0.459 por 92.6%, z-score: -0.97)
   - network_connectivity_index: 0.115 (menor que el promedio de 0.529 por 78.3%, z-score: -0.88)
 
-EXPLICACI覰 DEL NOMBRE 'gridiron_bajo_edge':
-  Este cluster representa una variante del patr髇 base 'gridiron' con la caracter韘tica distintiva 'bajo'.
+EXPLICACI脫N DEL NOMBRE 'gridiron_bajo_edge':
+  Este cluster representa una variante del patr贸n base 'gridiron' con la caracter铆stica distintiva 'bajo'.
 
 --------------------------------------------------
 
 Cluster 5: gridiron_alto_edge
-Patr髇 dominante: gridiron (33.3%)
-Comparaci髇 con otros clusters de tipo 'gridiron':
+Patr贸n dominante: gridiron (33.3%)
+Comparaci贸n con otros clusters de tipo 'gridiron':
   - street_length_avg: -0.180 (mayor que el promedio de -0.266 por 32.1%, z-score: 1.15)
   - k_avg: -1.837 (menor que el promedio de -0.292 por 528.9%, z-score: -1.14)
   - edge_length_avg: -0.179 (mayor que el promedio de -0.262 por 31.9%, z-score: 1.14)
   - angle_coefficient_variation: 2.363 (mayor que el promedio de 0.924 por 155.7%, z-score: 1.14)
   - cv_dead_end_distances: 0.491 (mayor que el promedio de -0.171 por 387.2%, z-score: 1.14)
 
-EXPLICACI覰 DEL NOMBRE 'gridiron_alto_edge':
-  Este cluster representa una variante del patr髇 base 'gridiron' con la caracter韘tica distintiva 'alto'.
+EXPLICACI脫N DEL NOMBRE 'gridiron_alto_edge':
+  Este cluster representa una variante del patr贸n base 'gridiron' con la caracter铆stica distintiva 'alto'.
 
 --------------------------------------------------
 
 Cluster 6: organico_bajo_edge
-Patr髇 dominante: organico (50.0%)
-Comparaci髇 con otros clusters de tipo 'organico':
+Patr贸n dominante: organico (50.0%)
+Comparaci贸n con otros clusters de tipo 'organico':
   - orthogonal_proportion: 0.965 (mayor que el promedio de -0.719 por 234.2%, z-score: 0.95)
   - std_intersection_angle: 0.481 (mayor que el promedio de -1.041 por 146.2%, z-score: 0.80)
   - mean_intersection_angle: 0.827 (mayor que el promedio de -0.836 por 198.8%, z-score: 0.72)
   - circuity_avg: -0.475 (menor que el promedio de 1.272 por 137.3%, z-score: -0.67)
   - k_avg: -0.816 (menor que el promedio de -0.417 por 95.7%, z-score: -0.64)
 
-EXPLICACI覰 DEL NOMBRE 'organico_bajo_edge':
-  Este cluster representa una variante del patr髇 base 'organico' con la caracter韘tica distintiva 'bajo'.
+EXPLICACI脫N DEL NOMBRE 'organico_bajo_edge':
+  Este cluster representa una variante del patr贸n base 'organico' con la caracter铆stica distintiva 'bajo'.
 
 --------------------------------------------------
 
@@ -97,7 +97,7 @@ EXPLICACI覰 DEL NOMBRE 'organico_bajo_edge':
 RESUMEN DE TODOS LOS CLUSTERS
 =========================
 
-Cluster | Nombre | Patr髇 Base | Caracter韘tica Distintiva
+Cluster | Nombre | Patr贸n Base | Caracter铆stica Distintiva
 ------------------------------------------------------------
 0 | organico | organico | N/A
 1 | organico_bajo_edge | organico | bajo
@@ -109,7 +109,7 @@ Cluster | Nombre | Patr髇 Base | Caracter韘tica Distintiva
 
 
 NOTA SOBRE NOMENCLATURA:
-- 'alto_[caracter韘tica]': Indica que este cluster tiene valores significativamente mayores
-  que el promedio de otros clusters del mismo patr髇 base para esta caracter韘tica.
-- 'bajo_[caracter韘tica]': Indica que este cluster tiene valores significativamente menores
-  que el promedio de otros clusters del mismo patr髇 base para esta caracter韘tica.
+- 'alto_[caracter铆stica]': Indica que este cluster tiene valores significativamente mayores
+  que el promedio de otros clusters del mismo patr贸n base para esta caracter铆stica.
+- 'bajo_[caracter铆stica]': Indica que este cluster tiene valores significativamente menores
+  que el promedio de otros clusters del mismo patr贸n base para esta caracter铆stica.

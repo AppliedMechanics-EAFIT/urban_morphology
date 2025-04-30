@@ -1,0 +1,97 @@
+ANÁLISIS DE COMPONENTES PRINCIPALES (PCA)
+======================================
+
+Número de componentes seleccionados: 8
+Varianza total explicada: 0.9676
+
+VARIANZA EXPLICADA POR COMPONENTE:
+  PC1: 0.5128 (51.28%)
+  PC2: 0.1661 (16.61%)
+  PC3: 0.0718 (7.18%)
+  PC4: 0.0711 (7.11%)
+  PC5: 0.0487 (4.87%)
+  PC6: 0.0369 (3.69%)
+  PC7: 0.0338 (3.38%)
+  PC8: 0.0265 (2.65%)
+
+CONTRIBUCIÓN DE VARIABLES A COMPONENTES:
+
+PC1 - Explica 51.28% de la varianza:
+  - edge_length_density: 0.2376 (contribución positiva)
+  - street_density_km2: 0.3025 (contribución positiva)
+  - node_density_km2: 0.3116 (contribución positiva)
+  - edge_density_km2: 0.2913 (contribución positiva)
+  - edge_length_avg: -0.2594 (contribución negativa)
+  - streets_per_node_avg: 0.2423 (contribución positiva)
+  - intersection_density_km2: 0.3132 (contribución positiva)
+  - segment_density_km2: 0.3111 (contribución positiva)
+  - street_length_avg: -0.2586 (contribución negativa)
+  - network_connectivity_index: 0.2401 (contribución positiva)
+  - mean_intersection_angle: 0.2314 (contribución positiva)
+  - orthogonal_proportion: 0.2557 (contribución positiva)
+
+PC2 - Explica 16.61% de la varianza:
+  - edge_length_density: 0.3106 (contribución positiva)
+  - edge_density_km2: 0.2107 (contribución positiva)
+  - k_avg: 0.3739 (contribución positiva)
+  - mean_intersection_angle: -0.2669 (contribución negativa)
+  - std_intersection_angle: 0.4801 (contribución positiva)
+  - angle_coefficient_variation: 0.4436 (contribución positiva)
+  - dead_end_ratio: -0.3357 (contribución negativa)
+  - cv_dead_end_distances: -0.2008 (contribución negativa)
+
+PC3 - Explica 7.18% de la varianza:
+  - k_avg: -0.2194 (contribución negativa)
+  - mean_intersection_angle: -0.3532 (contribución negativa)
+  - orthogonal_proportion: -0.2778 (contribución negativa)
+  - angle_coefficient_variation: 0.2636 (contribución positiva)
+  - dead_end_ratio: 0.4238 (contribución positiva)
+  - cv_dead_end_distances: 0.5810 (contribución positiva)
+
+PC4 - Explica 7.11% de la varianza:
+  - node_density_km2: -0.2032 (contribución negativa)
+  - streets_per_node_avg: 0.4625 (contribución positiva)
+  - circuity_avg: -0.3468 (contribución negativa)
+  - network_connectivity_index: 0.4696 (contribución positiva)
+  - std_intersection_angle: 0.2496 (contribución positiva)
+  - angle_coefficient_variation: 0.2062 (contribución positiva)
+  - dead_end_ratio: 0.2947 (contribución positiva)
+
+PC5 - Explica 4.87% de la varianza:
+  - edge_length_density: 0.2370 (contribución positiva)
+  - street_density_km2: 0.2107 (contribución positiva)
+  - edge_length_avg: 0.5945 (contribución positiva)
+  - street_length_avg: 0.6025 (contribución positiva)
+  - cv_dead_end_distances: 0.3211 (contribución positiva)
+
+PC6 - Explica 3.69% de la varianza:
+  - streets_per_node_avg: 0.3861 (contribución positiva)
+  - circuity_avg: 0.6621 (contribución positiva)
+  - network_connectivity_index: 0.3750 (contribución positiva)
+  - mean_intersection_angle: -0.2293 (contribución negativa)
+  - std_intersection_angle: -0.2656 (contribución negativa)
+  - orthogonal_proportion: -0.3127 (contribución negativa)
+
+PC7 - Explica 3.38% de la varianza:
+  - k_avg: 0.4782 (contribución positiva)
+  - edge_length_avg: -0.2126 (contribución negativa)
+  - street_length_avg: -0.2180 (contribución negativa)
+  - circuity_avg: 0.3254 (contribución positiva)
+  - mean_intersection_angle: 0.2859 (contribución positiva)
+  - orthogonal_proportion: 0.2206 (contribución positiva)
+  - cv_dead_end_distances: 0.5655 (contribución positiva)
+
+PC8 - Explica 2.65% de la varianza:
+  - edge_length_density: -0.2984 (contribución negativa)
+  - k_avg: -0.3730 (contribución negativa)
+  - circuity_avg: 0.4975 (contribución positiva)
+  - std_intersection_angle: 0.4448 (contribución positiva)
+  - orthogonal_proportion: 0.3870 (contribución positiva)
+  - angle_coefficient_variation: 0.2452 (contribución positiva)
+
+
+INTERPRETACIÓN DE COMPONENTES:
+La interpretación de cada componente debe hacerse considerando las variables
+con mayor contribución (positiva o negativa). Variables con contribuciones del
+mismo signo están correlacionadas positivamente en ese componente, mientras que
+variables con signos opuestos están correlacionadas negativamente.

@@ -1,0 +1,90 @@
+ANÁLISIS DE COMPONENTES PRINCIPALES (PCA)
+======================================
+
+Número de componentes seleccionados: 7
+Varianza total explicada: 0.9530
+
+VARIANZA EXPLICADA POR COMPONENTE:
+  PC1: 0.4758 (47.58%)
+  PC2: 0.1516 (15.16%)
+  PC3: 0.1000 (10.00%)
+  PC4: 0.0889 (8.89%)
+  PC5: 0.0605 (6.05%)
+  PC6: 0.0469 (4.69%)
+  PC7: 0.0292 (2.92%)
+
+CONTRIBUCIÓN DE VARIABLES A COMPONENTES:
+
+PC1 - Explica 47.58% de la varianza:
+  - edge_length_density: 0.2902 (contribución positiva)
+  - street_density_km2: 0.3054 (contribución positiva)
+  - node_density_km2: 0.3063 (contribución positiva)
+  - edge_density_km2: 0.3142 (contribución positiva)
+  - edge_length_avg: -0.2726 (contribución negativa)
+  - intersection_density_km2: 0.3248 (contribución positiva)
+  - segment_density_km2: 0.3254 (contribución positiva)
+  - street_length_avg: -0.2664 (contribución negativa)
+  - circuity_avg: -0.2235 (contribución negativa)
+  - mean_intersection_angle: 0.2166 (contribución positiva)
+  - orthogonal_proportion: 0.2307 (contribución positiva)
+
+PC2 - Explica 15.16% de la varianza:
+  - node_density_km2: -0.2404 (contribución negativa)
+  - edge_length_avg: 0.2112 (contribución positiva)
+  - streets_per_node_avg: 0.4196 (contribución positiva)
+  - street_length_avg: 0.2142 (contribución positiva)
+  - circuity_avg: -0.2492 (contribución negativa)
+  - network_connectivity_index: 0.4107 (contribución positiva)
+  - mean_intersection_angle: 0.2535 (contribución positiva)
+  - std_intersection_angle: 0.3497 (contribución positiva)
+  - orthogonal_proportion: 0.3369 (contribución positiva)
+
+PC3 - Explica 10.00% de la varianza:
+  - k_avg: 0.4613 (contribución positiva)
+  - network_connectivity_index: 0.2076 (contribución positiva)
+  - mean_intersection_angle: -0.3249 (contribución negativa)
+  - orthogonal_proportion: -0.2071 (contribución negativa)
+  - angle_coefficient_variation: 0.3777 (contribución positiva)
+  - dead_end_ratio: -0.4368 (contribución negativa)
+  - cv_dead_end_distances: -0.4368 (contribución negativa)
+
+PC4 - Explica 8.89% de la varianza:
+  - street_density_km2: 0.2099 (contribución positiva)
+  - mean_intersection_angle: -0.3358 (contribución negativa)
+  - angle_coefficient_variation: 0.5769 (contribución positiva)
+  - dead_end_ratio: 0.4257 (contribución positiva)
+  - cv_dead_end_distances: 0.3647 (contribución positiva)
+
+PC5 - Explica 6.05% de la varianza:
+  - edge_length_density: 0.3212 (contribución positiva)
+  - k_avg: 0.5643 (contribución positiva)
+  - edge_length_avg: 0.3007 (contribución positiva)
+  - streets_per_node_avg: -0.2267 (contribución negativa)
+  - street_length_avg: 0.3190 (contribución positiva)
+  - angle_coefficient_variation: -0.2167 (contribución negativa)
+  - dead_end_ratio: -0.2181 (contribución negativa)
+  - cv_dead_end_distances: 0.3779 (contribución positiva)
+
+PC6 - Explica 4.69% de la varianza:
+  - streets_per_node_avg: -0.3263 (contribución negativa)
+  - network_connectivity_index: -0.3150 (contribución negativa)
+  - std_intersection_angle: 0.5341 (contribución positiva)
+  - orthogonal_proportion: 0.3671 (contribución positiva)
+  - angle_coefficient_variation: 0.3449 (contribución positiva)
+  - dead_end_ratio: -0.3939 (contribución negativa)
+
+PC7 - Explica 2.92% de la varianza:
+  - street_density_km2: -0.2240 (contribución negativa)
+  - k_avg: 0.4587 (contribución positiva)
+  - edge_length_avg: -0.3675 (contribución negativa)
+  - street_length_avg: -0.3720 (contribución negativa)
+  - circuity_avg: 0.5155 (contribución positiva)
+  - dead_end_ratio: 0.2696 (contribución positiva)
+  - cv_dead_end_distances: 0.2118 (contribución positiva)
+
+
+INTERPRETACIÓN DE COMPONENTES:
+La interpretación de cada componente debe hacerse considerando las variables
+con mayor contribución (positiva o negativa). Variables con contribuciones del
+mismo signo están correlacionadas positivamente en ese componente, mientras que
+variables con signos opuestos están correlacionadas negativamente.

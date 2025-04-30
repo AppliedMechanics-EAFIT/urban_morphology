@@ -2326,12 +2326,15 @@ def prepare_clustering_features_improved(stats_dict, graph_dict):
 
     return X_normalized, poly_ids, feature_names
 
-def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
+def find_optimal_k_improved(X_scaled, max_k=10, min_k=2, output_dir='filename'):
     """
     Encuentra el número óptimo de clusters usando silhouette score,
     calinski-harabasz index y modularity score (para redes).
     """
    
+     # Crear directorio para resultados
+    os.makedirs(output_dir, exist_ok=True)
+
     
     results = []
     
@@ -2396,7 +2399,7 @@ def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
     axs[1, 1].set_title('Método del codo')
     
     plt.tight_layout()
-    plt.savefig('Resultados/urbano_pattern_cluster/cluster_metrics.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir,'cluster_metrics.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
     # Normalizar métricas para combinarlas
@@ -2414,14 +2417,10 @@ def find_optimal_k_improved(X_scaled, max_k=10, min_k=2):
     print(f"\nK óptimo según score combinado: {optimal_k}")
     return optimal_k
 
-
-
-
-
 def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True, 
                                pca_variance_threshold=0.95, max_pca_components=8, 
-                               visualize=True, use_elbow_method=False
-):
+                               visualize=True, use_elbow_method=False,output_dir="Resultados/urbano_pattern_cluster"
+    ):
     """
     Realiza clustering mejorado con KMeans y análisis de características importantes
     
@@ -2445,9 +2444,15 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
         Si se debe usar el método del codo para determinar componentes
     """
     
+     # Crear directorio para resultados
+    os.makedirs(output_dir, exist_ok=True)
+
     # Eliminar filas con NaN o infinitos (tu código original)
     valid_rows = ~np.any(np.isnan(X) | np.isinf(X), axis=1)
     X_clean = X[valid_rows]
+    if X_clean.shape[0] < 3:
+        raise ValueError(f"El conjunto de datos limpio tiene solo {X_clean.shape[0]} filas. Se requieren al menos 3 para clustering.")
+
     if X_clean.shape[0] < X.shape[0]:
         print(f"Eliminadas {X.shape[0] - X_clean.shape[0]} filas con valores no válidos")
     
@@ -2473,7 +2478,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
             plt.grid(True)
             plt.legend()
             plt.tight_layout()
-            plt.savefig('Resultados/urbano_pattern_cluster/pca_variance_explained.png', dpi=300)
+            plt.savefig(os.path.join(output_dir,'pca_variance_explained.png'), dpi=300)
             plt.close()
         
         # Método del codo para PCA si se solicita
@@ -2495,7 +2500,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
                 plt.grid(True)
                 plt.legend()
                 plt.tight_layout()
-                plt.savefig('Resultados/urbano_pattern_cluster/pca_elbow_method.png', dpi=300)
+                plt.savefig(os.path.join(output_dir,'pca_elbow_method.png'), dpi=300)
                 plt.close()
         else:
             # Criterio basado en umbral de varianza
@@ -2518,7 +2523,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
         print(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}")
    
         # Guardar información de los componentes PCA en un archivo de texto
-        with open('Resultados/urbano_pattern_cluster/pca_analysis.txt', 'w') as f:
+        with open(os.path.join(output_dir,'pca_analysis.txt'), 'w') as f:
             f.write(f"ANÁLISIS DE COMPONENTES PRINCIPALES (PCA)\n")
             f.write(f"======================================\n\n")
             f.write(f"Número de componentes seleccionados: {n_components}\n")
@@ -2571,7 +2576,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
             sns.heatmap(components, cmap='coolwarm', annot=True, fmt=".2f")
             plt.title('Contribución de variables a componentes principales')
             plt.tight_layout()
-            plt.savefig('Resultados/urbano_pattern_cluster/pca_components_contributions.png', dpi=300, bbox_inches='tight')
+            plt.savefig(os.path.join(output_dir,'pca_components_contributions.png'), dpi=300, bbox_inches='tight')
             plt.close()
     else:
         X_reduced = X_scaled
@@ -2579,7 +2584,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
     # Encontrar número óptimo de clusters si no se proporciona
     if n_clusters is None:
         # Asumimos que la función find_optimal_k_improved está definida en otro lugar
-        n_clusters = find_optimal_k_improved(X_reduced, max_k=8, min_k=3)
+        n_clusters = find_optimal_k_improved(X_reduced, max_k=8, min_k=3, output_dir=output_dir)
     
     print(f"\nRealizando clustering KMeans con {n_clusters} clusters")
     
@@ -2656,7 +2661,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
             plt.xlabel('PC1')
             plt.ylabel('PC2')
             plt.tight_layout()
-            plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_pca.png', dpi=300, bbox_inches='tight')
+            plt.savefig(os.path.join(output_dir,'cluster_visualization_pca.png'), dpi=300, bbox_inches='tight')
             plt.close()
             
             # Adicionalmente, podemos usar t-SNE como visualización complementaria
@@ -2676,7 +2681,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
                 plt.xlabel('t-SNE 1')
                 plt.ylabel('t-SNE 2')
                 plt.tight_layout()
-                plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_tsne_improved.png', dpi=300, bbox_inches='tight')
+                plt.savefig(os.path.join(output_dir,'cluster_visualization_tsne_improved.png'), dpi=300, bbox_inches='tight')
                 plt.close()
         else:
             # Si ya tenemos 2 dimensiones, usar directamente
@@ -2689,7 +2694,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
             plt.xlabel('Dimensión 1')
             plt.ylabel('Dimensión 2')
             plt.tight_layout()
-            plt.savefig('Resultados/urbano_pattern_cluster/cluster_visualization_direct.png', dpi=300, bbox_inches='tight')
+            plt.savefig(os.path.join(output_dir,'cluster_visualization_direct.png'), dpi=300, bbox_inches='tight')
             plt.close()
         
         # Visualizar distribución de características más importantes por cluster
@@ -2722,11 +2727,10 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
 
         # Ajustar el diseño
         plt.tight_layout()
-        plt.savefig('Resultados/urbano_pattern_cluster/feature_distributions_by_cluster.png', dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(output_dir,'feature_distributions_by_cluster.png'), dpi=300, bbox_inches='tight')
         plt.close()
 
     return n_clusters, cluster_labels, centers_df, sorted_features
-
 
 def urban_pattern_clustering(
     stats_dict, 
@@ -2752,7 +2756,7 @@ def urban_pattern_clustering(
     
     # Realizar clustering mejorado
     n_clusters, cluster_labels, centers_df, important_features = optimal_clustering_improved(
-        X, feature_names, n_clusters=n_clusters
+        X, feature_names, n_clusters=n_clusters, output_dir=output_dir
     )
     
     # Clasificación original de patrones
@@ -3122,12 +3126,12 @@ def urban_pattern_clustering(
 # Lista de ciudades a procesar
 ciudades = [
     "Moscow_ID",
-    "Philadelphia_PA",
-    "Peachtree_GA",
-    "Boston_MA",
-    "Chandler_AZ",
-    "Salt_Lake_UT",
-    "Santa_Fe_NM"
+    # "Philadelphia_PA",
+    # "Peachtree_GA",
+    # "Boston_MA",
+    # "Chandler_AZ",
+    # "Salt_Lake_UT",
+    # "Santa_Fe_NM"
 ]
 
 def main():
