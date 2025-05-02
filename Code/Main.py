@@ -30,7 +30,7 @@ import fiona
 #     "Pasto, Colombia",
 # ]
 
-# # Available metrics
+# # # Available metrics
 metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "slc", "lsc"]
 
 
@@ -49,14 +49,13 @@ metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "sl
 #             print(f"\nNode metric: {metric.upper()}")
 
 #             # calculate and save centrality DATA
-#             Numeric_coefficient_centrality(graph, metric, place_name)
-
+#             Numeric_coefficient_centrality(graph, metric, place_name, weight='length')
+#             print(place_name)
 #             # Use the current metric and city in the functions
 #             plot_geo_centrality_heatmap(
 #                 graph=graph,
 #                 metric=metric,
 #                 place_name=place_name,
-#                 weight='length',
 #                 cmap='inferno',
 #                 resolution=2080,  # High resolution for more detail
 #                 log_scale=True,
@@ -68,8 +67,7 @@ metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "sl
 #             plot_centrality(
 #                 graph=graph,
 #                 metric=metric,
-#                 place_name=place_name,
-#                 weight='length'
+#                 place_name=place_name
 #             )
 
 #         # 3. Calculate edge centrality after node metrics
@@ -77,17 +75,24 @@ metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "sl
 #         edge_data = compute_edge_betweenness_data(graph, metric="betweenness", weight='length')
 #         plot_edge_centrality(edge_data, place_name)
 
-    # except Exception as e:
-    #     print(f"Error processing {place_name}: {e}")
-    #     continue
+#     except Exception as e:
+#         print(f"Error processing {place_name}: {e}")
+#         continue
+
+
+
+
+
+
+
 
 geojson_files = {
-        # "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
-        # "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
-        # "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
-        # "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
-        # "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
-        # "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
+        "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
+        "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
+        "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
+        "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
+        "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
+        "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
         "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
     }
 
@@ -107,24 +112,22 @@ for geojson_path, pretty_name in geojson_files.items():
             #calculate and save centrality DATA
             Numeric_coefficient_centrality(graph, metric, pretty_name)
             # Usa el nombre bonito aquí
-            # plot_geo_centrality_heatmap(
-            #     graph=graph,
-            #     metric=metric,
-            #     place_name=pretty_name,
-            #     weight='length',
-            #     cmap='inferno',
-            #     resolution=1080,
-            #     log_scale=True,
-            #     road_opacity=0.25,
-            #     buffer_ratio=0.005,
-            #     smoothing=1.5
-            # )
-            # plot_centrality(
-            #     graph=graph,
-            #     metric=metric,
-            #     place_name=pretty_name,
-            #     weight='length'
-            # )
+            plot_geo_centrality_heatmap(
+                graph=graph,
+                metric=metric,
+                place_name=pretty_name,
+                cmap='inferno',
+                resolution=1080,
+                log_scale=True,
+                road_opacity=0.25,
+                buffer_ratio=0.005,
+                smoothing=1.5
+            )
+            plot_centrality(
+                graph=graph,
+                metric=metric,
+                place_name=pretty_name
+            )
             
     except Exception as e:
         print(f"Error processing {pretty_name}: {e}")

@@ -1,7 +1,7 @@
 import networkx as nx
 import osmnx as ox
 import matplotlib.pyplot as plt
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
 import os
@@ -19,7 +19,7 @@ from shapely.ops import unary_union
 from scipy.ndimage import gaussian_filter
 from scipy.spatial import ConvexHull
 from sklearn.preprocessing import MinMaxScaler
-
+import pandas as pd
 
 
 def calculate_centrality(graph, metric, weight='length'):
@@ -108,9 +108,7 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
     # 1. Centrality Calculation with Robust Handling
     # =============================================
     
-
-    # Calculate centrality
-    centrality = calculate_centrality(graph, metric, weight=weight)
+    centrality = load_centrality_from_excel(place_name, metric)
 
     # =============================================
     # 1.5 Normalize centrality values to [0,1] range
@@ -320,6 +318,127 @@ def plot_centrality(graph, metric, place_name, weight='length' ,cmap=plt.cm.jet)
     )
 
     print(f"Optimized visualization saved in: {ruta_completa}")
+
+def load_centrality_from_excel(place_name, metric):
+    """
+    Load centrality values from the Excel file using pandas for better performance.
+    
+    Parameters:
+        place_name (str): Name of the city/location
+        metric (str): Centrality metric to load ('degree', 'betweenness', 'closeness', etc.)
+    
+    Returns:
+        dict: Dictionary mapping node IDs to centrality values
+    """
+    # Mapping of metrics to their column positions in the Excel
+    metric_to_column = {
+        'degree': 0,        # Grado
+        'betweenness': 1,   # Intermediación
+        'closeness': 2,     # Cercanía
+        'pagerank': 3,      # PageRank
+        'eigenvector': 4,   # Vector Propio
+        'slc': 5,           # Centralidad semilocal
+        'lsc': 6            # Centralidad local ponderada
+    }
+    
+    # Check if the metric is valid
+    if metric not in metric_to_column:
+        raise ValueError(f"Invalid metric: {metric}. Valid options are: {list(metric_to_column.keys())}")
+    
+    # Calculate the column index for the metric (0-based)
+    col_idx = metric_to_column[metric]
+    
+    # Construct the file path
+    file_path = f"Metrics_and_Graphs_Cities/{place_name}/Metrics/Centrality_{place_name}.xlsx"
+    
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Excel file not found: {file_path}")
+    
+    print(f"Loading centrality values from: {file_path}")
+    
+    try:
+        # Use pandas to read the Excel file - much faster than openpyxl for large files
+        # We'll read starting from row 3 (header row) and use header=None to avoid using the headers as column names
+        df = pd.read_excel(file_path, header=None, skiprows=2)
+        
+        # The excel has a pattern where each metric has two columns: Node ID and Value
+        # So we need to calculate which columns to use based on the metric index
+        node_col_idx = col_idx * 2    # 0-based index for pandas
+        value_col_idx = col_idx * 2 + 1
+        
+        # Extract just the two columns we need (node IDs and values)
+        if node_col_idx >= df.shape[1] or value_col_idx >= df.shape[1]:
+            raise ValueError(f"Excel file doesn't have columns for {metric} (needed cols {node_col_idx} and {value_col_idx})")
+        
+        # Get the subset of data starting from row 1 (skipping the "Nodo"/"Valor" header)
+        metric_df = df.iloc[1:, [node_col_idx, value_col_idx]].dropna()
+        
+        # Convert to dictionary
+        centrality = {}
+        for _, row in metric_df.iterrows():
+            node_id = row.iloc[0]
+            value = row.iloc[1]
+            
+            # Skip if either is None
+            if pd.isnull(node_id) or pd.isnull(value):
+                continue
+                
+            # Convert node ID to the correct type (assuming it's an integer)
+            if isinstance(node_id, str) and node_id.isdigit():
+                node_id = int(node_id)
+            elif isinstance(node_id, float) and node_id.is_integer():
+                node_id = int(node_id)
+            
+            try:
+                centrality[node_id] = float(value)
+            except (ValueError, TypeError):
+                print(f"Warning: Could not convert value '{value}' to float for node {node_id}")
+                continue
+        
+    except Exception as e:
+        print(f"Error reading Excel with pandas: {e}")
+        print("Falling back to openpyxl method...")
+        
+        # Fallback to openpyxl for compatibility
+        wb = load_workbook(file_path, read_only=True, data_only=True)
+        ws = wb.active
+        
+        # Calculate column indices
+        base_col = col_idx * 2 + 1  # 1-based index for openpyxl
+        node_col = base_col
+        value_col = base_col + 1
+        
+        # Extract data with a max row limit to avoid infinite loops
+        centrality = {}
+        max_rows = 1000000  # Safety limit
+        
+        for row in range(4, max_rows):  # Start from row 4 (after headers)
+            node_val = ws.cell(row=row, column=node_col).value
+            
+            # Stop if we've reached an empty row
+            if node_val is None:
+                break
+                
+            value_val = ws.cell(row=row, column=value_col).value
+            
+            # Skip if value is None
+            if value_val is None:
+                continue
+                
+            # Convert node ID if needed
+            if isinstance(node_val, str) and node_val.isdigit():
+                node_val = int(node_val)
+            
+            try:
+                centrality[node_val] = float(value_val)
+            except (ValueError, TypeError):
+                continue
+        
+        wb.close()
+    
+    print(f"Loaded {len(centrality)} centrality values for {metric}")
+    return centrality
 
 def compute_edge_betweenness_data(graph, metric="betweenness", weight=None):
     """
@@ -577,72 +696,121 @@ def calculate_eigenvector_centrality(graph):
     
     return centrality
 
-def Numeric_coefficient_centrality(graph, metric, place_name):
-    # Calcular todas las métricas
-    metricas = calculate_centrality(graph, metric, weight='weight')
-
+def Numeric_coefficient_centrality(graph, metric, place_name, weight='length' ):
+    """
+    Esta función calcula una métrica de centralidad específica y la coloca 
+    en la columna correcta del Excel.
+    """
+    # Calcular la métrica solicitada
+    metricas = calculate_centrality(graph, metric, weight=weight)
     
-    # Crear libro de Excel
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Centralidades"
+    print(f"Calculando métrica: {metric}")
+    print(f"Estructura de metricas: {type(metricas)}")
+    if isinstance(metricas, dict):
+        print(f"Número de nodos con valores: {len(metricas)}")
+        # Muestra algunos ejemplos de valores
+        sample_items = list(metricas.items())[:3]
+        print(f"Ejemplos de valores: {sample_items}")
     
-    # Configurar cabeceras
-    columnas = [
-        ("Grado", 2),
-        ("Intermediación", 2),
-        ("Cercanía", 2),
-        ("PageRank", 2),
-        ("Vector Propio", 2),
-        ("Centralidad semilocal",2),
-        ("Centraldad local ponderada", 2)
-    ]
+    # Mapeo de métricas a columnas del Excel (índice base 0)
+    metrica_a_columna = {
+        'degree': 0,        # Grado
+        'betweenness': 1,   # Intermediación
+        'closeness': 2,     # Cercanía
+        'pagerank': 3,      # PageRank
+        'eigenvector': 4,   # Vector Propio
+        'slc': 5,           # Centralidad semilocal
+        'lsc': 6            # Centralidad local ponderada
+    }
     
-    # Escribir cabecera principal
-    ws.merge_cells('A1:N1')
-    ws['A1'] = place_name
-    ws['A1'].alignment = Alignment(horizontal='center')
+    # Verificar que la métrica solicitada esté en el mapeo
+    if metric not in metrica_a_columna:
+        print(f"Error: Métrica '{metric}' no reconocida.")
+        return None
     
-    # Escribir cabeceras de métricas
-    start_col = 1
-    for nombre, span in columnas:
-        ws.merge_cells(start_row=2, start_column=start_col, end_row=2, end_column=start_col+1)
-        ws.cell(row=2, column=start_col, value=nombre)
-        ws.cell(row=2, column=start_col).alignment = Alignment(horizontal='center')
+    # Determinar la columna donde se debe escribir la métrica
+    indice_columna = metrica_a_columna[metric]
+    
+    # Crear libro de Excel o cargar uno existente si ya existe
+    ruta_carpeta = f"Metrics_and_Graphs_Cities/{place_name}/Metrics"
+    nombre_archivo = f"Centrality_{place_name}.xlsx"
+    ruta_completa = os.path.join(ruta_carpeta, nombre_archivo)
+    
+    # Verificar si el archivo ya existe
+    archivo_existe = os.path.exists(ruta_completa)
+    
+    if archivo_existe:
+        try:
+            # Cargar el archivo existente
+            print("Cargando archivo existente...")
+            wb = load_workbook(ruta_completa)
+            ws = wb.active
+        except Exception as e:
+            print(f"Error al cargar el archivo existente: {e}")
+            # Si falla al cargar, crear uno nuevo
+            archivo_existe = False
+    
+    if not archivo_existe:
+        # Crear carpeta si no existe
+        if not os.path.exists(ruta_carpeta):
+            os.makedirs(ruta_carpeta)
+            
+        # Crear un nuevo libro de Excel
+        print("Creando nuevo archivo Excel...")
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Centralidades"
         
-        # Subcabeceras
-        ws.cell(row=3, column=start_col, value="Nodo")
-        ws.cell(row=3, column=start_col+1, value="Valor")
-        start_col += 2
+        # Configurar cabeceras
+        columnas = [
+            "Grado", "Intermediación", "Cercanía", "PageRank", 
+            "Vector Propio", "Centralidad semilocal", "Centraldad local ponderada"
+        ]
+        
+        # Escribir cabecera principal
+        ws.merge_cells('A1:N1')
+        ws['A1'] = place_name
+        ws['A1'].alignment = Alignment(horizontal='center')
+        
+        # Escribir cabeceras de columnas
+        for idx, nombre in enumerate(columnas):
+            col_letra = get_column_letter(idx*2 + 1)
+            # Combinar celdas para el título de la métrica
+            ws.merge_cells(f'{col_letra}2:{get_column_letter(idx*2 + 2)}2')
+            ws.cell(row=2, column=idx*2 + 1).value = nombre
+            ws.cell(row=2, column=idx*2 + 1).alignment = Alignment(horizontal='center')
+            
+            # Subcabeceras
+            ws.cell(row=3, column=idx*2 + 1).value = "Nodo"
+            ws.cell(row=3, column=idx*2 + 2).value = "Valor"
     
-    # Escribir datos
+    # Ahora escribimos los datos para la métrica específica
+    # Determinar las columnas donde escribir (nodo y valor)
+    col_nodo = indice_columna * 2 + 1
+    col_valor = indice_columna * 2 + 2
+    
+    # Limpiar datos anteriores para esta métrica (si los hay)
+    # Comenzamos desde la fila 4 porque las filas 1-3 son cabeceras
     fila = 4
-    for nodo in graph.nodes():
-        col = 1
-        for metrica in ['degree', 'betweenness', 'closeness', 'pagerank', 'eigenvector', "slc" , "lsc"]:
-            try:
-                valor = metricas[metrica].get(nodo, 0)
-            except KeyError:
-                valor = 0
-                
-            ws.cell(row=fila, column=col, value=nodo)
-            ws.cell(row=fila, column=col+1, value=valor)
-            col += 2
+    while ws.cell(row=fila, column=col_nodo).value is not None:
+        ws.cell(row=fila, column=col_nodo).value = None
+        ws.cell(row=fila, column=col_valor).value = None
+        fila += 1
+    
+    # Escribir los nuevos datos
+    fila = 4
+    for nodo, valor in metricas.items():
+        ws.cell(row=fila, column=col_nodo).value = nodo
+        ws.cell(row=fila, column=col_valor).value = valor
         fila += 1
     
     # Ajustar anchos de columna
-    for idx in range(len(columnas)*2):
+    for idx in range(7*2):
         ws.column_dimensions[get_column_letter(idx+1)].width = 15
     
-    # Crear la carpeta si no existe
-    ruta_carpeta = f"Metrics_and_Graphs_Cities/{place_name}/Metrics"
-    if not os.path.exists(ruta_carpeta):
-        os.makedirs(ruta_carpeta)
-    
-    # Guardar archivo en la ruta especificada
-    nombre_archivo = f"Centrality_{place_name}.xlsx"
-    ruta_completa = os.path.join(ruta_carpeta, nombre_archivo)
+    # Guardar el archivo
     wb.save(ruta_completa)
+    print(f"Archivo guardado en: {ruta_completa}")
     
     return ruta_completa
 
@@ -793,7 +961,7 @@ def plot_geo_centrality_heatmap(graph, metric, place_name, weight='length', cmap
     """
     
     # Calculate centrality
-    centrality = calculate_centrality(graph, metric, weight=weight)
+    centrality = load_centrality_from_excel(place_name, metric)
     
     # 2. Extract node coordinates and centrality values
     coords = []
