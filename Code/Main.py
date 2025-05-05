@@ -3,7 +3,7 @@
 ## Main file to executethe different programs and functions
 from Lecture_and_Cleaning_ABC import CiudadesABC, read_nodes_from_excel,clean_and_filter_data
 from network_Indicators import plot_centrality, Numeric_coefficient_centrality,compute_edge_betweenness_data, plot_edge_centrality, plot_geo_centrality_heatmap
-from Polygon_analisis import graph_from_geojson, process_selected_layers,get_street_network_metrics_per_polygon,parallel_process_geojsons,procesar_geojson_files
+from Polygon_analisis import graph_from_geojson, process_selected_layers,get_street_network_metrics_per_polygon,parallel_process_geojsons,post_processing_stats,process_city_geojsons
 import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -23,8 +23,9 @@ import numpy as np
 from shapely.geometry import Polygon, MultiPolygon
 from matplotlib import cm
 import fiona
-
-
+import pandas as pd
+from typing import Union, List, Dict, Any                               
+    
 # cities = [
 #     "Medellin, Colombia",
 #     "Pasto, Colombia",
@@ -86,52 +87,53 @@ metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "sl
 
 
 
-geojson_files = {
-        "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
-        "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
-        "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
-        "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
-        "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
-        "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
-        "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
-    }
+# geojson_files = {
+#         "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
+#         "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
+#         "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
+#         "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
+#         "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
+#         "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
+#         "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
+#     }
 
 
 
-for geojson_path, pretty_name in geojson_files.items():
-    try:
-        print(f"\n{'='*40}\nProcessing: {pretty_name}\n{'='*40}")
+# for geojson_path, pretty_name in geojson_files.items():
+#     try:
+#         print(f"\n{'='*40}\nProcessing: {pretty_name}\n{'='*40}")
         
-        # 1. Get graph from GeoJSON
-        graph, _ = graph_from_geojson(geojson_path)  # ya no necesitas place_name aquí
+#         # 1. Get graph from GeoJSON
+#         graph, _ = graph_from_geojson(geojson_path)  
 
-        # 2. Process node metrics
-        for metric in metrics:
-            print(f"\nNode metric: {metric.upper()}")
+#         # 2. Process node metrics
+#         for metric in metrics:
+#             print(f"\nNode metric: {metric.upper()}")
             
-            #calculate and save centrality DATA
-            Numeric_coefficient_centrality(graph, metric, pretty_name)
-            # Usa el nombre bonito aquí
-            plot_geo_centrality_heatmap(
-                graph=graph,
-                metric=metric,
-                place_name=pretty_name,
-                cmap='inferno',
-                resolution=1080,
-                log_scale=True,
-                road_opacity=0.25,
-                buffer_ratio=0.005,
-                smoothing=1.5
-            )
-            plot_centrality(
-                graph=graph,
-                metric=metric,
-                place_name=pretty_name
-            )
-            
-    except Exception as e:
-        print(f"Error processing {pretty_name}: {e}")
-        continue
+#             #calculate and save centrality DATA
+#             Numeric_coefficient_centrality(graph, metric, pretty_name)
+
+           
+#             plot_geo_centrality_heatmap(
+#                 graph=graph,
+#                 metric=metric,
+#                 place_name=pretty_name,
+#                 cmap='inferno',
+#                 resolution=1080,
+#                 log_scale=True,
+#                 road_opacity=0.25,
+#                 buffer_ratio=0.005,
+#                 smoothing=1.5
+#             )
+#             plot_centrality(
+#                 graph=graph,
+#                 metric=metric,
+#                 place_name=pretty_name
+#             )
+        
+#     except Exception as e:
+#         print(f"Error processing {pretty_name}: {e}")
+#         continue
 
 
 
@@ -139,11 +141,6 @@ for geojson_path, pretty_name in geojson_files.items():
 
 
 
-
-
-
-# # Data excel with centrality values for each node
-# archivo_resultado = coefficient_centrality(graph, "all", place_name)
 
 # # The ABC of movility DATA filtered
 # output_file_ABC="Data_ABC/Data_The_ABC_cleaned.xlsx"
@@ -201,51 +198,63 @@ base_folder = "MLowry_files"
 #         print(f"Error al procesar {gdb_file}: {str(e)}")
 #         continue
 
-# # Ejemplo de uso
-# if __name__ == '__main__':
-#     # Diccionario de archivos GeoJSON
-#     geojson_files = {
-#         "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
-#         "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
-#         "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
-#         "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
-#         "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
-#         "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
-#         "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
-#     }
 
-#     # Procesar en paralelo (ajusta los parámetros según tu CPU)
-#     output_files = parallel_process_geojsons(
-#         geojson_files, 
-#         network_type='drive', 
-#         max_city_workers=None,  # No se usa en esta implementación
-#         max_polygon_workers=None  # Usar número máximo de procesos disponibles para polígonos
-#     )
 
-#     # Imprimir resultados
-#     for path in output_files:
-#         print(f"Archivo generado: {path}")
 
-# if __name__ == "__main__":
-#     # Definir diccionario con archivos a procesar
-#     geojson_files2 = {
-#     "Polygons_analysis/Moscow_ID/stats/Polygon_Stats_for_Moscow_ID.txt": "Moscow, ID",
-#     "Polygons_analysis/Santa_Fe_NM/stats/Polygon_Stats_for_Santa_Fe_NM.txt": "Santa Fe, NM",
-#     "Polygons_analysis/Peachtree_GA/stats/Polygon_Stats_for_Peachtree_GA.txt": "Peachtree, GA",
-#     "Polygons_analysis/Chandler_AZ/stats/Polygon_Stats_for_Chandler_AZ.txt": "Chandler, AZ",
-#     "Polygons_analysis/Salt_Lake_UT/stats/Polygon_Stats_for_Salt_Lake_UT.txt": "Salt Lake, UT",
-#     "Polygons_analysis/Boston_MA/stats/Polygon_Stats_for_Boston_MA.txt": "Boston, MA",
-#     "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt": "Philadelphia, PA"
 
-#     }
 
-#     output_folder = None
+if __name__ == '__main__':
+    # Dictionary of GeoJSON files
+    geojson_files = {
+        "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
+        "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
+        "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
+        "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
+        "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
+        "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
+        "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
+    }
+    # Dictionary of Stats txt files without sorting and cleaning 
+    Stats_preprocessing = {
+        "Polygons_analysis/Moscow_ID/stats/Polygon_Stats_for_Moscow_ID.txt": "Moscow, ID",
+        "Polygons_analysis/Santa_Fe_NM/stats/Polygon_Stats_for_Santa_Fe_NM.txt": "Santa Fe, NM",
+        "Polygons_analysis/Peachtree_GA/stats/Polygon_Stats_for_Peachtree_GA.txt": "Peachtree, GA",
+        "Polygons_analysis/Chandler_AZ/stats/Polygon_Stats_for_Chandler_AZ.txt": "Chandler, AZ",
+        "Polygons_analysis/Salt_Lake_UT/stats/Polygon_Stats_for_Salt_Lake_UT.txt": "Salt Lake, UT",
+        "Polygons_analysis/Boston_MA/stats/Polygon_Stats_for_Boston_MA.txt": "Boston, MA",
+        "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt": "Philadelphia, PA"
+
+    }
+
+    # Calculate polygon stats with OSMX
+    output_files = parallel_process_geojsons(
+        geojson_files, 
+        network_type='drive', 
+        max_city_workers=None,  
+        max_polygon_workers=None  
+    )
+
+    # Print results
+    for path in output_files:
+        print(f"Generated file: {path}")
+
+    # Main folder for cities
+    output_folder = None
     
-#     # Procesar los archivos
-#     procesar_geojson_files(geojson_files2, output_folder)
+    # After the calculation this function sorts and cleans the data
+    post_processing_stats(Stats_preprocessing, output_folder)
 
+    # Extract the available Mobility data for each polygon
+    mobility_data = process_city_geojsons(geojson_files)
 
+    # Summary of mobility information processing
+    print("\nSummary of mobility information processing:")
+    for city, df in mobility_data.items():
+        print(f"{city}: {len(df)} records, {df.shape[1]} columns")
 
+    
+
+    
 
 
 

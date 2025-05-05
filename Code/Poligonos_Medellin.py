@@ -149,207 +149,6 @@ def load_polygon_stats_from_txt(stats_txt):
 
     return stats_dict
 
-# def classify_polygon(poly_stats):
-#     """
-#     Clasifica un polígono (o sub-polígono) en:
-#       'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
-#     usando reglas de decisión basadas en diversas estadísticas.
-
-#     Parámetros:
-#     -----------
-#     poly_stats : dict con claves:
-#       - "streets_per_node_avg" (float)
-#       - "streets_per_node_counts" (str o dict)
-#       - "streets_per_node_proportions" (str o dict)
-#       - "intersection_density_km2" (float)
-#       - "circuity_avg" (float)
-#       - "k_avg" (float)
-#       - "street_density_km2" (float)
-#       - etc.
-
-#     Retorna:
-#     --------
-#     str : 'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
-#     """
-
-#     # -------------------------------------------------------------------
-#     # 1. Parsear fields que podrían venir como string en lugar de dict
-#     # -------------------------------------------------------------------
-#     spn_counts_str = poly_stats.get("streets_per_node_counts", "{}")
-#     spn_props_str = poly_stats.get("streets_per_node_proportions", "{}")
-
-#     if isinstance(spn_counts_str, str):
-#         try:
-#             spn_counts = ast.literal_eval(spn_counts_str)
-#         except:
-#             spn_counts = {}
-#     else:
-#         spn_counts = spn_counts_str
-
-#     if isinstance(spn_props_str, str):
-#         try:
-#             spn_props = ast.literal_eval(spn_props_str)
-#         except:
-#             spn_props = {}
-#     else:
-#         spn_props = spn_props_str
-
-#     # -------------------------------------------------------------------
-#     # 2. Extraer Variables Numéricas Principales
-#     # -------------------------------------------------------------------
-#     streets_per_node = float(poly_stats.get("streets_per_node_avg", 0.0))
-#     intersection_density = float(poly_stats.get("intersection_density_km2", 0.0))
-#     circuity = float(poly_stats.get("circuity_avg", 1.0))
-#     k_avg = float(poly_stats.get("k_avg", 0.0))
-#     street_density = float(poly_stats.get("street_density_km2", 0.0))
-
-#     # Ejemplo de proporciones de nodos grado 1 y 4
-#     prop_deg1 = float(spn_props.get(1, 0.0))  # nodos con 1 calle
-#     prop_deg4 = float(spn_props.get(4, 0.0))  # nodos con 4 calles
-
-#     # -------------------------------------------------------------------
-#     # 3. Árbol de Decisión (umbrales orientativos)
-#     # -------------------------------------------------------------------
-#     #
-#     # A. Detectar cul-de-sac
-#     #    Reglas ejemplo:
-#     #    - Proporción de nodos grado 1 alta (>= 0.40)
-#     #    - O (streets_per_node < 2.1 y intersection_density < 30)
-#     #
-#     if prop_deg1 >= 0.40 or (streets_per_node < 2.1 and intersection_density < 30):
-#         return "cul_de_sac"
-
-#     # B. Detectar gridiron
-#     #    - Poca sinuosidad: circuity < 1.03
-#     #    - Buena conectividad local: streets_per_node >= 3.0
-#     #    - intersection_density >= 50 (bastante intersecciones)
-#     #    - prop_deg4 > 0.30 ó 0.40 => muchos nodos con 4 salidas
-#     #
-#     if (circuity < 1.03) and (streets_per_node >= 3.0 or intersection_density >= 50 or prop_deg4 >= 0.30):
-#         return "gridiron"
-
-#     # C. Detectar orgánico
-#     #    - Calles sinuosas => circuity > 1.05
-#     #    - k_avg > 3.0 => muchos nodos con 3+ aristas
-#     #    - street_density > 3000 => malla densa
-#     #
-#     if (circuity > 1.05) and (k_avg > 3.0) and (street_density > 3000):
-#         return "organico"
-
-#     # D. Caso general => híbrido
-#     return "hibrido"
-
-
-# def classify_polygon(poly_stats):
-#     """
-#     Clasifica un polígono (o sub-polígono) en:
-#       'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
-#     basado en la teoría de patrones urbanos y métricas morfológicas.
-
-#     Parámetros:
-#     -----------
-#     poly_stats : dict con claves:
-#       - "streets_per_node_avg" (float): Promedio de calles por nodo
-#       - "streets_per_node_counts" (str o dict): Conteo de nodos por número de calles
-#       - "streets_per_node_proportions" (str o dict): Proporción de nodos por número de calles
-#       - "intersection_density_km2" (float): Densidad de intersecciones por km²
-#       - "circuity_avg" (float): Sinuosidad promedio de segmentos
-#       - "k_avg" (float): Grado promedio de nodos
-#       - "street_density_km2" (float): Densidad de calles por km²
-#       - "orientation_entropy" (float, opcional): Entropía de orientación de segmentos
-#       - "edge_length_avg" (float, opcional): Longitud promedio de aristas
-#       - "street_length_avg" (float, opcional): Longitud promedio de calles
-
-#     Retorna:
-#     --------
-#     str : 'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
-#     """
-    
-#     # -------------------------------------------------------------------
-#     # 1. Parsear fields que podrían venir como string en lugar de dict
-#     # -------------------------------------------------------------------
-#     spn_counts_str = poly_stats.get("streets_per_node_counts", "{}")
-#     spn_props_str = poly_stats.get("streets_per_node_proportions", "{}")
-
-#     if isinstance(spn_counts_str, str):
-#         try:
-#             spn_counts = ast.literal_eval(spn_counts_str)
-#         except:
-#             spn_counts = {}
-#     else:
-#         spn_counts = spn_counts_str
-
-#     if isinstance(spn_props_str, str):
-#         try:
-#             spn_props = ast.literal_eval(spn_props_str)
-#         except:
-#             spn_props = {}
-#     else:
-#         spn_props = spn_props_str
-
-#     # -------------------------------------------------------------------
-#     # 2. Extraer Variables Numéricas Principales
-#     # -------------------------------------------------------------------
-#     # Conectividad y estructura nodal
-#     streets_per_node = float(poly_stats.get("streets_per_node_avg", 0.0))
-#     k_avg = float(poly_stats.get("k_avg", 0.0))
-    
-#     # Densidades
-#     intersection_density = float(poly_stats.get("intersection_density_km2", 0.0))
-#     street_density = float(poly_stats.get("street_density_km2", 0.0))
-    
-#     # Geometría
-#     circuity = float(poly_stats.get("circuity_avg", 1.0))
-#     edge_length_avg = float(poly_stats.get("edge_length_avg", 0.0))
-#     street_length_avg = float(poly_stats.get("street_length_avg", 0.0))
-    
-#     # Entropía de orientación (0=alineado, 1=diverso)
-#     orientation_entropy = float(poly_stats.get("orientation_entropy", 0.5))
-    
-#     # Proporciones de nodos por grado
-#     prop_deg1 = float(spn_props.get('1', 0.0))  # callejones sin salida
-#     prop_deg3 = float(spn_props.get('3', 0.0))  # intersecciones en T
-#     prop_deg4 = float(spn_props.get('4', 0.0))  # intersecciones en cruz
-
-#     # -------------------------------------------------------------------
-#     # 3. Clasificación por Patrones Urbanos
-#     # -------------------------------------------------------------------
-    
-#     # A. Patrón Cul-de-sac / Suburban
-#     # Características: Alta proporción de callejones sin salida, baja conectividad,
-#     # estructura jerárquica y arborescente, baja densidad de intersecciones
-#     if (prop_deg1 >= 0.35 or 
-#         (streets_per_node < 2.4 and intersection_density < 40) or
-#         (prop_deg1 >= 0.25 and circuity > 1.1 and streets_per_node < 2.5)):
-#         return "cul_de_sac"
-
-#     # B. Patrón Gridiron / Reticular
-#     # Características: Baja sinuosidad, alta proporción de cruces (nodos grado 4),
-#     # buena conectividad, orientación consistente (baja entropía de orientación)
-#     if ((circuity < 1.05 and prop_deg4 >= 0.25) or
-#         (streets_per_node >= 2.8 and orientation_entropy < 0.6 and prop_deg4 > prop_deg3) or
-#         (intersection_density >= 70 and circuity < 1.08 and prop_deg1 < 0.15)):
-#         return "gridiron"
-
-#     # C. Patrón Orgánico / Irregular
-#     # Características: Alta sinuosidad, predominio de intersecciones en T,
-#     # alta entropía de orientación, irregularidad geométrica
-#     if ((circuity > 1.08 and orientation_entropy > 0.7) or
-#         (prop_deg3 > prop_deg4 * 1.5 and circuity > 1.05) or
-#         (orientation_entropy > 0.8 and street_density > 15000 and circuity > 1.05)):
-#         return "organico"
-
-#     # D. Patrón Híbrido (mezcla de tipos o casos especiales)
-#     # Incluyendo subdivisión si se detectan características específicas
-#     if (streets_per_node > 2.7 and intersection_density > 50 and 
-#         0.15 < prop_deg1 < 0.25 and 0.2 < prop_deg4 < 0.3):
-#         # Híbrido con tendencia a retícula
-#         return "hibrido"
-    
-#     # Caso general - Híbrido no específico
-#     return "hibrido"
-
-
 def classify_polygon(poly_stats, graph_features=None):
     """
     Clasifica un polígono (o sub-polígono) en:
@@ -1557,15 +1356,6 @@ def filter_periphery_polygons(in_geojson, out_geojson, area_threshold=5.0):
 #         output_folder="Graphs_Cities",
 #         simplify=False
 #     )
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3125,16 +2915,16 @@ def urban_pattern_clustering(
 
 # Lista de ciudades a procesar
 ciudades = [
-    "Moscow_ID",
+    # "Moscow_ID",
     # "Philadelphia_PA",
     # "Peachtree_GA",
     # "Boston_MA",
     # "Chandler_AZ",
-    # "Salt_Lake_UT",
+    "Salt_Lake_UT",
     # "Santa_Fe_NM"
 ]
 
-def main():
+def main_clustering():
     # Procesamos cada ciudad
     for ciudad in ciudades:
         print(f"\n{'='*80}")
@@ -3175,7 +2965,7 @@ def main():
             print(f"Ejecutando urban_pattern_clustering para {ciudad}...")
 
             
-            resultados = urban_pattern_clustering(
+            urban_pattern_clustering(
                 stats_dict, 
                 graph_dict,
                 classify_polygon, 
@@ -3194,7 +2984,7 @@ def main():
     print("\nProcesamiento de todas las ciudades completado.")
 
 if __name__ == "__main__":
-    main()
+    main_clustering()
 
 
 

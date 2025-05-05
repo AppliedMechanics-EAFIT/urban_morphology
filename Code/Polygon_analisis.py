@@ -9,7 +9,8 @@ import re
 import multiprocessing
 import time
 from filelock import FileLock  # Necesitamos instalar esta dependencia: pip install filelock
-
+import pandas as pd
+from typing import Union, List, Dict, Any
 
 def process_selected_layers(gdb_path, layer_indices=None, layer_names=None, save_geojson=True, visualize=True):
 
@@ -637,7 +638,7 @@ def ordenar_y_limpiar_txt(input_txt, output_txt):
 
     print(f"Archivo ordenado y limpio guardado en: {output_txt}")
 
-def procesar_geojson_files(geojson_files, output_folder=None):
+def post_processing_stats(geojson_files, output_folder=None):
     """
     Procesa múltiples archivos GeoJSON, los ordena, elimina duplicados
     y genera nuevos archivos en la carpeta stats de cada ciudad.
@@ -676,6 +677,175 @@ def procesar_geojson_files(geojson_files, output_folder=None):
         # Llamar a la función para procesar el archivo
         ordenar_y_limpiar_txt(input_file, output_filepath)
       
+def geojson_to_excel(
+    geojson_path: str, 
+    output_path: str = None, 
+    exclude_columns: List[str] = None,
+    include_columns: List[str] = None,
+    add_poly_id: bool = True,
+    id_field: str = None,
+    id_prefix: str = ""
+) -> pd.DataFrame:
+    """
+    Extrae las propiedades de un archivo GeoJSON y las exporta a un archivo Excel.
+    
+    Args:
+        geojson_path (str): Ruta al archivo GeoJSON.
+        output_path (str, optional): Ruta donde guardar el archivo Excel. 
+                                     Si es None, no se guarda el archivo.
+        exclude_columns (List[str], optional): Lista de nombres de columnas a excluir.
+        include_columns (List[str], optional): Lista de nombres de columnas a incluir.
+                                               Si se especifica, solo se incluirán estas columnas.
+        add_poly_id (bool): Si es True, agrega un identificador único para cada polígono.
+        id_field (str, optional): Campo a usar como identificador si existe. Si es None,
+                                 se generará un ID secuencial.
+        id_prefix (str, optional): Prefijo para los IDs generados (ej: "CITY_").
+    
+    Returns:
+        pd.DataFrame: DataFrame con las propiedades extraídas.
+    """
+    # Verificar si el archivo existe
+    if not os.path.exists(geojson_path):
+        raise FileNotFoundError(f"El archivo {geojson_path} no existe")
+    
+    # Leer el archivo GeoJSON
+    with open(geojson_path, 'r', encoding='utf-8') as f:
+        geojson_data = json.load(f)
+    
+    # Extraer las propiedades de cada feature
+    properties_list = []
+    
+    # Determinar el tipo de estructura del GeoJSON
+    if "type" in geojson_data:
+        if geojson_data["type"] == "FeatureCollection":
+            features = geojson_data.get("features", [])
+        elif geojson_data["type"] == "Feature":
+            features = [geojson_data]
+        else:
+            # Asumimos que es una geometría individual con propiedades
+            features = [{"type": "Feature", "geometry": geojson_data, "properties": geojson_data.get("properties", {})}]
+    else:
+        # Si no tiene tipo, asumimos que es un array de features
+        features = geojson_data if isinstance(geojson_data, list) else [geojson_data]
+    
+    # Extraer propiedades de cada feature
+    for i, feature in enumerate(features):
+        if "properties" in feature and feature["properties"]:
+            properties = feature["properties"].copy()
+            
+            # Agregar poly_id si se solicita
+            if add_poly_id:
+                if id_field and id_field in properties:
+                    # Usar un campo existente como ID
+                    poly_id = properties[id_field]
+                    # Asegurarse de que sea una cadena
+                    poly_id = f"{id_prefix}{poly_id}" if id_prefix else str(poly_id)
+                else:
+                    # Generar un ID secuencial
+                    poly_id = f"{id_prefix}{i+1}" if id_prefix else f"poly_{i+1}"
+                
+                # Agregar el poly_id al principio de las propiedades para que aparezca primero en el Excel
+                properties = {"poly_id": poly_id, **properties}
+            
+            properties_list.append(properties)
+    
+    if not properties_list:
+        raise ValueError("No se encontraron propiedades en el archivo GeoJSON")
+    
+    # Crear DataFrame con todas las propiedades
+    df = pd.DataFrame(properties_list)
+    
+    # Filtrar columnas si es necesario
+    if include_columns:
+        # Solo incluir las columnas especificadas
+        valid_columns = [col for col in include_columns if col in df.columns]
+        df = df[valid_columns]
+    elif exclude_columns:
+        # Excluir las columnas especificadas
+        df = df.drop(columns=[col for col in exclude_columns if col in df.columns])
+    
+    # Guardar en Excel si se especificó una ruta de salida
+    if output_path:
+        # Asegurarse de que exista el directorio
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        df.to_excel(output_path, index=False)
+        print(f"Archivo Excel guardado en: {output_path}")
+    
+    return df
 
-
-
+def process_city_geojsons(
+    geojson_files: Dict[str, str],
+    base_output_dir: str = "Polygons_analysis",
+    exclude_columns: List[str] = None,
+    include_columns: List[str] = None,
+    add_poly_id: bool = True,
+    id_field: str = None,
+    use_city_prefix: bool = True
+) -> Dict[str, pd.DataFrame]:
+    """
+    Procesa múltiples archivos GeoJSON de diferentes ciudades y los guarda en una estructura
+    de carpetas organizada.
+    
+    Args:
+        geojson_files (Dict[str, str]): Diccionario con las rutas a los archivos GeoJSON como claves
+                                       y los nombres legibles de las ciudades como valores.
+        base_output_dir (str): Directorio base donde se crearán las carpetas de las ciudades.
+        exclude_columns (List[str], optional): Lista de columnas a excluir.
+        include_columns (List[str], optional): Lista de columnas a incluir.
+        add_poly_id (bool): Si es True, agrega un identificador único para cada polígono.
+        id_field (str, optional): Campo a usar como identificador si existe en el GeoJSON.
+        use_city_prefix (bool): Si es True, usa el código de la ciudad como prefijo para los poly_id.
+        
+    Returns:
+        Dict[str, pd.DataFrame]: Diccionario con los nombres de las ciudades como claves
+                               y los DataFrames correspondientes como valores.
+    """
+    results = {}
+    
+    for geojson_path, city_name in geojson_files.items():
+        # Formatear el nombre para carpetas y archivos
+        formatted_name = city_name.replace(", ", "_").replace(" ", "_")
+        
+        # Crear la estructura de directorios
+        city_dir = os.path.join(base_output_dir, formatted_name)
+        mobility_dir = os.path.join(city_dir, "Mobility_Data")
+        os.makedirs(mobility_dir, exist_ok=True)
+        
+        # Definir la ruta de salida del Excel
+        excel_filename = f"polygon_mobility_data_{formatted_name}.xlsx"
+        excel_path = os.path.join(mobility_dir, excel_filename)
+        
+        try:
+            # Determinar el prefijo para los IDs de polígonos basados en el nombre de la ciudad
+            city_code = ""
+            if use_city_prefix:
+                # Extraer código de la ciudad (ej: "Boston, MA" -> "BOS")
+                parts = city_name.split(", ")
+                if len(parts) == 2:
+                    city_name_part = parts[0]
+                    state_part = parts[1]
+                    # Usar las primeras 3 letras de la ciudad en mayúsculas
+                    city_code = city_name_part[:3].upper() + "_"
+                else:
+                    # Si no tiene formato "Ciudad, Estado", usar las primeras letras
+                    city_code = formatted_name[:3].upper() + "_"
+            
+            # Procesar el archivo GeoJSON
+            print(f"Procesando datos de {city_name}...")
+            df = geojson_to_excel(
+                geojson_path=geojson_path,
+                output_path=excel_path,
+                exclude_columns=exclude_columns,
+                include_columns=include_columns,
+                add_poly_id=add_poly_id,
+                id_field=id_field,
+                id_prefix=city_code
+            )
+            
+            results[city_name] = df
+            print(f"✓ Datos de {city_name} procesados correctamente.")
+            
+        except Exception as e:
+            print(f"✗ Error al procesar {city_name}: {str(e)}")
+    
+    return results
