@@ -149,13 +149,13 @@ def load_polygon_stats_from_txt(stats_txt):
 
     return stats_dict
 
-def classify_polygon(poly_stats, graph_features=None):
+def classify_polygon(poly_stats, G=None):
     """
     Clasifica un polígono (o sub-polígono) en:
       'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
     basado en la teoría de patrones urbanos y métricas morfológicas.
     
-    Versión mejorada con umbrales refinados y características adicionales.
+    Versión mejorada con características obligatorias de cálculo de ángulos y calles sin salida.
 
     Parámetros:
     -----------
@@ -171,19 +171,15 @@ def classify_polygon(poly_stats, graph_features=None):
       - "edge_length_avg" (float, opcional): Longitud promedio de aristas
       - "street_length_avg" (float, opcional): Longitud promedio de calles
       
-    graph_features : dict, opcional
-      Características adicionales derivadas del grafo:
-      - "mean_intersection_angle" (float): Ángulo medio de intersección
-      - "std_intersection_angle" (float): Desviación estándar de ángulos de intersección
-      - "orthogonal_proportion" (float): Proporción de intersecciones ortogonales
-      - "angle_coefficient_variation" (float): Coeficiente de variación de ángulos
-      - "dead_end_ratio" (float): Proporción de calles sin salida
-      - "cv_dead_end_distances" (float): Coef. variación de distancias entre calles sin salida
+    G : networkx.Graph, obligatorio
+      Grafo de la red vial del polígono, necesario para calcular características adicionales
+      como ángulos de intersección y métricas de calles sin salida.
 
     Retorna:
     --------
     str : 'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
     """
+    import ast
     
     # -------------------------------------------------------------------
     # 1. Parsear fields que podrían venir como string en lugar de dict
@@ -232,24 +228,38 @@ def classify_polygon(poly_stats, graph_features=None):
     prop_deg4 = float(spn_props.get('4', 0.0))  # intersecciones en cruz
     
     # -------------------------------------------------------------------
-    # 3. Incorporar métricas adicionales del grafo (si están disponibles)
+    # 3. Calcular obligatoriamente las métricas adicionales del grafo
     # -------------------------------------------------------------------
-    # Valores predeterminados
+    # Valores predeterminados en caso de que el grafo sea None o no se puedan calcular
     mean_intersection_angle = 90.0  # Asumiendo ángulos en grados
     std_intersection_angle = 45.0
     orthogonal_proportion = 0.5
     angle_coefficient_variation = 0.5
-    dead_end_ratio = prop_deg1  # Si no hay datos adicionales, usar prop_deg1
+    dead_end_ratio = prop_deg1  # Si no hay grafo, usar prop_deg1 como aproximación
     cv_dead_end_distances = 0.5
     
-    # Sobrescribir con valores reales si están disponibles
-    if graph_features is not None:
-        mean_intersection_angle = float(graph_features.get("mean_intersection_angle", mean_intersection_angle))
-        std_intersection_angle = float(graph_features.get("std_intersection_angle", std_intersection_angle))
-        orthogonal_proportion = float(graph_features.get("orthogonal_proportion", orthogonal_proportion))
-        angle_coefficient_variation = float(graph_features.get("angle_coefficient_variation", angle_coefficient_variation))
-        dead_end_ratio = float(graph_features.get("dead_end_ratio", dead_end_ratio))
-        cv_dead_end_distances = float(graph_features.get("cv_dead_end_distances", cv_dead_end_distances))
+    # Calcular las características si el grafo está disponible
+    if G is not None:
+        try:
+            from math import degrees, atan2
+            import numpy as np
+            
+            # Calcular características de ángulos
+            mean_angle, std_angle, ortho_prop, cv_angle = calculate_angle_features(G)
+            mean_intersection_angle = mean_angle
+            std_intersection_angle = std_angle
+            orthogonal_proportion = ortho_prop
+            angle_coefficient_variation = cv_angle
+            
+            # Calcular características de calles sin salida
+            dead_end_r, cv_dead_end = calculate_dead_end_features(G)
+            dead_end_ratio = dead_end_r  # Sobrescribir prop_deg1 con el cálculo directo
+            cv_dead_end_distances = cv_dead_end
+        except Exception as e:
+            print(f"Error al calcular características del grafo: {e}")
+            # Mantener los valores predeterminados en caso de error
+    else:
+        print("No se proporcionó un grafo válido. Usando valores aproximados para características adicionales.")
     
     # -------------------------------------------------------------------
     # 4. Sistema de puntuación para cada patrón
@@ -513,70 +523,128 @@ def plot_polygons_classification_png(
     geojson_path,
     stats_dict,
     classify_func,
-    output_png="polygons_classification.png"
+    output_png="polygons_classification.png",
+    graph_dict=None
 ):
     """
     Lee un GeoDataFrame (geojson_path), asigna una 'clase' a cada polígono
-    según las estadísticas en 'stats_dict' y la 'classify_func',
-    y dibuja en un PNG (Matplotlib) con colores distintos por clase.
+    según las estadísticas en 'stats_dict', la 'classify_func', y los grafos
+    en 'graph_dict', y dibuja en un PNG (Matplotlib) con colores distintos por clase.
 
-    Se asume que, en 'stats_dict', las claves son (idx, sub_idx).
-    Aquí, tomamos solamente sub_idx=0, por ejemplo, si cada fila
-    corresponde a (idx, 0). Ajusta si es distinto.
+    Parámetros:
+    -----------
+    geojson_path : str
+        Ruta al archivo GeoJSON con los polígonos
+    stats_dict : dict
+        Diccionario con las estadísticas de cada polígono. Las claves son (idx, sub_idx)
+    classify_func : function
+        Función de clasificación que recibe estadísticas y un grafo como parámetros
+    output_png : str, opcional
+        Ruta donde guardar la imagen resultante
+    graph_dict : dict, opcional
+        Diccionario con los grafos de red vial para cada polígono.
+        Las claves deben ser compatibles con los identificadores de polígonos.
+
+    Retorna:
+    --------
+    gdf : GeoDataFrame
+        El GeoDataFrame con una columna adicional 'pattern' que contiene la clasificación
     """
-
+ 
+    # Cargar el GeoDataFrame
     gdf = gpd.read_file(geojson_path)
-
+    
     # Crear columna 'pattern' con la clase
     patterns = []
+    
     for idx, row in gdf.iterrows():
-        key = (idx, 0)  # si cada fila = sub_poligono 0
+        # Identificar el polígono
+        poly_id = row['poly_id'] if 'poly_id' in gdf.columns else str(idx)
+        key = (idx, 0)  # Asumiendo que cada fila = sub-polígono 0
+        
         if key in stats_dict:
             poly_stats = stats_dict[key]
-            category = classify_func(poly_stats)
+            
+            # Buscar el grafo correspondiente al polígono
+            G = None
+            if graph_dict is not None:
+                G = graph_dict.get(poly_id)
+                if G is None:
+                    print(f"Advertencia: No se encontró grafo para el polígono {poly_id}")
+            
+            # Clasificar el polígono usando la función de clasificación
+            # Pasando tanto las estadísticas como el grafo
+            category = classify_func(poly_stats, G)
         else:
+            print(f"Advertencia: No se encontraron estadísticas para el polígono {poly_id}")
             category = "desconocido"
+            
         patterns.append(category)
 
+    # Añadir la columna de patrones al GeoDataFrame
     gdf["pattern"] = patterns
+
+    # Contar cuántos polígonos hay de cada categoría
+    pattern_counts = gdf["pattern"].value_counts()
+    print("Conteo de patrones:")
+    for pattern, count in pattern_counts.items():
+        print(f"  - {pattern}: {count}")
 
     # Mapear cada clase a un color
     color_map = {
-        'cul_de_sac': '#FF6B6B',   # Rojo suave
-        'gridiron': '#4ECDC4',     # Verde azulado
-        'organico': '#45B7D1',     # Azul claro
-        'hibrido': '#FDCB6E', 
-        "desconocido": "gray"
+     'cul_de_sac': '#FF6B6B',   # Rojo para callejones sin salida
+        'gridiron': '#006400',     # Verde oscuro para grid
+        'organico': '#45B7D1',     # Azul para orgánico
+        'hibrido': '#FDCB6E',      # Amarillo para híbrido
+        'unknown': '#CCCCCC'       # Gris para desconocidos
     }
 
+
+    # Función para obtener el color según la categoría
     def get_color(cat):
         return color_map.get(cat, "black")
 
+    # Obtener colores para cada polígono
     plot_colors = [get_color(cat) for cat in gdf["pattern"]]
 
     # Graficar
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(12, 10))
     gdf.plot(
         ax=ax,
         color=plot_colors,
         edgecolor="black",
-        linewidth=0.5
+        linewidth=0.5,
+        alpha=0.7  # Transparencia para mejor visualización
     )
 
-    # Leyenda manual
+    # Leyenda manual con conteo de cada categoría
     legend_patches = []
     for cat, col in color_map.items():
-        patch = mpatches.Patch(color=col, label=cat)
-        legend_patches.append(patch)
-    ax.legend(handles=legend_patches, title="Tipo de polígono")
+        count = pattern_counts.get(cat, 0)
+        if count > 0:  # Solo mostrar en la leyenda las categorías presentes
+            patch = mpatches.Patch(
+                color=col, 
+                label=f"{cat} ({count})"
+            )
+            legend_patches.append(patch)
+    
+    ax.legend(
+        handles=legend_patches, 
+        title="Tipos de tejido urbano",
+        loc="upper right",
+        frameon=True,
+        framealpha=0.9
+    )
 
-    ax.set_title("Clasificación de Polígonos", fontsize=14)
+    ax.set_title("Clasificación Morfológica de Tejidos Urbanos", fontsize=16)
     ax.set_axis_off()
 
+    # Guardar la imagen
     plt.savefig(output_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Imagen guardada en: {output_png}")
-
+    
+    return gdf 
 
 
 # # =============================================================================
@@ -2553,9 +2621,43 @@ def urban_pattern_clustering(
     original_patterns = []
     valid_poly_ids = []
     
+    # Essential block for running the analysis. Avoid making changes here.
+    # Block necesary to extract the G = graph for each polygon with te Poly_id and main_id
+    
+
     for poly_id in poly_ids:
         poly_stats = stats_dict[poly_id]
-        category = classify_func(poly_stats)
+        
+        # PROBLEMA: graph_dict podría no tener la misma estructura que poly_id
+        # Solución: implementar una verificación más robusta
+        
+        # 1. Extraer el ID principal del polígono
+        if isinstance(poly_id, tuple) and len(poly_id) >= 1:
+            main_id = poly_id[0]
+        else:
+            main_id = poly_id
+        
+        # 2. Convertir a posibles formatos (como string) para ser compatible con graph_dict
+        possible_keys = [main_id, str(main_id)]
+        
+        # 3. Buscar el grafo usando las posibles claves
+        G = None
+        for key in possible_keys:
+            if key in graph_dict:
+                G = graph_dict[key]
+                break
+        
+        # 4. Verificar explícitamente que G sea un objeto grafo antes de pasarlo
+        if G is not None:
+            if hasattr(G, 'number_of_nodes'):  # Verificar que es un grafo válido
+                category = classify_func(poly_stats, G)
+            else:
+                print(f"Advertencia: El objeto para {poly_id} no es un grafo válido.")
+                category = classify_func(poly_stats, None)
+        else:
+            # No se encontró grafo, pasar None
+            category = classify_func(poly_stats, None)
+        
         original_patterns.append(category)
         valid_poly_ids.append(poly_id)
     
@@ -2808,21 +2910,57 @@ def urban_pattern_clustering(
                 color_map[name] = mcolors.to_hex(adjusted_color)
             else:
                 color_map[name] = color_map[pattern]
+
+    # ---- NUEVAS ADICIONES: ANÁLISIS DE EXACTITUD ----
     
-    # Visualización de comparación
-    fig, axes = plt.subplots(1, 2, figsize=(18, 10))
+    # Crear un mapeo de cluster a patrón dominante para cada polígono
+    results_df['cluster_pattern'] = results_df['cluster'].map(
+        lambda c: cluster_dominant_pattern.get(c, ('unknown', 0))[0]
+    )
+    
+    # Calcular coincidencias entre clasificación original y clustering
+    results_df['match'] = results_df['original_pattern'] == results_df['cluster_pattern']
+    
+    # Estadísticas de exactitud
+    accuracy = results_df['match'].mean() * 100
+    print(f"\nExactitud global: {accuracy:.2f}%")
+    
+    # Análisis de exactitud por patrón original
+    pattern_accuracy = {}
+    for pattern in set(results_df['original_pattern']):
+        pattern_df = results_df[results_df['original_pattern'] == pattern]
+        pattern_accuracy[pattern] = pattern_df['match'].mean() * 100
+        print(f"Exactitud para {pattern}: {pattern_accuracy[pattern]:.2f}%")
+    
+    # Crear DataFrame de exactitud para visualización
+    accuracy_df = pd.DataFrame({
+        'Patrón': list(pattern_accuracy.keys()) + ['Global'],
+        'Exactitud (%)': list(pattern_accuracy.values()) + [accuracy]
+    })
+    
+    # Visualización de comparación con tres elementos:
+    # 1. Patrones originales
+    # 2. Clusters
+    # 3. Gráfico de exactitud
+    fig = plt.figure(figsize=(18, 12))
+    import matplotlib.gridspec as gridspec
+
+    # Definir cuadrícula: 2 filas, 3 columnas con diferentes tamaños
+    gs = gridspec.GridSpec(2, 3, height_ratios=[2, 1])
+    
+    # Mapa de patrones originales
+    ax1 = plt.subplot(gs[0, 0])
     
     # Función para asignar colores
     def get_color(value, color_map):
         return color_map.get(value, '#CCCCCC')
     
-    # Mapa de patrones originales
     gdf_filtered['color_pattern'] = gdf_filtered['original_pattern'].apply(
         lambda x: get_color(x, color_map)
     )
     
     gdf_filtered.plot(color=gdf_filtered['color_pattern'], 
-                     ax=axes[0],
+                     ax=ax1,
                      edgecolor='black', 
                      linewidth=0.5)
     
@@ -2832,17 +2970,18 @@ def urban_pattern_clustering(
         for pattern in sorted(list(set(gdf_filtered['original_pattern'])))
         if pattern in color_map
     ]
-    axes[0].legend(handles=pattern_legend_elements, loc='lower right', title="Patrones originales")
-    axes[0].set_title('Patrones de calle teóricos', fontsize=14)
-    axes[0].axis('off')
+    ax1.legend(handles=pattern_legend_elements, loc='lower right', title="Patrones originales")
+    ax1.set_title('Patrones de calle teóricos', fontsize=14)
+    ax1.axis('off')
     
     # Mapa de clusters
+    ax2 = plt.subplot(gs[0, 1])
     gdf_filtered['color_cluster'] = gdf_filtered['cluster_name'].apply(
         lambda x: get_color(x, color_map)
     )
     
     gdf_filtered.plot(color=gdf_filtered['color_cluster'], 
-                     ax=axes[1],
+                     ax=ax2,
                      edgecolor='black', 
                      linewidth=0.5)
     
@@ -2852,6 +2991,80 @@ def urban_pattern_clustering(
         for name in sorted(list(set(gdf_filtered['cluster_name'])))
         if name != 'unknown'
     ]
+    ax2.legend(handles=cluster_legend_elements, loc='lower right', title="Clusters identificados")
+    ax2.set_title('Agrupación por características morfológicas', fontsize=14)
+    ax2.axis('off')
+    
+    # Gráfico de barras de exactitud
+    ax3 = plt.subplot(gs[0, 2])
+    
+    # Ordenar por exactitud para mejor visualización
+    accuracy_df = accuracy_df.sort_values('Exactitud (%)', ascending=False)
+    
+    # Definir colores para las barras
+    bar_colors = [color_map.get(pattern, '#333333') for pattern in accuracy_df['Patrón']]
+    bar_colors[-1] = '#000000'  # Color negro para la exactitud global
+    
+    # Crear gráfico de barras
+    bars = ax3.bar(accuracy_df['Patrón'], accuracy_df['Exactitud (%)'], color=bar_colors)
+    ax3.set_title('Exactitud del Clustering vs. Clasificación Original', fontsize=14)
+    ax3.set_ylabel('Porcentaje de Coincidencia (%)')
+    ax3.set_ylim(0, 100)
+    
+    # Añadir etiquetas de valores
+    for bar in bars:
+        height = bar.get_height()
+        ax3.text(bar.get_x() + bar.get_width()/2., height + 2,
+                f'{height:.1f}%', ha='center', va='bottom')
+    
+    # Distribución original vs. clustering
+    ax4 = plt.subplot(gs[1, :])
+    
+    # Preparar datos para la comparación
+    pattern_counts = results_df['original_pattern'].value_counts(normalize=True) * 100
+    cluster_pattern_counts = results_df['cluster_pattern'].value_counts(normalize=True) * 100
+    
+    # Crear DataFrame para visualización
+    compare_df = pd.DataFrame({
+        'Clasificación Original (%)': pattern_counts,
+        'Clasificación por Clustering (%)': cluster_pattern_counts
+    }).fillna(0).sort_index()
+    
+    # Gráfico de barras agrupadas
+    compare_df.plot(kind='bar', ax=ax4, width=0.7)
+    ax4.set_title('Distribución de Patrones: Clasificación Original vs. Clustering', fontsize=14)
+    ax4.set_ylabel('Porcentaje (%)')
+    ax4.set_ylim(0, max(compare_df.max().max() * 1.1, 100))
+    
+    # Añadir etiquetas de valores
+    for container in ax4.containers:
+        ax4.bar_label(container, fmt='%.1f%%')
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'urban_pattern_comparison_accuracy.png'), 
+                dpi=300, 
+                bbox_inches='tight')
+    plt.close()
+    
+    # Visualización original de comparación (mantenida para compatibilidad)
+    fig, axes = plt.subplots(1, 2, figsize=(18, 10))
+    
+    # Mapa de patrones originales
+    gdf_filtered.plot(color=gdf_filtered['color_pattern'], 
+                     ax=axes[0],
+                     edgecolor='black', 
+                     linewidth=0.5)
+    
+    axes[0].legend(handles=pattern_legend_elements, loc='lower right', title="Patrones originales")
+    axes[0].set_title('Patrones de calle teóricos', fontsize=14)
+    axes[0].axis('off')
+    
+    # Mapa de clusters
+    gdf_filtered.plot(color=gdf_filtered['color_cluster'], 
+                     ax=axes[1],
+                     edgecolor='black', 
+                     linewidth=0.5)
+    
     axes[1].legend(handles=cluster_legend_elements, loc='lower right', title="Clusters identificados")
     axes[1].set_title('Agrupación por características morfológicas', fontsize=14)
     axes[1].axis('off')
@@ -2880,21 +3093,37 @@ def urban_pattern_clustering(
     # Crear DataFrame de resumen
     summary_df = pd.DataFrame(pattern_feature_summary).T
     
+    # Crear DataFrames detallados para las nuevas hojas de Excel
+    # 1. Hoja de polígonos con clasificación original
+    polygons_original_df = results_df[['poly_id', 'subpoly_id', 'original_pattern']].copy()
+    
+    # 2. Hoja de polígonos con clustering
+    polygons_cluster_df = results_df[['poly_id', 'subpoly_id', 'cluster', 'cluster_pattern']].copy()
+    polygons_cluster_df['cluster_name'] = polygons_cluster_df['cluster'].map(
+        lambda c: cluster_names.get(c, f"cluster_{c}")
+    )
+    
+    # 3. Hoja de comparación de exactitud
+    comparison_df = results_df[['poly_id', 'subpoly_id', 'original_pattern', 'cluster_pattern', 'match']].copy()
+    comparison_df['match_text'] = comparison_df['match'].map({True: 'Coincide', False: 'No coincide'})
+    
     # Guardar resultados en formato Excel
     with pd.ExcelWriter(os.path.join(output_dir, 'urban_pattern_analysis.xlsx')) as writer:
-        # Hoja 1: Resumen de patrones y características
+        # Hojas originales
         summary_df.to_excel(writer, sheet_name='Pattern_Features')
-        
-        # Hoja 2: Matriz de confusión entre patrones y clusters
         pattern_cluster_matrix.to_excel(writer, sheet_name='Pattern_Cluster_Matrix')
-        
-        # Hoja 3: Características de centros de clusters
         centers_df.to_excel(writer, sheet_name='Cluster_Centers')
         
-        # Hoja 4: Importancia de características
         pd.DataFrame(important_features, columns=['Feature', 'Importance']).to_excel(
             writer, sheet_name='Feature_Importance'
         )
+        
+        # Nuevas hojas
+         # Nuevas hojas
+        polygons_original_df.to_excel(writer, sheet_name='Polygons_Original', index=False)
+        polygons_cluster_df.to_excel(writer, sheet_name='Polygons_Cluster', index=False)
+        comparison_df.to_excel(writer, sheet_name='Classification_Compare', index=False)
+        accuracy_df.to_excel(writer, sheet_name='Accuracy_Summary', index=False)
     
     # Guardar GeoJSON con resultados
     gdf_filtered.to_file(
@@ -2908,20 +3137,21 @@ def urban_pattern_clustering(
         'pattern_cluster_matrix': pattern_cluster_matrix,
         'cluster_names': cluster_names,
         'important_features': important_features,
-        'n_clusters': n_clusters
+        'n_clusters': n_clusters,
+        'accuracy': accuracy,
+        'pattern_accuracy': pattern_accuracy
     }
-
-
 
 # Lista de ciudades a procesar
 ciudades = [
-    # "Moscow_ID",
-    # "Philadelphia_PA",
-    # "Peachtree_GA",
-    # "Boston_MA",
-    # "Chandler_AZ",
+    "Moscow_ID",
+    "Philadelphia_PA",
+    "Peachtree_GA",
+    "Boston_MA",
+    "Chandler_AZ",
     "Salt_Lake_UT",
-    # "Santa_Fe_NM"
+    "Santa_Fe_NM",
+    'Medellin_ANT'
 ]
 
 def main_clustering():
@@ -2936,8 +3166,8 @@ def main_clustering():
         
         # Construir rutas de archivos
         geojson_file = f"GeoJSON_Export/{ciudad_lower}/tracts/{ciudad_lower}_tracts.geojson"
-        stats_txt = f"Polygons_analysis/{ciudad}/stats/Polygon_Stats_for_{ciudad}.txt"
-        
+        stats_txt = f"Polygons_analysis/{ciudad}/stats/Polygon_Analisys_{ciudad}_sorted.txt"
+
         # Crear directorio de salida
         output_dir = f"Polygons_analysis/{ciudad}/clustering_analysis"
         os.makedirs(output_dir, exist_ok=True)
@@ -2983,9 +3213,62 @@ def main_clustering():
     
     print("\nProcesamiento de todas las ciudades completado.")
 
-if __name__ == "__main__":
-    main_clustering()
+# if __name__ == "__main__":
+#     main_clustering()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################################################################################
+# section to verify data formats, to check index, and set ups for the geojson files
+
+
+# # 1. Cargar los polígonos
+# geojson_path = "GeoJSON_Export/medellin_ant/tracts/medellin_ant_tracts.geojson"
+# gdf = gpd.read_file(geojson_path)
+
+# # 2. Procesar polígonos y generar grafos
+# graph_dict = procesar_poligonos_y_generar_grafos(gdf)
+# print("Diagnóstico de graph_dict:")
+# print(f"Tipo de graph_dict: {type(graph_dict)}")
+# if graph_dict:
+#     # Mostrar algunas claves para diagnóstico
+#     sample_keys = list(graph_dict.keys())[:3]
+#     print(f"Ejemplos de claves en graph_dict: {sample_keys}")
+#     for key in sample_keys:
+#         value = graph_dict[key]
+#         print(f"Tipo de valor para clave {key}: {type(value)}")
+#         if hasattr(value, 'number_of_nodes'):
+#             print(f"  Es un grafo válido con {value.number_of_nodes()} nodos")
+#         else:
+#             print(f"  NO es un grafo válido")
+
+
+# stats_txt = "Polygons_analysis/Medellin_ANT/stats/Polygon_Analisys_Medellin_ANT_sorted.txt"
+
+# stats_dict = load_polygon_stats_from_txt(stats_txt)
+
+
+
+# # 4. Clasificar y visualizar
+# gdf_with_patterns = plot_polygons_classification_png(
+#     geojson_path,
+#     stats_dict,
+#     classify_polygon,
+#     output_png="clasificacion_morfologica.png",
+#     graph_dict=graph_dict
+# )
 
 
 

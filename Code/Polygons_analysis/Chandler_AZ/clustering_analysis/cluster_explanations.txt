@@ -1,36 +1,36 @@
-EXPLICACI脫N DETALLADA DE CLUSTERS
+EXPLICACI覰 DETALLADA DE CLUSTERS
 ================================
 
 Cluster 0: organico
-Patr贸n dominante: organico (80.0%)
-Comparaci贸n con otros clusters de tipo 'organico':
-  - edge_length_density: -0.949 (menor que el promedio de -0.158 por 500.7%, z-score: -0.71)
+Patr髇 dominante: organico (75.0%)
+Comparaci髇 con otros clusters de tipo 'organico':
+  - street_length_avg: 0.044 (mayor que el promedio de -0.086 por 151.4%, z-score: 0.71)
   - street_density_km2: -0.935 (menor que el promedio de -0.158 por 491.5%, z-score: -0.71)
   - node_density_km2: -0.899 (menor que el promedio de -0.139 por 547.0%, z-score: -0.71)
-  - intersection_density_km2: -0.907 (menor que el promedio de -0.140 por 548.8%, z-score: -0.71)
-  - segment_density_km2: -0.907 (menor que el promedio de -0.140 por 549.2%, z-score: -0.71)
+  - edge_length_avg: 0.110 (mayor que el promedio de -0.072 por 251.2%, z-score: 0.71)
+  - streets_per_node_avg: 0.039 (mayor que el promedio de -0.015 por 365.5%, z-score: 0.71)
 
 --------------------------------------------------
 
 Cluster 1: organico_bajo_street
-Patr贸n dominante: organico (89.2%)
-Comparaci贸n con otros clusters de tipo 'organico':
-  - edge_length_density: 0.633 (mayor que el promedio de -0.158 por 500.7%, z-score: 0.71)
+Patr髇 dominante: organico (87.7%)
+Comparaci髇 con otros clusters de tipo 'organico':
   - street_density_km2: 0.619 (mayor que el promedio de -0.158 por 491.5%, z-score: 0.71)
   - node_density_km2: 0.621 (mayor que el promedio de -0.139 por 547.0%, z-score: 0.71)
-  - intersection_density_km2: 0.628 (mayor que el promedio de -0.140 por 548.8%, z-score: 0.71)
+  - streets_per_node_avg: -0.068 (menor que el promedio de -0.015 por 365.5%, z-score: -0.71)
   - segment_density_km2: 0.627 (mayor que el promedio de -0.140 por 549.2%, z-score: 0.71)
+  - network_connectivity_index: 0.030 (mayor que el promedio de -0.050 por 160.4%, z-score: 0.71)
 
-EXPLICACI脫N DEL NOMBRE 'organico_bajo_street':
-  Este cluster representa una variante del patr贸n base 'organico' con la caracter铆stica distintiva 'bajo'.
+EXPLICACI覰 DEL NOMBRE 'organico_bajo_street':
+  Este cluster representa una variante del patr髇 base 'organico' con la caracter韘tica distintiva 'bajo'.
 
 --------------------------------------------------
 
 Cluster 2: gridiron
-Patr贸n dominante: gridiron (50.0%)
-  Este es el 煤nico cluster con este patr贸n base.
+Patr髇 dominante: gridiron (50.0%)
+  Este es el 鷑ico cluster con este patr髇 base.
 
-Caracter铆sticas principales:
+Caracter韘ticas principales:
   - street_length_avg: 6.152
   - edge_length_avg: 6.080
   - cv_dead_end_distances: 1.700
@@ -43,7 +43,7 @@ Caracter铆sticas principales:
 RESUMEN DE TODOS LOS CLUSTERS
 =========================
 
-Cluster | Nombre | Patr贸n Base | Caracter铆stica Distintiva
+Cluster | Nombre | Patr髇 Base | Caracter韘tica Distintiva
 ------------------------------------------------------------
 0 | organico | organico | N/A
 1 | organico_bajo_street | organico | bajo
@@ -51,7 +51,7 @@ Cluster | Nombre | Patr贸n Base | Caracter铆stica Distintiva
 
 
 NOTA SOBRE NOMENCLATURA:
-- 'alto_[caracter铆stica]': Indica que este cluster tiene valores significativamente mayores
-  que el promedio de otros clusters del mismo patr贸n base para esta caracter铆stica.
-- 'bajo_[caracter铆stica]': Indica que este cluster tiene valores significativamente menores
-  que el promedio de otros clusters del mismo patr贸n base para esta caracter铆stica.
+- 'alto_[caracter韘tica]': Indica que este cluster tiene valores significativamente mayores
+  que el promedio de otros clusters del mismo patr髇 base para esta caracter韘tica.
+- 'bajo_[caracter韘tica]': Indica que este cluster tiene valores significativamente menores
+  que el promedio de otros clusters del mismo patr髇 base para esta caracter韘tica.

@@ -2,7 +2,7 @@ EXPLICACIÓN DETALLADA DE CLUSTERS
 ================================
 
 Cluster 0: gridiron
-Patrón dominante: gridiron (65.2%)
+Patrón dominante: gridiron (43.5%)
 Comparación con otros clusters de tipo 'gridiron':
   - edge_length_density: -1.077 (menor que el promedio de -0.021 por 4942.9%, z-score: -1.15)
   - edge_length_avg: 1.062 (mayor que el promedio de 0.021 por 4946.7%, z-score: 1.15)
@@ -13,7 +13,7 @@ Comparación con otros clusters de tipo 'gridiron':
 --------------------------------------------------
 
 Cluster 1: gridiron_alto_intersection
-Patrón dominante: gridiron (96.8%)
+Patrón dominante: gridiron (100.0%)
 Comparación con otros clusters de tipo 'gridiron':
   - orthogonal_proportion: 0.855 (mayor que el promedio de -0.144 por 693.8%, z-score: 1.15)
   - std_intersection_angle: 0.797 (mayor que el promedio de -0.134 por 695.8%, z-score: 1.15)
@@ -27,7 +27,7 @@ EXPLICACIÓN DEL NOMBRE 'gridiron_alto_intersection':
 --------------------------------------------------
 
 Cluster 2: gridiron_alto_intersection
-Patrón dominante: gridiron (50.0%)
+Patrón dominante: gridiron (55.6%)
 Comparación con otros clusters de tipo 'gridiron':
   - dead_end_ratio: -0.484 (menor que el promedio de -0.061 por 696.2%, z-score: -1.13)
   - cv_dead_end_distances: -0.407 (menor que el promedio de -0.031 por 1213.5%, z-score: -1.06)
