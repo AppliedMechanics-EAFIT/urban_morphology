@@ -1,0 +1,187 @@
+ANOVA para a_by_pattern:
+              sum_sq      df          F        PR(>F)
+C(pattern)   1.82669     3.0  25.862464  3.213215e-16
+Residual    28.62907  1216.0        NaN           NaN
+
+ANOVA para a_by_city:
+             sum_sq      df          F        PR(>F)
+C(city)    4.146312     5.0  38.264752  1.516112e-36
+Residual  26.309448  1214.0        NaN           NaN
+
+ANOVA para a_pattern_city_interaction:
+                       sum_sq      df          F        PR(>F)
+C(pattern)           2.922084     3.0  46.414544  3.837767e-20
+C(city)              3.375383     5.0  32.168869  5.321390e-20
+C(pattern):C(city)   1.554738    15.0   4.939110  5.314499e-09
+Residual            25.182483  1200.0        NaN           NaN
+
+ANOVA para b_by_pattern:
+               sum_sq      df          F        PR(>F)
+C(pattern)   4.726600     3.0  86.354315  1.178782e-50
+Residual    22.185902  1216.0        NaN           NaN
+
+ANOVA para b_by_city:
+             sum_sq      df           F        PR(>F)
+C(city)    8.065318     5.0  103.901957  2.303933e-91
+Residual  18.847184  1214.0         NaN           NaN
+
+ANOVA para b_pattern_city_interaction:
+                       sum_sq      df           F        PR(>F)
+C(pattern)           5.015940     3.0  121.183505  1.156856e-48
+C(city)              2.656753     5.0   38.511778  9.216175e-24
+C(pattern):C(city)   4.246171    15.0   20.517224  4.367088e-47
+Residual            16.556512  1200.0         NaN           NaN
+
+ANOVA para c_by_pattern:
+               sum_sq      df          F        PR(>F)
+C(pattern)  10.662769     3.0  59.478216  7.017041e-36
+Residual    72.664853  1216.0        NaN           NaN
+
+ANOVA para c_by_city:
+             sum_sq      df           F        PR(>F)
+C(city)   25.049179     5.0  104.360042  1.038454e-91
+Residual  58.278443  1214.0         NaN           NaN
+
+ANOVA para c_pattern_city_interaction:
+                       sum_sq      df          F        PR(>F)
+C(pattern)           7.270627     3.0  54.189695  2.941243e-23
+C(city)             10.468204     5.0  46.813194  1.346294e-36
+C(pattern):C(city)  12.765963    15.0  19.029545  1.436144e-43
+Residual            53.667969  1200.0        NaN           NaN
+
+ANOVA para car_mode_by_pattern:
+                  sum_sq      df          F        PR(>F)
+C(pattern)  4.054164e+07     3.0  28.050235  1.537153e-17
+Residual    5.858374e+08  1216.0        NaN           NaN
+
+ANOVA para car_mode_by_city:
+                sum_sq      df          F        PR(>F)
+C(city)   1.127098e+08     5.0  53.275424  4.413320e-50
+Residual  5.136692e+08  1214.0        NaN           NaN
+
+ANOVA para car_mode_pattern_city_interaction:
+                          sum_sq      df          F        PR(>F)
+C(pattern)          2.435399e+07     3.0  20.043533  2.738048e-09
+C(city)             4.982633e+07     5.0  24.604482  1.340610e-19
+C(pattern):C(city)  6.574349e+07    15.0  10.821484  1.508459e-23
+Residual            4.860220e+08  1200.0        NaN           NaN
+
+ANOVA para transit_mode_by_pattern:
+                  sum_sq      df          F        PR(>F)
+C(pattern)  1.007076e+07     3.0  58.337288  3.100743e-35
+Residual    6.997266e+07  1216.0        NaN           NaN
+
+ANOVA para transit_mode_by_city:
+                sum_sq      df         F        PR(>F)
+C(city)   1.979287e+07     5.0  79.76208  1.833113e-72
+Residual  6.025055e+07  1214.0       NaN           NaN
+
+ANOVA para transit_mode_pattern_city_interaction:
+                          sum_sq      df          F        PR(>F)
+C(pattern)          9.766086e+06     3.0  70.440557  1.187363e-29
+C(city)             5.888126e+06     5.0  25.481828  2.739732e-20
+C(pattern):C(city)  1.043910e+07    15.0  15.058974  5.288252e-34
+Residual            5.545718e+07  1200.0        NaN           NaN
+
+ANOVA para bicycle_mode_by_pattern:
+                  sum_sq      df          F        PR(>F)
+C(pattern)  1.844671e+05     3.0  17.060546  7.406763e-11
+Residual    4.382666e+06  1216.0        NaN           NaN
+
+ANOVA para bicycle_mode_by_city:
+                sum_sq      df          F        PR(>F)
+C(city)   3.370602e+05     5.0  19.346759  1.436816e-18
+Residual  4.230073e+06  1214.0        NaN           NaN
+
+ANOVA para bicycle_mode_pattern_city_interaction:
+                          sum_sq      df          F        PR(>F)
+C(pattern)          1.769607e+05     3.0  17.235601  4.170323e-08
+C(city)             3.092550e+05     5.0  18.072471  1.788645e-11
+C(pattern):C(city)  1.013209e+05    15.0   1.973688  1.679359e-02
+Residual            4.106866e+06  1200.0        NaN           NaN
+
+ANOVA para walked_mode_by_pattern:
+                  sum_sq      df          F        PR(>F)
+C(pattern)  2.320243e+06     3.0  18.937388  5.246406e-12
+Residual    4.966218e+07  1216.0        NaN           NaN
+
+ANOVA para walked_mode_by_city:
+                sum_sq      df          F        PR(>F)
+C(city)   5.648494e+06     5.0  29.599356  1.955340e-28
+Residual  4.633393e+07  1214.0        NaN           NaN
+
+ANOVA para walked_mode_pattern_city_interaction:
+                          sum_sq      df          F        PR(>F)
+C(pattern)          3.696841e+06     3.0  32.854394  1.283720e-14
+C(city)             3.316783e+06     5.0  17.686055  4.078092e-14
+C(pattern):C(city)  2.189873e+06    15.0   3.892347  1.529072e-06
+Residual            4.500879e+07  1200.0        NaN           NaN
+
+ANOVA para car_share_by_pattern:
+               sum_sq      df          F        PR(>F)
+C(pattern)  10.662769     3.0  59.478216  7.017041e-36
+Residual    72.664853  1216.0        NaN           NaN
+
+ANOVA para car_share_by_city:
+             sum_sq      df           F        PR(>F)
+C(city)   25.049179     5.0  104.360042  1.038454e-91
+Residual  58.278443  1214.0         NaN           NaN
+
+ANOVA para car_share_pattern_city_interaction:
+                       sum_sq      df          F        PR(>F)
+C(pattern)           7.270627     3.0  54.189695  2.941243e-23
+C(city)             10.468204     5.0  46.813194  1.346294e-36
+C(pattern):C(city)  12.765963    15.0  19.029545  1.436144e-43
+Residual            53.667969  1200.0        NaN           NaN
+
+ANOVA para transit_share_by_pattern:
+               sum_sq      df          F        PR(>F)
+C(pattern)   4.726600     3.0  86.354315  1.178782e-50
+Residual    22.185902  1216.0        NaN           NaN
+
+ANOVA para transit_share_by_city:
+             sum_sq      df           F        PR(>F)
+C(city)    8.065318     5.0  103.901957  2.303933e-91
+Residual  18.847184  1214.0         NaN           NaN
+
+ANOVA para transit_share_pattern_city_interaction:
+                       sum_sq      df           F        PR(>F)
+C(pattern)           5.015940     3.0  121.183505  1.156856e-48
+C(city)              2.656753     5.0   38.511778  9.216175e-24
+C(pattern):C(city)   4.246171    15.0   20.517224  4.367088e-47
+Residual            16.556512  1200.0         NaN           NaN
+
+ANOVA para bicycle_share_by_pattern:
+              sum_sq      df          F        PR(>F)
+C(pattern)  0.073772     3.0  19.040712  4.535799e-12
+Residual    1.570435  1216.0        NaN           NaN
+
+ANOVA para bicycle_share_by_city:
+            sum_sq      df          F        PR(>F)
+C(city)   0.144672     5.0  23.424753  1.586119e-22
+Residual  1.499536  1214.0        NaN           NaN
+
+ANOVA para bicycle_share_pattern_city_interaction:
+                      sum_sq      df          F        PR(>F)
+C(pattern)          0.091369     3.0  25.156885  1.983075e-11
+C(city)             0.133877     5.0  22.116487  6.087556e-14
+C(pattern):C(city)  0.040767    15.0   2.244915  5.232480e-03
+Residual            1.452783  1200.0        NaN           NaN
+
+ANOVA para walked_share_by_pattern:
+               sum_sq      df          F        PR(>F)
+C(pattern)   1.178590     3.0  20.606718  5.010387e-13
+Residual    23.182817  1216.0        NaN           NaN
+
+ANOVA para walked_share_by_city:
+             sum_sq      df          F        PR(>F)
+C(city)    2.750010     5.0  30.895851  1.158701e-29
+Residual  21.611396  1214.0        NaN           NaN
+
+ANOVA para walked_share_pattern_city_interaction:
+                       sum_sq      df          F        PR(>F)
+C(pattern)           1.990694     3.0  38.206161  8.206439e-17
+C(city)              1.615380     5.0  18.601795  7.594578e-15
+C(pattern):C(city)   1.135023    15.0   4.356760  1.276447e-07
+Residual            20.841602  1200.0        NaN           NaN
+

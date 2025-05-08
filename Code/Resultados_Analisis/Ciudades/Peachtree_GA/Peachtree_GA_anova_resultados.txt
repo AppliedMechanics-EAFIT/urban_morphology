@@ -1,0 +1,55 @@
+ANOVA para a:
+              sum_sq    df        F    PR(>F)
+C(pattern)  0.000400   2.0  1.14331  0.348825
+Residual    0.002272  13.0      NaN       NaN
+
+ANOVA para b:
+              sum_sq    df         F    PR(>F)
+C(pattern)  0.000090   2.0  0.160699  0.853214
+Residual    0.003655  13.0       NaN       NaN
+
+ANOVA para c:
+              sum_sq    df         F    PR(>F)
+C(pattern)  0.000149   2.0  0.209515  0.813663
+Residual    0.004629  13.0       NaN       NaN
+
+ANOVA para car_mode:
+                  sum_sq    df         F    PR(>F)
+C(pattern)  1.226601e+06   2.0  0.845125  0.451796
+Residual    9.434001e+06  13.0       NaN       NaN
+
+ANOVA para transit_mode:
+             sum_sq    df         F    PR(>F)
+C(pattern)   451.35   2.0  0.481231  0.628607
+Residual    6096.40  13.0       NaN       NaN
+
+ANOVA para bicycle_mode:
+               sum_sq    df         F    PR(>F)
+C(pattern)   566.8375   2.0  1.798957  0.204307
+Residual    2048.1000  13.0       NaN       NaN
+
+ANOVA para walked_mode:
+            sum_sq    df         F   PR(>F)
+C(pattern)   977.7   2.0  1.780475  0.20729
+Residual    3569.3  13.0       NaN      NaN
+
+ANOVA para car_share:
+              sum_sq    df         F    PR(>F)
+C(pattern)  0.000149   2.0  0.209515  0.813663
+Residual    0.004629  13.0       NaN       NaN
+
+ANOVA para transit_share:
+              sum_sq    df         F    PR(>F)
+C(pattern)  0.000090   2.0  0.160699  0.853214
+Residual    0.003655  13.0       NaN       NaN
+
+ANOVA para bicycle_share:
+              sum_sq    df         F    PR(>F)
+C(pattern)  0.000274   2.0  2.436664  0.126269
+Residual    0.000730  13.0       NaN       NaN
+
+ANOVA para walked_share:
+              sum_sq    df         F    PR(>F)
+C(pattern)  0.000183   2.0  1.075889  0.369503
+Residual    0.001109  13.0       NaN       NaN
+

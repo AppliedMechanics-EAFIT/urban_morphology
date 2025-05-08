@@ -179,7 +179,6 @@ def classify_polygon(poly_stats, G=None):
     --------
     str : 'cul_de_sac', 'gridiron', 'organico' o 'hibrido'
     """
-    import ast
     
     # -------------------------------------------------------------------
     # 1. Parsear fields que podrían venir como string en lugar de dict
@@ -311,16 +310,16 @@ def classify_polygon(poly_stats, G=None):
         scores["cul_de_sac"] += 1
     
     # B. Puntuación para Gridiron / Reticular (manteniendo como estaba)
-    if circuity < 1.05:  # Muy baja sinuosidad
+    if circuity < 1.02:  # Muy baja sinuosidad
         scores["gridiron"] += 2
-    elif circuity < 1.08:
+    elif circuity < 1.04:
         scores["gridiron"] += 1
         
     if prop_deg4 >= 0.30:  # Alta proporción de cruces en X
         scores["gridiron"] += 3
-    elif prop_deg4 >= 0.20:
+    elif prop_deg4 >= 0.25:
         scores["gridiron"] += 2
-    elif prop_deg4 >= 0.15:
+    elif prop_deg4 >= 0.20:
         scores["gridiron"] += 1
         
     if orientation_entropy < 0.5:  # Orientaciones muy consistentes
@@ -348,27 +347,27 @@ def classify_polygon(poly_stats, G=None):
     # - Menor penalización por pequeñas tendencias ortogonales
     
     # La sinuosidad (circuity) es una característica clave para patrones orgánicos
-    if circuity > 1.15:  # Sinuosidad muy alta
-        scores["organico"] += 3  # Mayor peso
-    elif circuity > 1.10:  # Sinuosidad alta
-        scores["organico"] += 2  # Peso aumentado
-    elif circuity > 1.06:  # Sinuosidad moderada
-        scores["organico"] += 1  # Umbral más bajo para detectar tendencias sutiles
+    if circuity > 1.2:  # Sinuosidad muy alta
+        scores["organico"] += 3  
+    elif circuity > 1.12:  # Sinuosidad alta
+        scores["organico"] += 2  
+    elif circuity > 1.07:  # Sinuosidad moderada
+        scores["organico"] += 1  
     
     # Las intersecciones en T son típicas en patrones orgánicos
     if prop_deg3 > prop_deg4 * 1.7:  # Dominan las intersecciones en T
         scores["organico"] += 3
-    elif prop_deg3 > prop_deg4 * 1.2:  # Valor ajustado
+    elif prop_deg3 > prop_deg4 * 1.2:  
         scores["organico"] += 2
-    elif prop_deg3 > prop_deg4 * 0.8:  # Umbral más inclusivo
+    elif prop_deg3 > prop_deg4 * 0.8:  
         scores["organico"] += 1
     
     # La variabilidad en orientaciones es característica de patrones orgánicos
     if orientation_entropy > 0.75:
-        scores["organico"] += 3  # Mayor peso (era 2)
+        scores["organico"] += 3  
     elif orientation_entropy > 0.65:
-        scores["organico"] += 2  # Peso aumentado (era 1)
-    elif orientation_entropy > 0.55:  # Nuevo umbral más inclusivo
+        scores["organico"] += 2  
+    elif orientation_entropy > 0.6:   
         scores["organico"] += 1
     
     # Coeficiente de variación de ángulos (irregularidad)
@@ -385,7 +384,7 @@ def classify_polygon(poly_stats, G=None):
     
     # Baja proporción de intersecciones ortogonales
     if orthogonal_proportion < 0.3:
-        scores["organico"] += 2  # Mayor peso (era 1)
+        scores["organico"] += 2  
     elif orthogonal_proportion < 0.4:  # Nuevo umbral más inclusivo
         scores["organico"] += 1
     
@@ -3144,13 +3143,13 @@ def urban_pattern_clustering(
 
 # Lista de ciudades a procesar
 ciudades = [
-    "Moscow_ID",
-    "Philadelphia_PA",
-    "Peachtree_GA",
-    "Boston_MA",
-    "Chandler_AZ",
-    "Salt_Lake_UT",
-    "Santa_Fe_NM",
+    # "Moscow_ID",
+    # "Philadelphia_PA",
+    # "Peachtree_GA",
+    # "Boston_MA",
+    # "Chandler_AZ",
+    # "Salt_Lake_UT",
+    # "Santa_Fe_NM",
     'Medellin_ANT'
 ]
 
@@ -3213,8 +3212,8 @@ def main_clustering():
     
     print("\nProcesamiento de todas las ciudades completado.")
 
-# if __name__ == "__main__":
-#     main_clustering()
+if __name__ == "__main__":
+    main_clustering()
 
 
 

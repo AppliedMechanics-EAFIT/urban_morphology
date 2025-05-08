@@ -1,55 +1,55 @@
 EXPLICACIÓN DETALLADA DE CLUSTERS
 ================================
 
-Cluster 0: gridiron
-Patrón dominante: gridiron (49.1%)
-Comparación con otros clusters de tipo 'gridiron':
-  - cv_dead_end_distances: 0.098 (mayor que el promedio de -0.067 por 246.6%, z-score: 1.05)
-  - k_avg: -0.446 (menor que el promedio de 0.076 por 685.7%, z-score: -0.95)
-  - edge_length_density: -0.488 (menor que el promedio de 0.120 por 507.7%, z-score: -0.73)
-  - edge_density_km2: -0.481 (menor que el promedio de 0.118 por 508.9%, z-score: -0.72)
-  - segment_density_km2: -0.444 (menor que el promedio de 0.120 por 470.5%, z-score: -0.68)
+Cluster 0: organico
+Patrón dominante: organico (46.8%)
+Comparación con otros clusters de tipo 'organico':
+  - k_avg: -0.446 (menor que el promedio de -0.225 por 97.9%, z-score: -0.93)
+  - orthogonal_proportion: 0.128 (mayor que el promedio de -0.577 por 122.1%, z-score: 0.72)
+  - cv_dead_end_distances: 0.098 (mayor que el promedio de -0.020 por 587.0%, z-score: 0.70)
+  - std_intersection_angle: 0.307 (mayor que el promedio de -0.741 por 141.4%, z-score: 0.69)
+  - streets_per_node_avg: -0.105 (mayor que el promedio de -0.574 por 81.8%, z-score: 0.68)
 
 --------------------------------------------------
 
-Cluster 1: gridiron_alto_std
-Patrón dominante: gridiron (87.9%)
-Comparación con otros clusters de tipo 'gridiron':
-  - intersection_density_km2: 1.059 (mayor que el promedio de 0.108 por 879.6%, z-score: 1.15)
-  - circuity_avg: -0.426 (menor que el promedio de -0.216 por 97.8%, z-score: -1.15)
-  - node_density_km2: 1.052 (mayor que el promedio de 0.121 por 771.0%, z-score: 1.15)
-  - street_density_km2: 1.049 (mayor que el promedio de 0.118 por 788.0%, z-score: 1.15)
-  - segment_density_km2: 1.075 (mayor que el promedio de 0.120 por 796.3%, z-score: 1.15)
-
-EXPLICACIÓN DEL NOMBRE 'gridiron_alto_std':
-  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
-
---------------------------------------------------
-
-Cluster 2: gridiron_bajo_std
-Patrón dominante: gridiron (47.9%)
-Comparación con otros clusters de tipo 'gridiron':
-  - std_intersection_angle: -2.481 (menor que el promedio de -0.620 por 300.5%, z-score: -1.15)
-  - angle_coefficient_variation: -2.257 (menor que el promedio de -0.570 por 295.9%, z-score: -1.15)
-  - mean_intersection_angle: -2.031 (menor que el promedio de -0.504 por 303.0%, z-score: -1.15)
-  - orthogonal_proportion: -1.695 (menor que el promedio de -0.400 por 323.3%, z-score: -1.15)
-  - dead_end_ratio: 0.552 (mayor que el promedio de 0.147 por 275.9%, z-score: 1.14)
-
-EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_std':
-  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
-
---------------------------------------------------
-
-Cluster 3: organico
-Patrón dominante: organico (93.4%)
+Cluster 1: gridiron
+Patrón dominante: gridiron (82.1%)
   Este es el único cluster con este patrón base.
 
 Características principales:
-  - edge_length_avg: 2.018
-  - street_length_avg: 2.016
-  - circuity_avg: 1.738
-  - cv_dead_end_distances: 0.055
-  - angle_coefficient_variation: -0.004
+  - segment_density_km2: 1.075
+  - edge_length_density: 1.069
+  - edge_density_km2: 1.066
+  - intersection_density_km2: 1.059
+  - node_density_km2: 1.052
+
+--------------------------------------------------
+
+Cluster 2: organico_bajo_std
+Patrón dominante: organico (45.8%)
+Comparación con otros clusters de tipo 'organico':
+  - mean_intersection_angle: -2.031 (menor que el promedio de -0.620 por 227.7%, z-score: -1.15)
+  - angle_coefficient_variation: -2.257 (menor que el promedio de -0.654 por 244.9%, z-score: -1.15)
+  - std_intersection_angle: -2.481 (menor que el promedio de -0.741 por 234.7%, z-score: -1.15)
+  - cv_dead_end_distances: -0.213 (menor que el promedio de -0.020 por 962.0%, z-score: -1.15)
+  - orthogonal_proportion: -1.695 (menor que el promedio de -0.577 por 193.6%, z-score: -1.14)
+
+EXPLICACIÓN DEL NOMBRE 'organico_bajo_std':
+  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 3: organico_alto_std
+Patrón dominante: organico (91.8%)
+Comparación con otros clusters de tipo 'organico':
+  - circuity_avg: 1.738 (mayor que el promedio de 0.506 por 243.5%, z-score: 1.15)
+  - edge_length_avg: 2.018 (mayor que el promedio de 0.608 por 232.2%, z-score: 1.15)
+  - street_length_avg: 2.016 (mayor que el promedio de 0.606 por 232.4%, z-score: 1.15)
+  - intersection_density_km2: -1.248 (menor que el promedio de -0.661 por 88.8%, z-score: -1.15)
+  - network_connectivity_index: -1.355 (menor que el promedio de -0.570 por 138.0%, z-score: -1.15)
+
+EXPLICACIÓN DEL NOMBRE 'organico_alto_std':
+  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'alto'.
 
 --------------------------------------------------
 
@@ -59,10 +59,10 @@ RESUMEN DE TODOS LOS CLUSTERS
 
 Cluster | Nombre | Patrón Base | Característica Distintiva
 ------------------------------------------------------------
-0 | gridiron | gridiron | N/A
-1 | gridiron_alto_std | gridiron | alto
-2 | gridiron_bajo_std | gridiron | bajo
-3 | organico | organico | N/A
+0 | organico | organico | N/A
+1 | gridiron | gridiron | N/A
+2 | organico_bajo_std | organico | bajo
+3 | organico_alto_std | organico | alto
 
 
 NOTA SOBRE NOMENCLATURA:
