@@ -671,7 +671,7 @@ class StreetPatternMobilityAnalyzer:
         Returns:
             DataFrame con los datos de movilidad o None si hay error
         """
-        mobility_path = os.path.join(self.base_path, city, "Mobility_data")
+        mobility_path = os.path.join(self.base_path, city, "Mobility_Data")
         
         if not os.path.exists(mobility_path):
             logger.error(f"La carpeta {mobility_path} no existe")
