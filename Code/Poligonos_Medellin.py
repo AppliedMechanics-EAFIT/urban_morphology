@@ -149,6 +149,67 @@ def load_polygon_stats_from_txt(stats_txt):
 
     return stats_dict
 
+def calculate_extended_cul_de_sac_features(G):
+    """
+    Calcula características básicas para la detección de patrones cul-de-sac.
+    Versión con robustez reducida al 60%.
+    
+    Parámetros:
+    -----------
+    G : networkx.Graph
+        Grafo de la red vial
+        
+    Retorna:
+    --------
+    dict : Diccionario con métricas muy básicas para patrones cul-de-sac
+    """
+   
+    # Inicializar resultado con una sola métrica
+    results = {
+        'depth_avg': 0.0
+    }
+    
+    # Verificación mínima del grafo
+    if not G:
+        return results
+    
+    # Identificar nodos relevantes con enfoque simplificado
+    dead_end_nodes = []
+    arterial_nodes = []
+    
+    # Obtener nodos de manera más simple
+    for n, d in G.degree():
+        if d == 1:
+            dead_end_nodes.append(n)
+            if len(dead_end_nodes) >= 3:  # Limitar a solo 3 nodos sin salida
+                break
+    
+    for n, d in G.degree():
+        if d >= 3:
+            arterial_nodes.append(n)
+            if len(arterial_nodes) >= 2:  # Limitar a solo 2 nodos arteriales
+                break
+    
+    # Si no hay suficientes nodos, devolver valores iniciales
+    if len(dead_end_nodes) == 0 or len(arterial_nodes) == 0:
+        return results
+    
+    # Cálculo muy simplificado de profundidad
+    depths = []
+    for dead_end in dead_end_nodes[:3]:  # Usar máximo 3 nodos
+        arterial = arterial_nodes[0]  # Usar solo el primer nodo arterial
+        try:
+            dist = nx.shortest_path_length(G, dead_end, arterial)
+            depths.append(dist)
+        except:
+            depths.append(1)  # Valor predeterminado si falla
+    
+    # Cálculo promedio ultrasimplificado
+    if depths:
+        results['depth_avg'] = sum(depths) / len(depths) 
+    
+    return results
+
 def classify_polygon(poly_stats, G=None):
     """
     Clasifica un polígono (o sub-polígono) en:
@@ -156,6 +217,7 @@ def classify_polygon(poly_stats, G=None):
     basado en la teoría de patrones urbanos y métricas morfológicas.
     
     Versión mejorada con características obligatorias de cálculo de ángulos y calles sin salida.
+    Optimizada para mejor detección de patrones cul-de-sac.
 
     Parámetros:
     -----------
@@ -237,6 +299,12 @@ def classify_polygon(poly_stats, G=None):
     dead_end_ratio = prop_deg1  # Si no hay grafo, usar prop_deg1 como aproximación
     cv_dead_end_distances = 0.5
     
+    # Características específicas para cul-de-sac mejoradas
+    cul_de_sac_depth_avg = 0.0  # Profundidad promedio de calles sin salida
+    cul_de_sac_branch_ratio = 0.0  # Proporción de ramificación en calles sin salida
+    loop_ratio = 0.0  # Proporción de calles que forman bucles cerrados
+    tree_like_structure_score = 0.0  # Puntuación de estructura arbórea
+    
     # Calcular las características si el grafo está disponible
     if G is not None:
         try:
@@ -254,6 +322,14 @@ def classify_polygon(poly_stats, G=None):
             dead_end_r, cv_dead_end = calculate_dead_end_features(G)
             dead_end_ratio = dead_end_r  # Sobrescribir prop_deg1 con el cálculo directo
             cv_dead_end_distances = cv_dead_end
+            
+            # NUEVO: Características extendidas para cul-de-sac
+            cul_de_sac_metrics = calculate_extended_cul_de_sac_features(G)
+            cul_de_sac_depth_avg = cul_de_sac_metrics.get('depth_avg', 0.0)
+            cul_de_sac_branch_ratio = cul_de_sac_metrics.get('branch_ratio', 0.0)
+            loop_ratio = cul_de_sac_metrics.get('loop_ratio', 0.0)
+            tree_like_structure_score = cul_de_sac_metrics.get('tree_structure_score', 0.0)
+            
         except Exception as e:
             print(f"Error al calcular características del grafo: {e}")
             # Mantener los valores predeterminados en caso de error
@@ -272,42 +348,140 @@ def classify_polygon(poly_stats, G=None):
     }
     
     # A. Puntuación para Cul-de-sac / Suburban
-    # - Dando mayor peso al dead_end_ratio como característica definitoria
-    # - Ajustando umbrales para ser más flexibles en detección
+    # - SECCIÓN RECONSTRUIDA: Detección avanzada de patrones cul-de-sac
+    # - Utilizando un enfoque multimétrica más sensible y detallado
     
-    # Dead_end_ratio es ahora la métrica principal para cul-de-sac
-    if dead_end_ratio > 0.30:  # Proporción muy alta de calles sin salida
-        scores["cul_de_sac"] += 5  # Mayor peso (era 2)
+    # 1. Característica principal: Calles sin salida (dead_end_ratio)
+    # Enfoque más sensible con umbrales incrementales revisados
+    if dead_end_ratio > 0.25:  # Proporción muy alta de calles sin salida
+        scores["cul_de_sac"] += 5  # Incrementado, máxima importancia
     elif dead_end_ratio > 0.20:  # Proporción alta
-        scores["cul_de_sac"] += 3  # Peso aumentado (era 1)
-    elif dead_end_ratio > 0.15:  # Proporción moderada
-        scores["cul_de_sac"] += 2  # Nuevo nivel con peso significativo
-    elif dead_end_ratio > 0.10:  # Proporción baja pero significativa
-        scores["cul_de_sac"] += 1  # Nuevo nivel para detectar tendencias sutiles
-    
-    # La proporción de nodos de grado 1 sigue siendo relevante pero con menor peso
-    if prop_deg1 >= 0.30:
-        scores["cul_de_sac"] += 2  # Peso reducido (era 3)
-    elif prop_deg1 >= 0.20:
-        scores["cul_de_sac"] += 1  # Peso reducido (era 2)
-    
-    # Conectividad baja sigue siendo un buen indicador secundario
-    if streets_per_node < 2.4:
+        scores["cul_de_sac"] += 5
+    elif dead_end_ratio > 0.15:  # Proporción moderada-alta
+        scores["cul_de_sac"] += 4
+    elif dead_end_ratio > 0.10:  # Proporción moderada
+        scores["cul_de_sac"] += 3
+    elif dead_end_ratio > 0.07:  # Proporción baja pero significativa
+        scores["cul_de_sac"] += 3
+    elif dead_end_ratio > 0.05:  # Proporción mínima detectable - nuevo umbral más bajo
         scores["cul_de_sac"] += 2
-    elif streets_per_node < 2.6:
-        scores["cul_de_sac"] += 1
     
-    # Densidad más flexible para reconocer cul-de-sac en áreas más densas
-    if intersection_density < 35:
+    # 2. NUEVO: Profundidad de calles sin salida
+    # Evalúa qué tan profundas son las calles sin salida en relación a la red
+    if cul_de_sac_depth_avg > 3.0:  # Calles sin salida muy profundas
+        scores["cul_de_sac"] += 4  # Alta puntuación, indicador clave
+    elif cul_de_sac_depth_avg > 2.5:  # Calles sin salida profundas
+        scores["cul_de_sac"] += 3
+    elif cul_de_sac_depth_avg > 2.0:  # Profundidad moderada
         scores["cul_de_sac"] += 2
-    elif intersection_density < 55:
+    elif cul_de_sac_depth_avg > 1.5:  # Profundidad mínima significativa
+        scores["cul_de_sac"] += 1
+
+    # 3. NUEVO: Estructura arbórea de la red
+    # Evalúa cuánto se asemeja la red a un árbol (típico en cul-de-sac)
+    if tree_like_structure_score > 0.7:  # Estructura fuertemente arbórea
+        scores["cul_de_sac"] += 5  # Indicador clave, alta puntuación
+    elif tree_like_structure_score > 0.6:  # Estructura mayormente arbórea
+        scores["cul_de_sac"] += 4
+    elif tree_like_structure_score > 0.5:  # Estructura moderadamente arbórea
+        scores["cul_de_sac"] += 3
+    elif tree_like_structure_score > 0.4:  # Estructura ligeramente arbórea
+        scores["cul_de_sac"] += 2
+    elif tree_like_structure_score > 0.3:  # Estructura mínimamente arbórea
         scores["cul_de_sac"] += 1
     
-    # Variabilidad en distancias entre calles sin salida (indicador de planificación suburbana)
-    if cv_dead_end_distances > 0.7:
-        scores["cul_de_sac"] += 2  # Mayor peso (era 1)
-    elif cv_dead_end_distances > 0.5:  # Nuevo umbral más inclusivo
+    # 4. Estructura nodal: Proporción de nodos de grado 1
+    # Complementario a dead_end_ratio, útil para casos límite
+    if prop_deg1 >= 0.25:
+        scores["cul_de_sac"] += 3
+    elif prop_deg1 >= 0.18:
+        scores["cul_de_sac"] += 2
+    elif prop_deg1 >= 0.12:
         scores["cul_de_sac"] += 1
+    
+    # 5. Conectividad: Indicador clave secundario (streets_per_node)
+    # Umbrales ajustados para mejor detección de cul-de-sac
+    if streets_per_node < 2.1:  # Conectividad extremadamente baja
+        scores["cul_de_sac"] += 5  # Mayor importancia
+    elif streets_per_node < 2.3:  # Conectividad muy baja
+        scores["cul_de_sac"] += 4
+    elif streets_per_node < 2.5:  # Conectividad baja
+        scores["cul_de_sac"] += 3
+    elif streets_per_node < 2.7:  # Conectividad moderadamente baja
+        scores["cul_de_sac"] += 2
+    elif streets_per_node < 2.9:  # Umbral más inclusivo
+        scores["cul_de_sac"] += 1
+    
+    # 6. NUEVO: Proporción de bucles cerrados (loop_ratio)
+    # Los patrones cul-de-sac modernos a menudo incorporan bucles
+    # Pero demasiados bucles indicarían otro patrón
+    if loop_ratio > 0.0 and loop_ratio < 0.15:  # Presencia óptima de bucles
+        scores["cul_de_sac"] += 3  # Indicador positivo para cul-de-sac modernos
+    elif loop_ratio >= 0.15 and loop_ratio < 0.25:  # Cantidad moderada de bucles
+        scores["cul_de_sac"] += 2  # Aún compatible con cul-de-sac
+    elif loop_ratio >= 0.25 and loop_ratio < 0.35:  # Cantidad significativa de bucles
+        scores["cul_de_sac"] += 1  # Menos típico pero posible en algunos cul-de-sac
+    
+    # 7. NUEVO: Ramificación de calles sin salida
+    # Evalúa cómo las calles sin salida se ramifican desde arterias principales
+    if cul_de_sac_branch_ratio > 0.6:  # Alta ramificación jerárquica
+        scores["cul_de_sac"] += 4  # Fuerte indicador de patrón cul-de-sac planificado
+    elif cul_de_sac_branch_ratio > 0.5:  # Ramificación moderada-alta
+        scores["cul_de_sac"] += 3
+    elif cul_de_sac_branch_ratio > 0.4:  # Ramificación moderada
+        scores["cul_de_sac"] += 2
+    elif cul_de_sac_branch_ratio > 0.3:  # Ramificación baja pero significativa
+        scores["cul_de_sac"] += 1
+    
+    # 8. Densidad: Más flexible, reconociendo variantes más densas de cul-de-sac
+    if intersection_density < 25:  # Extremadamente baja densidad (suburbios extensos)
+        scores["cul_de_sac"] += 3
+    elif intersection_density < 40:  # Muy baja densidad
+        scores["cul_de_sac"] += 2
+    elif intersection_density < 70:  # Baja-media densidad (permite cul-de-sac más urbanos)
+        scores["cul_de_sac"] += 1
+    
+    # 9. Geometría y distribución
+    # Variabilidad en distancias entre calles sin salida (indicador de diseño suburbano)
+    if cv_dead_end_distances > 0.8:  # Alta variabilidad típica de desarrollos planificados
+        scores["cul_de_sac"] += 3
+    elif cv_dead_end_distances > 0.6:  # Variabilidad moderada-alta
+        scores["cul_de_sac"] += 2
+    elif cv_dead_end_distances > 0.4:  # Variabilidad moderada
+        scores["cul_de_sac"] += 1
+    
+    # 10. Combinaciones específicas de métricas para patrones cul-de-sac
+    # Estas combinaciones ayudan a detectar variantes específicas de cul-de-sac
+    
+    # 10.1 MEJORADO: Patrón cul-de-sac clásico
+    # Combinación de dead-ends, baja conectividad y baja densidad
+    if dead_end_ratio > 0.15 and streets_per_node < 2.5 and intersection_density < 50:
+        scores["cul_de_sac"] += 3  # Mayor peso
+        
+    # 10.2 MEJORADO: Patrón cul-de-sac compacto
+    # Calles sin salida pero densidad moderada y cierta regularidad
+    if dead_end_ratio > 0.15 and intersection_density > 50 and intersection_density < 90:
+        scores["cul_de_sac"] += 2
+        
+    # 10.3 MEJORADO: Patrón cul-de-sac con loops
+    # Sinuosidad moderada con calles sin salida y presencia de bucles
+    if dead_end_ratio > 0.10 and loop_ratio > 0.05 and loop_ratio < 0.20:
+        scores["cul_de_sac"] += 3  # Mayor peso
+        
+    # 10.4 NUEVO: Cul-de-sac en zonas de transición
+    # Áreas que mezclan cul-de-sac con elementos de retícula incompleta
+    if dead_end_ratio > 0.12 and orthogonal_proportion > 0.4 and orthogonal_proportion < 0.7:
+        scores["cul_de_sac"] += 2
+        
+    # 10.5 NUEVO: Cul-de-sac integrados
+    # Áreas donde el patrón cul-de-sac está integrado con otras tipologías
+    if dead_end_ratio > 0.10 and prop_deg3 > 0.30 and tree_like_structure_score > 0.35:
+        scores["cul_de_sac"] += 2
+    
+    # 10.6 NUEVO: Cul-de-sac de nueva generación
+    # Diseños contemporáneos que combinan calles sin salida con mejor conectividad
+    if dead_end_ratio > 0.12 and cul_de_sac_branch_ratio > 0.4 and loop_ratio > 0.1:
+        scores["cul_de_sac"] += 3
     
     # B. Puntuación para Gridiron / Reticular (manteniendo como estaba)
     if circuity < 1.02:  # Muy baja sinuosidad
@@ -404,22 +578,31 @@ def classify_polygon(poly_stats, G=None):
     # 5. Factores de penalización para patrones incompatibles (ajustados)
     # -------------------------------------------------------------------
     
-    # Penalizaciones ajustadas para Cul-de-sac
-    # Más enfoque en características fundamentales, menos en limitantes secundarias
+    # REVISADO: Penalizaciones más selectivas para Cul-de-sac
+    # Estas penalizaciones ahora son condicionales a múltiples factores
     
-    # Un alto streets_per_node es incompatible con cul-de-sac, pero menos importante
-    # si hay evidencia fuerte de calles sin salida
-    if streets_per_node > 3.0 and dead_end_ratio < 0.25:
+    # Penalización por alta conectividad solo si no hay evidencia clara de cul-de-sac
+    # y no hay estructura arbórea significativa
+    if streets_per_node > 3.2 and dead_end_ratio < 0.12 and tree_like_structure_score < 0.35:
         scores["cul_de_sac"] -= 2
-    elif streets_per_node > 2.8 and dead_end_ratio < 0.20:
+    elif streets_per_node > 3.0 and dead_end_ratio < 0.10 and tree_like_structure_score < 0.30:
         scores["cul_de_sac"] -= 1
     
-    # La densidad de intersecciones puede ser más variable en cul-de-sac modernos
-    # Solo penalizar densidades extremadamente altas
-    if intersection_density > 80:
+    # Penalización por densidad extremadamente alta, solo si no hay características
+    # distintivas de cul-de-sac como profundidad o ramificación significativas
+    if intersection_density > 120 and dead_end_ratio < 0.15 and cul_de_sac_depth_avg < 1.8:
         scores["cul_de_sac"] -= 2
-    elif intersection_density > 65 and dead_end_ratio < 0.20:
+    elif intersection_density > 100 and dead_end_ratio < 0.12 and cul_de_sac_depth_avg < 1.5:
         scores["cul_de_sac"] -= 1
+    
+    # Penalización por estructura demasiado regular o mallada
+    # Solo penalizar si no hay características compensatorias de cul-de-sac
+    if orthogonal_proportion > 0.85 and prop_deg4 > 0.4 and dead_end_ratio < 0.15 and tree_like_structure_score < 0.4:
+        scores["cul_de_sac"] -= 2  # Patrón extremadamente regular no es cul-de-sac típico
+    
+    # Penalización por alto porcentaje de bucles, incompatible con cul-de-sac puros
+    if loop_ratio > 0.5 and dead_end_ratio < 0.12:
+        scores["cul_de_sac"] -= 2  # Demasiados bucles para ser cul-de-sac típico
     
     # Penalizar Gridiron si hay alta sinuosidad o irregularidad (sin cambios)
     if circuity > 1.12:
@@ -475,23 +658,49 @@ def classify_polygon(poly_stats, G=None):
         dominant_pattern = "hibrido"  # Si no hay un patrón claramente dominante, es híbrido
     
     # -------------------------------------------------------------------
-    # 7. Post-procesamiento para ajustes finales
+    # 7. Post-procesamiento para ajustes finales - RECONSTRUIDO
     # -------------------------------------------------------------------
     
-    # Verificación especial para áreas orgánicas con algunas características excepcionales
-    # Por ejemplo, centros urbanos históricos pueden tener cierta densidad pero estructura orgánica
-    if dominant_pattern == "hibrido":
-        # Si tiene buena puntuación orgánica y no es claramente otro patrón
-        if scores["organico"] >= 3 and scores["gridiron"] <= scores["organico"] - 1 and scores["cul_de_sac"] <= scores["organico"] - 1:
-            dominant_pattern = "organico"
+    # NUEVO: Sistema de verificación avanzada para patrones cul-de-sac
+    # Prioriza la detección de cul-de-sac basándose en criterios jerárquicos
+    
+    # Regla 1: Evidencia directa muy fuerte - sobrescribe cualquier otra clasificación
+    if dead_end_ratio > 0.20 and (tree_like_structure_score > 0.45 or cul_de_sac_depth_avg > 2.2):
+        dominant_pattern = "cul_de_sac"
         
-        # Verificación especial para cul-de-sac basada en dead_end_ratio 
-        # Prioriza los casos con alto dead_end_ratio incluso si otras métricas son mixtas
-        if dead_end_ratio > 0.25 and scores["cul_de_sac"] >= 3:
-            dominant_pattern = "cul_de_sac"  # Fuerza cul-de-sac si hay muchas calles sin salida
-        elif scores["cul_de_sac"] >= 3 and scores["gridiron"] <= scores["cul_de_sac"] - 1 and scores["organico"] <= scores["cul_de_sac"] - 1:
+    # Regla 2: Combinación de múltiples indicadores fuertes de cul-de-sac
+    elif dominant_pattern == "hibrido" or scores["cul_de_sac"] >= scores[dominant_pattern] - 1:
+        # Verificamos combinaciones específicas que deberían garantizar clasificación como cul-de-sac
+        
+        # 2.1: Calles sin salida significativas + estructura arbórea
+        if dead_end_ratio > 0.15 and tree_like_structure_score > 0.40:
+            dominant_pattern = "cul_de_sac"
+            
+        # 2.2: Calles sin salida + baja conectividad + profundidad significativa
+        elif dead_end_ratio > 0.12 and streets_per_node < 2.7 and cul_de_sac_depth_avg > 1.8:
+            dominant_pattern = "cul_de_sac"
+            
+        # 2.3: Patrón de ramificación clara + calles sin salida moderadas
+        elif dead_end_ratio > 0.10 and cul_de_sac_branch_ratio > 0.5:
+            dominant_pattern = "cul_de_sac"
+            
+        # 2.4: Configuración de cul-de-sac modernos con loops
+        elif dead_end_ratio > 0.08 and loop_ratio > 0.05 and loop_ratio < 0.25 and tree_like_structure_score > 0.35:
             dominant_pattern = "cul_de_sac"
     
+    # Regla 3: Verificación adicional para evitar casos de falsos positivos
+    # Si está clasificado como cul-de-sac pero tiene características contradictorias fuertes
+    if dominant_pattern == "cul_de_sac":
+        # Posible falso positivo - estructura demasiado ortogonal y densa para ser cul-de-sac
+        if prop_deg4 > 0.4 and orthogonal_proportion > 0.8 and intersection_density > 100 and dead_end_ratio < 0.15:
+            dominant_pattern = "hibrido"  # Reclasificar como híbrido
+    
+    # Regla 4: En caso de duda con buena evidencia parcial, favorecer cul-de-sac
+    # Esta regla final atrapa los casos límite donde hay indicios significativos de cul-de-sac
+    if dominant_pattern == "hibrido" and scores["cul_de_sac"] >= 5:
+        dominant_pattern = "cul_de_sac"
+    
+  
     return dominant_pattern
 
 def add_classification_to_gdf(geojson_path, stats_dict):
@@ -542,7 +751,7 @@ def plot_polygons_classification_png(
         Ruta donde guardar la imagen resultante
     graph_dict : dict, opcional
         Diccionario con los grafos de red vial para cada polígono.
-        Las claves deben ser compatibles con los identificadores de polígonos.
+        Las claves pueden tener formato diferente a las de stats_dict.
 
     Retorna:
     --------
@@ -558,25 +767,41 @@ def plot_polygons_classification_png(
     
     for idx, row in gdf.iterrows():
         # Identificar el polígono
-        poly_id = row['poly_id'] if 'poly_id' in gdf.columns else str(idx)
+        poly_id = row['poly_id'] if 'poly_id' in gdf.columns else idx
         key = (idx, 0)  # Asumiendo que cada fila = sub-polígono 0
         
         if key in stats_dict:
             poly_stats = stats_dict[key]
             
-            # Buscar el grafo correspondiente al polígono
+            # Manejo mejorado de graph_dict
             G = None
             if graph_dict is not None:
-                G = graph_dict.get(poly_id)
-                if G is None:
-                    print(f"Advertencia: No se encontró grafo para el polígono {poly_id}")
+                # 1. Extraer el ID principal del polígono
+                if isinstance(poly_id, tuple) and len(poly_id) >= 1:
+                    main_id = poly_id[0]
+                else:
+                    main_id = poly_id
+                
+                # 2. Generar posibles formatos de clave
+                possible_keys = [main_id, str(main_id), idx, str(idx), key]
+                
+                # 3. Buscar el grafo usando las posibles claves
+                for possible_key in possible_keys:
+                    if possible_key in graph_dict:
+                        G = graph_dict[possible_key]
+                        break
+                
+                # 4. Verificar que G sea un objeto grafo válido
+                if G is not None and not hasattr(G, 'number_of_nodes'):
+                    print(f"Advertencia: El objeto para el polígono {poly_id} no es un grafo válido.")
+                    G = None
             
             # Clasificar el polígono usando la función de clasificación
             # Pasando tanto las estadísticas como el grafo
             category = classify_func(poly_stats, G)
         else:
             print(f"Advertencia: No se encontraron estadísticas para el polígono {poly_id}")
-            category = "desconocido"
+            category = "unknown"
             
         patterns.append(category)
 
@@ -591,13 +816,12 @@ def plot_polygons_classification_png(
 
     # Mapear cada clase a un color
     color_map = {
-     'cul_de_sac': '#FF6B6B',   # Rojo para callejones sin salida
+        'cul_de_sac': '#FF6B6B',   # Rojo para callejones sin salida
         'gridiron': '#006400',     # Verde oscuro para grid
         'organico': '#45B7D1',     # Azul para orgánico
         'hibrido': '#FDCB6E',      # Amarillo para híbrido
         'unknown': '#CCCCCC'       # Gris para desconocidos
     }
-
 
     # Función para obtener el color según la categoría
     def get_color(cat):
@@ -643,51 +867,7 @@ def plot_polygons_classification_png(
     plt.close(fig)
     print(f"Imagen guardada en: {output_png}")
     
-    return gdf 
-
-
-# # =============================================================================
-# # Ejemplo de uso
-# if __name__ == "__main__":
-#     # geojson_file = "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson"
-#     # stats_txt = "Polygons_analysis/Peachtree_GA/stats/Polygon_Stats_for_Peachtree_GA.txt"
-
-#     # geojson_file = "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson"
-#     # stats_txt = "Polygons_analysis/Chandler_AZ/stats/Polygon_Stats_for_Chandler_AZ.txt"
-
-#     # geojson_file = "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson"
-#     # stats_txt = "Polygons_analysis/Salt_Lake_UT/stats/Polygon_Stats_for_Salt_Lake_UT.txt"
-        
-#     # geojson_file = "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson"
-#     # stats_txt = "Polygons_analysis/Moscow_ID/stats/Polygon_Stats_for_Moscow_ID.txt"
-
-#     # geojson_file = "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson"
-#     # stats_txt = "Polygons_analysis/Boston_MA/stats/Polygon_Stats_for_Boston_MA.txt"
-
-#     geojson_file = "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson"
-#     stats_txt = "Polygons_analysis/Santa_Fe_NM/stats/Polygon_Stats_for_Santa_Fe_NM.txt"
-
-#     # geojson_file = "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson"
-#     # stats_txt = "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt"
-
-
-
-
-
-#     # 1. Cargar stats desde .txt
-#     stats_dict = load_polygon_stats_from_txt(stats_txt)
-
-#     # 2. Generar PNG con cada fila = (idx, 0)
-#     plot_polygons_classification_png(
-#         geojson_path=geojson_file,
-#         stats_dict=stats_dict,
-#         classify_func=classify_polygon,
-#         output_png="polygon_classification.png"
-#     )
-# NOTA MENTAL : ESTA FUNCION NO SIRVE PA NADA MI H
-
-
-
+    return gdf
 
 def normalize_edge(x0, y0, x1, y1, tol=4):
     """
@@ -697,257 +877,6 @@ def normalize_edge(x0, y0, x1, y1, tol=4):
     p1 = (round(x0, tol), round(y0, tol))
     p2 = (round(x1, tol), round(y1, tol))
     return tuple(sorted([p1, p2]))
-
-def plot_street_patterns_classification(
-    geojson_path,
-    classify_func,
-    stats_dict,
-    place_name="MyPlace",
-    network_type="drive",
-    output_folder="Graphs_Cities",
-    simplify=True
-):
-    """
-    Genera un HTML interactivo en Plotly con DOS capas:
-      1) Capa base vectorial (en gris) de la red completa a partir de la unión de
-         todos los polígonos, filtrando aquellos segmentos que se sobreponen con los
-         de la clasificación.
-      2) Capas vectoriales de sub-polígonos coloreados según su clasificación.
-    
-    De esta forma, los segmentos repetidos se muestran sólo en la capa clasificada.
-    """
-    print("Construyendo la capa base (red completa) a partir de la unión de polígonos...")
-    gdf = gpd.read_file(geojson_path)
-    try:
-        poly_union = gdf.union_all()  # Si tu geopandas es reciente
-    except AttributeError:
-        poly_union = gdf.unary_union
-
-    try:
-        G_full = ox.graph_from_polygon(poly_union, network_type=network_type, simplify=simplify)
-    except Exception as e:
-        print(f"Error al crear la red base: {e}")
-        return
-
-    if len(G_full.edges()) == 0:
-        print("La red base (unión) está vacía. Revisa tu GeoJSON y tipo de red.")
-        return
-
-    G_full = ox.project_graph(G_full)
-    base_nodes = list(G_full.nodes())
-    base_positions = np.array([(G_full.nodes[n]['y'], G_full.nodes[n]['x']) for n in base_nodes])
-    x_vals = base_positions[:, 1]
-    y_vals = base_positions[:, 0]
-    global_x_min, global_x_max = x_vals.min(), x_vals.max()
-    global_y_min, global_y_max = y_vals.min(), y_vals.max()
-
-    # --------------------------------------------------------------------------------
-    # B) CAPAS DE SUB-POLÍGONOS: Genera trazas vectoriales clasificadas y almacena
-    # sus segmentos en un set para filtrar la capa base
-    # --------------------------------------------------------------------------------
-    print("Generando capas vectoriales para sub-polígonos clasificados...")
-    pattern_colors = {
-        "cul_de_sac":   "red",
-        "gridiron":     "green",
-        "organico":     "blue",
-        "hibrido":      "orange"
-    }
-    default_color = "gray"
-    classification_traces = []
-    classified_edges_set = set()
-
-    for idx, row in gdf.iterrows():
-        geom = row.geometry
-        if geom is None or geom.is_empty:
-            continue
-        if geom.geom_type == "Polygon":
-            polys = [geom]
-        elif geom.geom_type == "MultiPolygon":
-            polys = list(geom.geoms)
-        else:
-            continue
-
-        for sub_idx, poly in enumerate(polys):
-            key = (idx, sub_idx)
-            if key in stats_dict:
-                poly_stats = stats_dict[key]
-                poly_class = classify_func(poly_stats)
-            else:
-                poly_class = None
-            color = pattern_colors.get(poly_class, default_color)
-            try:
-                G_sub = ox.graph_from_polygon(poly, network_type=network_type, simplify=simplify)
-            except Exception:
-                continue
-            if len(G_sub.edges()) == 0:
-                continue
-            G_sub = ox.project_graph(G_sub)
-            sub_nodes = list(G_sub.nodes())
-            sub_positions = np.array([(G_sub.nodes[n]['y'], G_sub.nodes[n]['x']) for n in sub_nodes])
-            if sub_positions.size == 0:
-                continue
-
-            # Actualizar bounding box global
-            lx_min, lx_max = sub_positions[:,1].min(), sub_positions[:,1].max()
-            ly_min, ly_max = sub_positions[:,0].min(), sub_positions[:,0].max()
-            global_x_min = min(global_x_min, lx_min)
-            global_x_max = max(global_x_max, lx_max)
-            global_y_min = min(global_y_min, ly_min)
-            global_y_max = max(global_y_max, ly_max)
-
-            # Procesar aristas del sub-grafo y almacenarlas en el set
-            edge_x = []
-            edge_y = []
-            for u, v in G_sub.edges():
-                if u in sub_nodes and v in sub_nodes:
-                    u_idx = sub_nodes.index(u)
-                    v_idx = sub_nodes.index(v)
-                    # Extraer coordenadas de cada extremo (en proyección)
-                    x0 = sub_positions[u_idx][1]
-                    y0 = sub_positions[u_idx][0]
-                    x1 = sub_positions[v_idx][1]
-                    y1 = sub_positions[v_idx][0]
-                    # Normalizar el segmento
-                    norm_edge = normalize_edge(x0, y0, x1, y1)
-                    classified_edges_set.add(norm_edge)
-                    edge_x.extend([x0, x1, None])
-                    edge_y.extend([y0, y1, None])
-                    
-            edge_trace = go.Scattergl(
-                x=edge_x, y=edge_y,
-                mode='lines',
-                line=dict(width=1.0, color=color),
-                hoverinfo='none',
-                name=f"Polígono {idx}-{sub_idx} ({poly_class})" if poly_class else f"Polígono {idx}-{sub_idx}"
-            )
-            x_sub = sub_positions[:,1]
-            y_sub = sub_positions[:,0]
-            node_trace = go.Scattergl(
-                x=x_sub, y=y_sub,
-                mode='markers',
-                marker=dict(
-                    size=1,
-                    color=color,
-                    opacity=0.9,
-                    line=dict(width=0.4, color='black')
-                ),
-                hoverinfo='none',
-                name=f"Polígono {idx}-{sub_idx} ({poly_class})" if poly_class else f"Polígono {idx}-{sub_idx}"
-            )
-            classification_traces.append(edge_trace)
-            classification_traces.append(node_trace)
-
-    # --------------------------------------------------------------------------------
-    # C) CAPA BASE VECTORIAL: Filtrar segmentos que aparecen en la capa clasificada
-    # --------------------------------------------------------------------------------
-    print("Filtrando segmentos repetidos en la capa base...")
-    base_edges_filtered = []
-    base_edge_x = []
-    base_edge_y = []
-    for u, v in G_full.edges():
-        if u in base_nodes and v in base_nodes:
-            u_idx = base_nodes.index(u)
-            v_idx = base_nodes.index(v)
-            x0 = base_positions[u_idx][1]
-            y0 = base_positions[u_idx][0]
-            x1 = base_positions[v_idx][1]
-            y1 = base_positions[v_idx][0]
-            norm_edge = normalize_edge(x0, y0, x1, y1)
-            if norm_edge not in classified_edges_set:
-                # Este segmento no está en la capa clasificada, lo añadimos
-                base_edge_x.extend([x0, x1, None])
-                base_edge_y.extend([y0, y1, None])
-                base_edges_filtered.append(norm_edge)
-    
-    base_edge_trace = go.Scattergl(
-        x=base_edge_x, y=base_edge_y,
-        mode='lines',
-        line=dict(width=0.5, color='rgba(150,150,150,0.6)'),
-        hoverinfo='none',
-        name='BASE: Red completa'
-    )
-
-    # --------------------------------------------------------------------------------
-    # D) Crear la figura final: Unir la capa base filtrada y las capas de clasificación
-    # --------------------------------------------------------------------------------
-    final_traces = [base_edge_trace] + classification_traces
-
-    x_range = [global_x_min, global_x_max]
-    y_range = [global_y_min, global_y_max]
-
-    layout = go.Layout(
-        title=f'Clasificación de Street Patterns - {place_name}',
-        showlegend=True,
-        hovermode='closest',
-        margin=dict(b=20, l=20, r=20, t=40),
-        xaxis=dict(
-            range=x_range,
-            autorange=False,
-            scaleanchor="y",
-            constrain='domain',
-            showgrid=False,
-            zeroline=False,
-            showticklabels=False
-        ),
-        yaxis=dict(
-            range=y_range,
-            autorange=False,
-            showgrid=False,
-            zeroline=False,
-            showticklabels=False
-        ),
-        template='plotly_white',
-        height=800,
-        paper_bgcolor="#F5F5F5",
-        plot_bgcolor="#FFFFFF"
-    )
-
-    fig = go.Figure(data=final_traces, layout=layout)
-
-    config = {
-        'scrollZoom': True,
-        'displayModeBar': True,
-        'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
-        'toImageButtonOptions': {
-            'format': 'svg',
-            'width': 1600,
-            'height': 1600
-        },
-        'responsive': True
-    }
-
-    os.makedirs(output_folder, exist_ok=True)
-    out_html = os.path.join(output_folder, f"StreetPatterns_{place_name}.html")
-    fig.write_html(
-        out_html, 
-        config=config, 
-        include_plotlyjs='cdn', 
-        auto_open=False, 
-        full_html=True,
-        default_width='100%',
-        default_height='100%'
-        )
-
-    print(f"Archivo HTML generado: {out_html}")
-    print("Capa base filtrada (sin duplicados) + sub-polígonos clasificados superpuestos.")
-
-# ================== EJEMPLO DE USO ==================
-# if __name__ == "__main__":
-#     # Define las rutas a tus archivos
-#     geojson_file = "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson"
-#     stats_txt = "Polygons_analysis/Peachtree_GA/stats/Polygon_Stats_for_Peachtree_GA.txt"
-#     stats_dict = load_polygon_stats_from_txt(stats_txt)
-    
-
-#     plot_street_patterns_classification(
-#         geojson_path=geojson_file,
-#         classify_func=classify_polygon,
-#         stats_dict=stats_dict,
-#         place_name="Medellin",
-#         network_type="drive",
-#         output_folder="Graphs_Cities",
-#         simplify=False
-#     )
 
 def match_polygons_by_area(gdfA, gdfB, area_ratio_threshold=0.9, out_csv=None):
     """
@@ -2885,30 +2814,50 @@ def urban_pattern_clustering(
     }
     
     # Añadir colores para nombres de cluster
+    # Añadir colores para nombres de cluster
+    # Añadir colores para nombres de cluster
     for cluster, name in cluster_names.items():
-        pattern = name.split('_')[0]
-        if pattern in color_map:
-            base_color = np.array(mcolors.to_rgb(color_map[pattern]))
-            # Ajustar color ligeramente para distinguir patrones similares
-            if '_' in name and pattern in named_patterns:
-                # Oscurecer o aclarar el color según el sufijo
-                suffix = name.split('_')[1]
+        # Manejo especial para cul_de_sac (tiene dos guiones bajos)
+        if name.startswith('cul_de_sac'):
+            pattern = 'cul_de_sac'
+            # Usar el mismo enfoque para obtener el sufijo
+            if '_' in name:
+                suffix = name.split('_')[2]
                 if suffix.startswith('alto'):
-                    # Más claro
-                    adjusted_color = base_color + (1 - base_color) * 0.3
+                    color_map[name] = '#e93939'  # Color específico para cul_de_sac_alto
                 elif suffix.startswith('bajo'):
-                    # Más oscuro
-                    adjusted_color = base_color * 0.7
+                    color_map[name] = '#fa8072'  # Color específico para cul_de_sac_bajo
                 else:
-                    # Alternar entre tonos
-                    factor = int(suffix) * 0.15 if suffix.isdigit() else 0.2
-                    adjusted_color = base_color + np.array([0, factor, -factor])
-                
-                # Recortar valores a rango válido
-                adjusted_color = np.clip(adjusted_color, 0, 1)
-                color_map[name] = mcolors.to_hex(adjusted_color)
+                    # Para otros sufijos de cul_de_sac, usar el color base
+                    color_map[name] = color_map[pattern]
             else:
+                # Si es solo 'cul_de_sac' sin sufijo
                 color_map[name] = color_map[pattern]
+        else:
+            # Para todos los demás patrones normales
+            pattern = name.split('_')[0]
+            if pattern in color_map:
+                base_color = np.array(mcolors.to_rgb(color_map[pattern]))
+                # Ajustar color ligeramente para distinguir patrones similares
+                if '_' in name and pattern in named_patterns:
+                    # Oscurecer o aclarar el color según el sufijo
+                    suffix = name.split('_')[1]
+                    if suffix.startswith('alto'):
+                        # Más claro
+                        adjusted_color = base_color + (1 - base_color) * 0.3
+                    elif suffix.startswith('bajo'):
+                        # Más oscuro
+                        adjusted_color = base_color * 0.7
+                    else:
+                        # Alternar entre tonos
+                        factor = int(suffix) * 0.15 if suffix.isdigit() else 0.2
+                        adjusted_color = base_color + np.array([0, factor, -factor])
+                    
+                    # Recortar valores a rango válido
+                    adjusted_color = np.clip(adjusted_color, 0, 1)
+                    color_map[name] = mcolors.to_hex(adjusted_color)
+                else:
+                    color_map[name] = color_map[pattern]
 
     # ---- NUEVAS ADICIONES: ANÁLISIS DE EXACTITUD ----
     
@@ -3149,7 +3098,7 @@ ciudades = [
     # "Boston_MA",
     # "Chandler_AZ",
     # "Salt_Lake_UT",
-    # "Santa_Fe_NM",
+    "Santa_Fe_NM",
     'Medellin_ANT'
 ]
 
@@ -3185,7 +3134,7 @@ def main_clustering():
             # Procesar polígonos y generar grafos
             print("Procesando polígonos y generando grafos...")
             graph_dict = procesar_poligonos_y_generar_grafos(gdf)
-            
+
             # Cargar estadísticas
             print("Cargando estadísticas de polígonos...")
             stats_dict = load_polygon_stats_from_txt(stats_txt)
@@ -3228,11 +3177,6 @@ if __name__ == "__main__":
 
 
 
-
-#################################################################################
-# section to verify data formats, to check index, and set ups for the geojson files
-
-
 # # 1. Cargar los polígonos
 # geojson_path = "GeoJSON_Export/medellin_ant/tracts/medellin_ant_tracts.geojson"
 # gdf = gpd.read_file(geojson_path)
@@ -3271,4 +3215,625 @@ if __name__ == "__main__":
 
 
 
+
+
+
+
+
+
+
+
+def plot_street_patterns_optimized(
+    geojson_path,
+    classify_func,
+    graph_dict,
+    stats_dict,
+    place_name="MyPlace",
+    network_type="drive",
+    output_folder="Graphs_Cities",
+    simplify=True,
+    filter_patterns=None,  # Lista de patrones a incluir en la versión filtrada
+    filter_poly_ids=None,  # Lista de IDs específicos para la versión filtrada
+    max_polygons_per_pattern=None  # Límite por patrón para la versión filtrada
+):
+    """
+    Genera DOS archivos HTML interactivos en una sola pasada:
+    1) Versión completa con todos los polígonos (igual que la función original)
+    2) Versión filtrada solo con los polígonos seleccionados
+    
+    Esto evita duplicar cálculos costosos y reduce significativamente el tiempo total.
+    """
+    print("Iniciando procesamiento optimizado para generar dos visualizaciones...")
+    
+    # Leer y preparar datos (solo una vez)
+    print("Leyendo GeoJSON y construyendo la red completa...")
+    gdf = gpd.read_file(geojson_path)
+    try:
+        poly_union = gdf.union_all()
+    except AttributeError:
+        poly_union = gdf.unary_union
+
+    try:
+        G_full = ox.graph_from_polygon(poly_union, network_type=network_type, simplify=simplify)
+    except Exception as e:
+        print(f"Error al crear la red base: {e}")
+        return
+
+    if len(G_full.edges()) == 0:
+        print("La red base (unión) está vacía. Revisa tu GeoJSON y tipo de red.")
+        return
+
+    G_full = ox.project_graph(G_full)
+    base_nodes = list(G_full.nodes())
+    base_positions = np.array([(G_full.nodes[n]['y'], G_full.nodes[n]['x']) for n in base_nodes])
+    x_vals = base_positions[:, 1]
+    y_vals = base_positions[:, 0]
+    global_x_min, global_x_max = x_vals.min(), x_vals.max()
+    global_y_min, global_y_max = y_vals.min(), y_vals.max()
+
+    # --------------------------------------------------------------------------------
+    # Primer paso: Procesar TODOS los polígonos y almacenar sus datos
+    # --------------------------------------------------------------------------------
+    print("Procesando todos los polígonos y clasificándolos (una sola vez)...")
+    
+    pattern_colors = {
+        'cul_de_sac': '#FF6B6B',   # Rojo para callejones sin salida
+        'gridiron': '#006400',     # Verde oscuro para grid
+        'organico': '#0F2F76',     # Azul para orgánico
+        'hibrido': '#FDCB6E'     # Amarillo para híbrido
+    }
+    default_color = "gray"
+    
+    # Contadores para limitar polígonos por patrón en la versión filtrada
+    pattern_counters = {pattern: 0 for pattern in pattern_colors.keys()}
+    
+    # Estructuras de datos para almacenar toda la información
+    all_polygons_data = []  # Todos los polígonos procesados
+    classified_edges_all = set()  # Todos los segmentos de bordes clasificados
+    
+    # Para cada polígono, procesarlo y almacenar sus datos
+    for idx, row in gdf.iterrows():
+        geom = row.geometry
+        if geom is None or geom.is_empty:
+            continue
+        if geom.geom_type == "Polygon":
+            polys = [geom]
+        elif geom.geom_type == "MultiPolygon":
+            polys = list(geom.geoms)
+        else:
+            continue
+
+        for sub_idx, poly in enumerate(polys):
+            key = (idx, sub_idx)
+            
+            # Clasificar el polígono (igual que antes, acceso robusto al grafo)
+            poly_class = None
+            if key in stats_dict:
+                poly_stats = stats_dict[key]
+                
+                # Método robusto para acceder al grafo
+                if isinstance(key, tuple) and len(key) >= 1:
+                    main_id = key[0]
+                else:
+                    main_id = key
+                
+                possible_keys = [main_id, str(main_id), key, str(key)]
+                G = None
+                for possible_key in possible_keys:
+                    if possible_key in graph_dict:
+                        G = graph_dict[possible_key]
+                        break
+                
+                if G is not None and hasattr(G, 'number_of_nodes'):
+                    poly_class = classify_func(poly_stats, G)
+                else:
+                    print(f"Advertencia: No se encontró grafo válido para el polígono {key}, usando None.")
+                    poly_class = classify_func(poly_stats, None)
+            
+            # Determinar si este polígono debe incluirse en la versión filtrada
+            include_in_filtered = True
+            
+            # Filtro por patrón
+            if filter_patterns is not None and poly_class not in filter_patterns:
+                include_in_filtered = False
+            
+            # Filtro por ID específico
+            if filter_poly_ids is not None:
+                poly_id_options = [key, idx, f"{idx}-{sub_idx}", (idx, sub_idx), str(idx)]
+                if not any(pid in filter_poly_ids for pid in poly_id_options):
+                    include_in_filtered = False
+            
+            # Filtro por límite de polígonos por patrón
+            if max_polygons_per_pattern is not None and poly_class is not None and include_in_filtered:
+                if pattern_counters[poly_class] >= max_polygons_per_pattern:
+                    include_in_filtered = False
+                else:
+                    pattern_counters[poly_class] += 1
+            
+            # Procesar el polígono y generar su grafo
+            try:
+                G_sub = ox.graph_from_polygon(poly, network_type=network_type, simplify=simplify)
+                if len(G_sub.edges()) == 0:
+                    continue
+                
+                G_sub = ox.project_graph(G_sub)
+                sub_nodes = list(G_sub.nodes())
+                sub_positions = np.array([(G_sub.nodes[n]['y'], G_sub.nodes[n]['x']) for n in sub_nodes])
+                
+                if sub_positions.size == 0:
+                    continue
+                
+                # Actualizar bounding box global
+                lx_min, lx_max = sub_positions[:,1].min(), sub_positions[:,1].max()
+                ly_min, ly_max = sub_positions[:,0].min(), sub_positions[:,0].max()
+                global_x_min = min(global_x_min, lx_min)
+                global_x_max = max(global_x_max, lx_max)
+                global_y_min = min(global_y_min, ly_min)
+                global_y_max = max(global_y_max, ly_max)
+                
+                # Procesar bordes
+                edge_data = []
+                for u, v in G_sub.edges():
+                    if u in sub_nodes and v in sub_nodes:
+                        u_idx = sub_nodes.index(u)
+                        v_idx = sub_nodes.index(v)
+                        x0 = sub_positions[u_idx][1]
+                        y0 = sub_positions[u_idx][0]
+                        x1 = sub_positions[v_idx][1]
+                        y1 = sub_positions[v_idx][0]
+                        norm_edge = normalize_edge(x0, y0, x1, y1)
+                        classified_edges_all.add(norm_edge)
+                        edge_data.append((x0, y0, x1, y1, norm_edge))
+                
+                # Almacenar todos los datos del polígono para usar después
+                polygon_data = {
+                    'id': key,
+                    'id_str': f"{idx}-{sub_idx}",
+                    'polygon': poly,
+                    'class': poly_class,
+                    'color': pattern_colors.get(poly_class, default_color),
+                    'nodes': sub_nodes,
+                    'positions': sub_positions,
+                    'edges': edge_data,
+                    'include_in_filtered': include_in_filtered
+                }
+                
+                all_polygons_data.append(polygon_data)
+                
+            except Exception as e:
+                print(f"Error procesando polígono {idx}-{sub_idx}: {e}")
+                continue
+    
+    print(f"Total de polígonos procesados: {len(all_polygons_data)}")
+    
+    # --------------------------------------------------------------------------------
+    # Generar la visualización completa (todos los polígonos)
+    # --------------------------------------------------------------------------------
+    print("Generando visualización COMPLETA con todos los polígonos...")
+    
+    # Preparar trazas para la versión completa
+    all_traces = []
+    
+    # Añadir todas las trazas de polígonos
+    for poly_data in all_polygons_data:
+        # Extraer datos del polígono
+        edge_x = []
+        edge_y = []
+        for x0, y0, x1, y1, _ in poly_data['edges']:
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+        
+        edge_trace = go.Scattergl(
+            x=edge_x, y=edge_y,
+            mode='lines',
+            line=dict(width=1.0, color=poly_data['color']),
+            hoverinfo='none',
+            name=f"Polígono {poly_data['id_str']} ({poly_data['class']})" if poly_data['class'] else f"Polígono {poly_data['id_str']}"
+        )
+        
+        x_sub = poly_data['positions'][:,1]
+        y_sub = poly_data['positions'][:,0]
+        node_trace = go.Scattergl(
+            x=x_sub, y=y_sub,
+            mode='markers',
+            marker=dict(
+                size=1,
+                color=poly_data['color'],
+                opacity=0.9,
+                line=dict(width=0.4, color='black')
+            ),
+            hoverinfo='none',
+            name=f"Polígono {poly_data['id_str']} ({poly_data['class']})" if poly_data['class'] else f"Polígono {poly_data['id_str']}"
+        )
+        
+        all_traces.append(edge_trace)
+        all_traces.append(node_trace)
+    
+    # Añadir capa base (por consistencia con la función original)
+    base_edge_x = []
+    base_edge_y = []
+    for u, v in G_full.edges():
+        if u in base_nodes and v in base_nodes:
+            u_idx = base_nodes.index(u)
+            v_idx = base_nodes.index(v)
+            x0 = base_positions[u_idx][1]
+            y0 = base_positions[u_idx][0]
+            x1 = base_positions[v_idx][1]
+            y1 = base_positions[v_idx][0]
+            norm_edge = normalize_edge(x0, y0, x1, y1)
+            if norm_edge not in classified_edges_all:
+                base_edge_x.extend([x0, x1, None])
+                base_edge_y.extend([y0, y1, None])
+    
+    base_edge_trace = go.Scattergl(
+        x=base_edge_x, y=base_edge_y,
+        mode='lines',
+        line=dict(width=0.5, color='rgba(150,150,150,0.6)'),
+        hoverinfo='none',
+        name='BASE: Red completa'
+    )
+    
+    # Insertar la capa base al principio
+    all_traces.insert(0, base_edge_trace)
+    
+    # Crear la figura completa
+    layout_full = go.Layout(
+        title=f'Clasificación de Street Patterns - {place_name} (Completo)',
+        showlegend=True,
+        hovermode='closest',
+        margin=dict(b=20, l=20, r=20, t=40),
+        xaxis=dict(
+            range=[global_x_min, global_x_max],
+            autorange=False,
+            scaleanchor="y",
+            constrain='domain',
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False
+        ),
+        yaxis=dict(
+            range=[global_y_min, global_y_max],
+            autorange=False,
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False
+        ),
+        template='plotly_white',
+        height=800,
+        paper_bgcolor="#F5F5F5",
+        plot_bgcolor="#FFFFFF"
+    )
+    
+    fig_full = go.Figure(data=all_traces, layout=layout_full)
+    
+    config = {
+        'scrollZoom': True,
+        'displayModeBar': True,
+        'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
+        'toImageButtonOptions': {
+            'format': 'svg',
+            'width': 1600,
+            'height': 1600
+        },
+        'responsive': True
+    }
+    
+    # Guardar visualización completa
+    os.makedirs(output_folder, exist_ok=True)
+    full_html = os.path.join(output_folder, f"StreetPatterns_{place_name}_Completo.html")
+    fig_full.write_html(
+        full_html, 
+        config=config, 
+        include_plotlyjs='cdn', 
+        auto_open=False, 
+        full_html=True,
+        default_width='100%',
+        default_height='100%'
+    )
+    
+    print(f"Archivo HTML completo generado: {full_html}")
+    
+    # --------------------------------------------------------------------------------
+    # Generar la visualización filtrada (solo polígonos seleccionados)
+    # --------------------------------------------------------------------------------
+    print("Generando visualización FILTRADA solo con los polígonos seleccionados...")
+    
+    # Contar cuántos polígonos filtrados hay por categoría para el resumen
+    filtered_polygons = [p for p in all_polygons_data if p['include_in_filtered']]
+    
+    if not filtered_polygons:
+        print("No hay polígonos que cumplan con los criterios de filtrado. No se generará la visualización filtrada.")
+        return
+    
+    # Resumen de polígonos filtrados
+    print(f"Polígonos incluidos en la visualización filtrada: {len(filtered_polygons)}")
+    filtered_by_class = {}
+    for p in filtered_polygons:
+        pattern = p['class'] or 'sin_clasificar'
+        if pattern not in filtered_by_class:
+            filtered_by_class[pattern] = []
+        filtered_by_class[pattern].append(p['id_str'])
+    
+    for pattern, ids in filtered_by_class.items():
+        print(f"- {pattern}: {len(ids)} polígonos")
+        if len(ids) <= 10:
+            print(f"  IDs: {', '.join(ids)}")
+        else:
+            print(f"  Primeros 5 IDs: {', '.join(ids[:5])}...")
+    
+    # Preparar trazas para la versión filtrada
+    filtered_traces = []
+    classified_edges_filtered = set()
+    
+    # Añadir solo las trazas de polígonos filtrados
+    for poly_data in filtered_polygons:
+        # Extraer datos del polígono
+        edge_x = []
+        edge_y = []
+        for x0, y0, x1, y1, edge in poly_data['edges']:
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+            classified_edges_filtered.add(edge)
+        
+        edge_trace = go.Scattergl(
+            x=edge_x, y=edge_y,
+            mode='lines',
+            line=dict(width=1.0, color=poly_data['color']),
+            hoverinfo='none',
+            name=f"Polígono {poly_data['id_str']} ({poly_data['class']})" if poly_data['class'] else f"Polígono {poly_data['id_str']}"
+        )
+        
+        x_sub = poly_data['positions'][:,1]
+        y_sub = poly_data['positions'][:,0]
+        node_trace = go.Scattergl(
+            x=x_sub, y=y_sub,
+            mode='markers',
+            marker=dict(
+                size=1,
+                color=poly_data['color'],
+                opacity=0.9,
+                line=dict(width=0.4, color='black')
+            ),
+            hoverinfo='none',
+            name=f"Polígono {poly_data['id_str']} ({poly_data['class']})" if poly_data['class'] else f"Polígono {poly_data['id_str']}"
+        )
+        
+        filtered_traces.append(edge_trace)
+        filtered_traces.append(node_trace)
+    
+    # Añadir capa base para la versión filtrada
+    filtered_base_edge_x = []
+    filtered_base_edge_y = []
+    for u, v in G_full.edges():
+        if u in base_nodes and v in base_nodes:
+            u_idx = base_nodes.index(u)
+            v_idx = base_nodes.index(v)
+            x0 = base_positions[u_idx][1]
+            y0 = base_positions[u_idx][0]
+            x1 = base_positions[v_idx][1]
+            y1 = base_positions[v_idx][0]
+            norm_edge = normalize_edge(x0, y0, x1, y1)
+            if norm_edge not in classified_edges_filtered:
+                filtered_base_edge_x.extend([x0, x1, None])
+                filtered_base_edge_y.extend([y0, y1, None])
+    
+    filtered_base_edge_trace = go.Scattergl(
+        x=filtered_base_edge_x, y=filtered_base_edge_y,
+        mode='lines',
+        line=dict(width=0.5, color='rgba(150,150,150,0.6)'),
+        hoverinfo='none',
+        name='BASE: Red completa'
+    )
+    
+    # Insertar la capa base al principio
+    filtered_traces.insert(0, filtered_base_edge_trace)
+    
+    # Crear título para versión filtrada
+    filtered_title = f'Clasificación de Street Patterns - {place_name} (Filtrado)'
+    if filter_patterns:
+        filtered_title += f" - Patrones: {', '.join(filter_patterns)}"
+    if filter_poly_ids:
+        filtered_title += f" - Polígonos específicos"
+    if max_polygons_per_pattern:
+        filtered_title += f" (máx {max_polygons_per_pattern} por patrón)"
+    
+    # Crear la figura filtrada
+    layout_filtered = go.Layout(
+        title=filtered_title,
+        showlegend=True,
+        hovermode='closest',
+        margin=dict(b=20, l=20, r=20, t=40),
+        xaxis=dict(
+            range=[global_x_min, global_x_max],
+            autorange=False,
+            scaleanchor="y",
+            constrain='domain',
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False
+        ),
+        yaxis=dict(
+            range=[global_y_min, global_y_max],
+            autorange=False,
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False
+        ),
+        template='plotly_white',
+        paper_bgcolor="#F5F5F5",
+        plot_bgcolor="#FFFFFF"
+    )
+    
+    fig_filtered = go.Figure(data=filtered_traces, layout=layout_filtered)
+    
+
+    
+    # Crear nombre de archivo para versión filtrada
+    filename = f"StreetPatterns_{place_name}_Filtrado"
+    if filter_patterns:
+        filename += f"_patterns_{'_'.join(filter_patterns)}"
+    if filter_poly_ids:
+        filename += "_specific_polys"
+    if max_polygons_per_pattern:
+        filename += f"_max{max_polygons_per_pattern}"
+    
+    # Guardar visualización filtrada
+    filtered_html = os.path.join(output_folder, f"{filename}.html")
+    fig_filtered.write_html(
+        filtered_html, 
+        config=config, 
+        include_plotlyjs='cdn', 
+        auto_open=False, 
+        full_html=True
+     
+    )
+    
+    print(f"Archivo HTML filtrado generado: {filtered_html}")
+    print("Proceso completado. Se generaron 2 archivos HTML:")
+    print(f"1. {full_html} - Versión completa con todos los polígonos")
+    print(f"2. {filtered_html} - Versión filtrada solo con los polígonos seleccionados")
+    
+    return {
+        'all_polygons': all_polygons_data,
+        'filtered_polygons': filtered_polygons,
+        'full_html': full_html,
+        'filtered_html': filtered_html
+    }
+
+
+# ##================== EJEMPLO DE USO ==================
+# if __name__ == "__main__":
+#     # Define las rutas a tus archivos
+#     geojson_file = "GeoJSON_Export/medellin_ant/tracts/medellin_ant_tracts.geojson"
+#     stats_txt = "Polygons_analysis/Medellin_ANT/stats/Polygon_Analisys_Medellin_ANT_sorted.txt"
+#     stats_dict = load_polygon_stats_from_txt(stats_txt)
+#     gdf = gpd.read_file(geojson_file)
+#     graph_dict = procesar_poligonos_y_generar_grafos(gdf)
+    
+
+#    # También se pueden filtrar polígonos específicos por ID
+#     resultados = plot_street_patterns_optimized(
+#     geojson_path=geojson_file,
+#     classify_func=classify_polygon,
+#     stats_dict=stats_dict,
+#     graph_dict=graph_dict,
+#     place_name="Medellin",
+#     network_type="drive",
+#     simplify=False,
+#     filter_poly_ids= [
+#     # La candelaria
+#     (236, 0), (235, 0), (234, 0), (233, 0),(231, 0),(230, 0), (229, 0), (228, 0), (226, 0), (225, 0),
+#     (224, 0), (222, 0), (221, 0), (220, 0), (218, 0), (217, 0), (216, 0), (191, 0),
+#     (190, 0), (189, 0), (188, 0), (187, 0), (185, 0), (184, 0), (183, 0), (182, 0),
+#     (181, 0), (181, 0), (179, 0), (178, 0), (177, 0), (176, 0), (175, 0),
+
+#     # # Poblado
+#     # (283, 0), (284, 0), (285, 0), (286, 0), (289, 0), (290, 0), (291, 0), (296, 0), (297, 0), 
+#     # (298, 0), (299, 0), (299, 0), (304, 0), (305, 0), (306, 0), (310, 0), (433, 0),
+
+#     # # Envigado
+#     # (21, 0), (142, 0), (143, 0), (144, 0), (145, 0), 
+#     # (357, 0), (359, 0), (389, 0), (393, 0), (394, 0), (407, 0),
+#     # (425, 0), (426, 0), (427, 0),  (444, 0),
+
+#     # Envigado
+#     (18.0),  (142, 0),  (144, 0), (145, 0), 
+#     (407, 0),(425, 0), (426, 0),   (444, 0),
+
+
+#     # # San anotnio de prado
+#     # (7, 0), (430, 0), (432, 0), (355, 0),
+
+#     # # Manrique 
+#     # (0,0), (36,0), (37,0), (42,0), (43,0), (44,0), (46,0), (47,0), (48,0), (52,0), (52,0), (61,0), (62,0),
+#     # (63,0), (64,0), (65,0), (96,0), (143,0),(144,0), (145,0), (357,0), (358,0), (359,0), (389,0), (393,0), (394,0),
+#     # (407,0), (408,0), (425,0), (426,0), (427,0), (433,0), (435,0), (436,0), (439,0), (443,0), (444,0)
+
+#     ]
+
+# )
+
+# # Para ver información detallada sobre los polígonos procesados
+# # (útil para análisis adicionales)
+# if resultados:
+#     print("\nDetalles de los polígonos filtrados:")
+#     for idx, poly in enumerate(resultados['filtered_polygons']):
+#         print(f"{idx+1}. ID: {poly['id_str']}, Patrón: {poly['class']}, Nodos: {len(poly['nodes'])}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import geopandas as gpd
+# import os
+# import json
+
+# def add_polygon_ids_to_geojson(
+#     input_geojson_path,
+#     output_geojson_path=None,
+#     id_field_name="Py_poly_id"
+# ):
+#     gdf = gpd.read_file(input_geojson_path)
+#     gdf[id_field_name] = None
+#     gdf["is_multipolygon"] = False
+#     gdf["num_sub_polygons"] = 1
+
+#     id_mapping = {}
+
+#     for idx, row in gdf.iterrows():
+#         geom = row.geometry
+
+#         if geom is None or geom.is_empty:
+#             gdf.at[idx, id_field_name] = f"empty_{idx}"
+#             continue
+
+#         if geom.geom_type == "Polygon":
+#             poly_id = f"{idx}-0"
+#             gdf.at[idx, id_field_name] = poly_id
+#             id_mapping[poly_id] = {
+#                 "original_idx": idx,
+#                 "sub_idx": 0,
+#                 "area": geom.area,
+#                 "perimeter": geom.length,
+#                 "tuple_id": f"({idx}, 0)"
+#             }
+
+#         elif geom.geom_type == "MultiPolygon":
+#             subpolys = list(geom.geoms)
+#             gdf.at[idx, "is_multipolygon"] = True
+#             gdf.at[idx, "num_sub_polygons"] = len(subpolys)
+
+#             id_list = []
+#             for sub_idx, _ in enumerate(subpolys):
+#                 poly_id = f"{idx}-{sub_idx}"
+#                 id_list.append(poly_id)
+#                 id_mapping[poly_id] = {
+#                     "original_idx": idx,
+#                     "sub_idx": sub_idx,
+#                     "tuple_id": f"({idx}, {sub_idx})"
+#                 }
+
+#             gdf.at[idx, id_field_name] = "|".join(id_list)
+
+#     if output_geojson_path is None:
+#         base, ext = os.path.splitext(input_geojson_path)
+#         output_geojson_path = f"{base}_with_poly_ids{ext}"
+
+#     gdf.to_file(output_geojson_path, driver="GeoJSON")
+#     return output_geojson_path
+
+# # Ejecutar solo esto
+# if __name__ == "__main__":
+#     geojson_file = "GeoJSON_Export/medellin_ant/tracts/medellin_ant_tracts.geojson"
+#     add_polygon_ids_to_geojson(input_geojson_path=geojson_file, id_field_name="Py_poly_id")
+#     print("GeoJson file with poly_id included processed")
 

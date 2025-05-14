@@ -27,12 +27,12 @@ import pandas as pd
 from typing import Union, List, Dict, Any                               
     
 # cities = [
-#     "Medellin, Colombia",
-#     "Pasto, Colombia",
+#     # "Medellin, Colombia",
+#     # "Pasto, Colombia",
 # ]
 
-# # # Available metrics
-metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "slc", "lsc"]
+# # # # # Available metrics
+# # metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "slc", "lsc"]
 
 
 # # Multi city analysis
@@ -44,6 +44,7 @@ metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "sl
 
 #         # 1. Get graph
 #         graph = ox.graph_from_place(place_name, network_type='drive')
+#         ox.plot_graph(graph, node_size=1)
 
 #         # 2. Process node metrics
 #         for metric in metrics:
@@ -76,9 +77,9 @@ metrics = [ "eigenvector", "closeness", "pagerank", "betweenness", "degree", "sl
 #         edge_data = compute_edge_betweenness_data(graph, metric="betweenness", weight='length')
 #         plot_edge_centrality(edge_data, place_name)
 
-#     except Exception as e:
-#         print(f"Error processing {place_name}: {e}")
-#         continue
+    # except Exception as e:
+    #     print(f"Error processing {place_name}: {e}")
+    #     continue
 
 
 
@@ -203,58 +204,102 @@ base_folder = "MLowry_files"
 
 
 
-if __name__ == '__main__':
-    # Dictionary of GeoJSON files
-    geojson_files = {
-        "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
-        "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
-        "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
-        "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
-        "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
-        "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
-        "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
+# if __name__ == '__main__':
+#     # Dictionary of GeoJSON files
+#     geojson_files = {
+#         "GeoJSON_Export/moscow_id/tracts/moscow_id_tracts.geojson": "Moscow, ID",
+#         "GeoJSON_Export/santa_fe_nm/tracts/santa_fe_nm_tracts.geojson": "Santa Fe, NM",
+#         "GeoJSON_Export/peachtree_ga/tracts/peachtree_ga_tracts.geojson": "Peachtree, GA",
+#         "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
+#         "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
+#         "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
+#         "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
+#     }
+#     # Dictionary of Stats txt files without sorting and cleaning 
+#     Stats_preprocessing = {
+#         "Polygons_analysis/Moscow_ID/stats/Polygon_Stats_for_Moscow_ID.txt": "Moscow, ID",
+#         "Polygons_analysis/Santa_Fe_NM/stats/Polygon_Stats_for_Santa_Fe_NM.txt": "Santa Fe, NM",
+#         "Polygons_analysis/Peachtree_GA/stats/Polygon_Stats_for_Peachtree_GA.txt": "Peachtree, GA",
+#         "Polygons_analysis/Chandler_AZ/stats/Polygon_Stats_for_Chandler_AZ.txt": "Chandler, AZ",
+#         "Polygons_analysis/Salt_Lake_UT/stats/Polygon_Stats_for_Salt_Lake_UT.txt": "Salt Lake, UT",
+#         "Polygons_analysis/Boston_MA/stats/Polygon_Stats_for_Boston_MA.txt": "Boston, MA",
+#         "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt": "Philadelphia, PA"
+
+#     }
+
+#     # Calculate polygon stats with OSMX
+#     output_files = parallel_process_geojsons(
+#         geojson_files, 
+#         network_type='drive', 
+#         max_city_workers=None,  
+#         max_polygon_workers=None  
+#     )
+
+#     # Print results
+#     for path in output_files:
+#         print(f"Generated file: {path}")
+
+#     # Main folder for cities
+#     output_folder = None
+    
+#     # After the calculation this function sorts and cleans the data
+#     post_processing_stats(Stats_preprocessing, output_folder)
+
+#     # Extract the available Mobility data for each polygon
+#     mobility_data = process_city_geojsons(geojson_files)
+
+#     # Summary of mobility information processing
+#     print("\nSummary of mobility information processing:")
+#     for city, df in mobility_data.items():
+#         print(f"{city}: {len(df)} records, {df.shape[1]} columns")
+
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import osmnx as ox
+import geopandas as gpd
+import folium
+import webbrowser
+import os
+
+# Cargar GeoJSON con geopandas
+geojson_path = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+gdf = gpd.read_file(geojson_path)
+
+# Centrar el mapa en Medellín
+centroide = gdf.unary_union.centroid
+mapa = folium.Map(location=[centroide.y, centroide.x], zoom_start=12, tiles='cartodbpositron')
+
+# Agregar los polígonos al mapa solo con bordes azules (sin relleno)
+folium.GeoJson(
+    gdf,
+    style_function=lambda x: {
+        'color': 'black',      # Color del borde
+        'weight': 2,          # Grosor del borde
+        'fillOpacity': 0      # Transparencia del relleno (0 = completamente transparente)
     }
-    # Dictionary of Stats txt files without sorting and cleaning 
-    Stats_preprocessing = {
-        "Polygons_analysis/Moscow_ID/stats/Polygon_Stats_for_Moscow_ID.txt": "Moscow, ID",
-        "Polygons_analysis/Santa_Fe_NM/stats/Polygon_Stats_for_Santa_Fe_NM.txt": "Santa Fe, NM",
-        "Polygons_analysis/Peachtree_GA/stats/Polygon_Stats_for_Peachtree_GA.txt": "Peachtree, GA",
-        "Polygons_analysis/Chandler_AZ/stats/Polygon_Stats_for_Chandler_AZ.txt": "Chandler, AZ",
-        "Polygons_analysis/Salt_Lake_UT/stats/Polygon_Stats_for_Salt_Lake_UT.txt": "Salt Lake, UT",
-        "Polygons_analysis/Boston_MA/stats/Polygon_Stats_for_Boston_MA.txt": "Boston, MA",
-        "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt": "Philadelphia, PA"
+).add_to(mapa)
 
-    }
-
-    # Calculate polygon stats with OSMX
-    output_files = parallel_process_geojsons(
-        geojson_files, 
-        network_type='drive', 
-        max_city_workers=None,  
-        max_polygon_workers=None  
-    )
-
-    # Print results
-    for path in output_files:
-        print(f"Generated file: {path}")
-
-    # Main folder for cities
-    output_folder = None
-    
-    # After the calculation this function sorts and cleans the data
-    post_processing_stats(Stats_preprocessing, output_folder)
-
-    # Extract the available Mobility data for each polygon
-    mobility_data = process_city_geojsons(geojson_files)
-
-    # Summary of mobility information processing
-    print("\nSummary of mobility information processing:")
-    for city, df in mobility_data.items():
-        print(f"{city}: {len(df)} records, {df.shape[1]} columns")
-
-    
-
-    
-
-
-
+# Guardar y abrir en el navegador
+mapa.save("mapa_eod.html")
+webbrowser.open("file://" + os.path.abspath("mapa_eod.html"))

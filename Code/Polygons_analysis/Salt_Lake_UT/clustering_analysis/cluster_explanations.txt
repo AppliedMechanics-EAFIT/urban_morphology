@@ -1,42 +1,41 @@
 EXPLICACIÓN DETALLADA DE CLUSTERS
 ================================
 
-Cluster 0: gridiron
-Patrón dominante: gridiron (43.5%)
-Comparación con otros clusters de tipo 'gridiron':
-  - edge_length_density: -1.077 (menor que el promedio de -0.021 por 4942.9%, z-score: -1.15)
-  - edge_length_avg: 1.062 (mayor que el promedio de 0.021 por 4946.7%, z-score: 1.15)
-  - edge_density_km2: -1.182 (menor que el promedio de -0.022 por 5253.0%, z-score: -1.15)
-  - node_density_km2: -1.182 (menor que el promedio de -0.022 por 5391.7%, z-score: -1.15)
-  - street_length_avg: 1.046 (mayor que el promedio de 0.018 por 5858.9%, z-score: 1.15)
+Cluster 0: cul_de_sac
+Patrón dominante: cul_de_sac (43.5%)
+  Este es el único cluster con este patrón base.
+
+Características principales:
+  - edge_length_avg: 1.062
+  - street_length_avg: 1.046
+  - circuity_avg: 0.697
+  - cv_dead_end_distances: 0.301
+  - angle_coefficient_variation: 0.083
 
 --------------------------------------------------
 
-Cluster 1: gridiron_alto_intersection
-Patrón dominante: gridiron (100.0%)
+Cluster 1: gridiron
+Patrón dominante: gridiron (87.1%)
 Comparación con otros clusters de tipo 'gridiron':
-  - orthogonal_proportion: 0.855 (mayor que el promedio de -0.144 por 693.8%, z-score: 1.15)
-  - std_intersection_angle: 0.797 (mayor que el promedio de -0.134 por 695.8%, z-score: 1.15)
-  - network_connectivity_index: 0.803 (mayor que el promedio de -0.140 por 674.9%, z-score: 1.15)
-  - mean_intersection_angle: 0.726 (mayor que el promedio de -0.121 por 701.1%, z-score: 1.15)
-  - streets_per_node_avg: 0.794 (mayor que el promedio de -0.141 por 662.0%, z-score: 1.15)
-
-EXPLICACIÓN DEL NOMBRE 'gridiron_alto_intersection':
-  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
+  - edge_density_km2: 0.546 (menor que el promedio de 0.558 por 2.1%, z-score: -0.71)
+  - node_density_km2: 0.544 (menor que el promedio de 0.559 por 2.6%, z-score: -0.71)
+  - segment_density_km2: 0.667 (mayor que el promedio de 0.538 por 24.1%, z-score: 0.71)
+  - street_density_km2: 0.657 (mayor que el promedio de 0.482 por 36.2%, z-score: 0.71)
+  - edge_length_avg: -0.496 (mayor que el promedio de -0.500 por 0.7%, z-score: 0.71)
 
 --------------------------------------------------
 
-Cluster 2: gridiron_alto_intersection
-Patrón dominante: gridiron (55.6%)
+Cluster 2: gridiron_bajo_intersection
+Patrón dominante: gridiron (38.9%)
 Comparación con otros clusters de tipo 'gridiron':
-  - dead_end_ratio: -0.484 (menor que el promedio de -0.061 por 696.2%, z-score: -1.13)
-  - cv_dead_end_distances: -0.407 (menor que el promedio de -0.031 por 1213.5%, z-score: -1.06)
-  - streets_per_node_avg: -0.679 (menor que el promedio de -0.141 por 380.8%, z-score: -0.66)
-  - network_connectivity_index: -0.642 (menor que el promedio de -0.140 por 360.1%, z-score: -0.62)
-  - street_length_avg: -0.518 (menor que el promedio de 0.018 por 3051.7%, z-score: -0.60)
+  - k_avg: 0.068 (menor que el promedio de 0.109 por 37.8%, z-score: -0.71)
+  - edge_length_avg: -0.503 (menor que el promedio de -0.500 por 0.7%, z-score: -0.71)
+  - streets_per_node_avg: -0.679 (menor que el promedio de 0.057 por 1285.5%, z-score: -0.71)
+  - intersection_density_km2: 0.395 (menor que el promedio de 0.539 por 26.7%, z-score: -0.71)
+  - street_length_avg: -0.518 (menor que el promedio de -0.497 por 4.3%, z-score: -0.71)
 
-EXPLICACIÓN DEL NOMBRE 'gridiron_alto_intersection':
-  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_intersection':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
 
 --------------------------------------------------
 
@@ -46,9 +45,9 @@ RESUMEN DE TODOS LOS CLUSTERS
 
 Cluster | Nombre | Patrón Base | Característica Distintiva
 ------------------------------------------------------------
-0 | gridiron | gridiron | N/A
-1 | gridiron_alto_intersection | gridiron | alto
-2 | gridiron_alto_intersection | gridiron | alto
+0 | cul_de_sac | cul_de_sac | N/A
+1 | gridiron | gridiron | N/A
+2 | gridiron_bajo_intersection | gridiron | bajo
 
 
 NOTA SOBRE NOMENCLATURA:

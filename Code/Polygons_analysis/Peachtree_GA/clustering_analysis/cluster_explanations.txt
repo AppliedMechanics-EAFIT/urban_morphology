@@ -3,100 +3,91 @@ EXPLICACIÓN DETALLADA DE CLUSTERS
 
 Cluster 0: organico
 Patrón dominante: organico (100.0%)
-Comparación con otros clusters de tipo 'organico':
-  - circuity_avg: 2.093 (mayor que el promedio de 0.367 por 470.6%, z-score: 1.47)
-  - mean_intersection_angle: 0.060 (mayor que el promedio de -0.576 por 110.4%, z-score: 0.86)
-  - edge_length_density: 1.553 (mayor que el promedio de 0.745 por 108.4%, z-score: 0.61)
-  - street_density_km2: 1.492 (mayor que el promedio de 0.750 por 99.0%, z-score: 0.55)
-  - orthogonal_proportion: 0.311 (mayor que el promedio de -0.140 por 321.9%, z-score: 0.53)
+  Este es el único cluster con este patrón base.
+
+Características principales:
+  - circuity_avg: 2.093
+  - edge_length_density: 1.553
+  - street_density_km2: 1.492
+  - edge_density_km2: 1.408
+  - segment_density_km2: 1.392
 
 --------------------------------------------------
 
-Cluster 1: organico_alto_mean
-Patrón dominante: organico (66.7%)
-Comparación con otros clusters de tipo 'organico':
-  - network_connectivity_index: -0.318 (menor que el promedio de 0.765 por 141.5%, z-score: -1.37)
-  - streets_per_node_avg: -0.284 (menor que el promedio de 0.776 por 136.7%, z-score: -1.36)
-  - std_intersection_angle: -0.789 (menor que el promedio de 0.532 por 248.2%, z-score: -1.22)
-  - angle_coefficient_variation: -0.553 (menor que el promedio de 0.647 por 185.6%, z-score: -1.15)
-  - k_avg: -0.430 (menor que el promedio de 0.605 por 171.1%, z-score: -1.04)
-
-EXPLICACIÓN DEL NOMBRE 'organico_alto_mean':
-  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'alto'.
-
---------------------------------------------------
-
-Cluster 2: cul_de_sac
+Cluster 1: cul_de_sac
 Patrón dominante: cul_de_sac (100.0%)
 Comparación con otros clusters de tipo 'cul_de_sac':
-  - street_length_avg: 2.194 (mayor que el promedio de 0.544 por 302.9%, z-score: 1.15)
-  - edge_length_avg: 2.212 (mayor que el promedio de 0.533 por 314.7%, z-score: 1.14)
-  - k_avg: 0.663 (mayor que el promedio de -0.213 por 412.1%, z-score: 1.13)
-  - mean_intersection_angle: -1.188 (menor que el promedio de -0.163 por 628.3%, z-score: -1.10)
-  - edge_density_km2: -1.267 (menor que el promedio de -0.466 por 171.6%, z-score: -1.04)
+  - std_intersection_angle: -0.789 (menor que el promedio de 0.221 por 456.3%, z-score: -1.01)
+  - circuity_avg: 0.095 (mayor que el promedio de -0.272 por 135.1%, z-score: 0.76)
+  - orthogonal_proportion: -0.714 (menor que el promedio de 0.148 por 582.1%, z-score: -0.67)
+  - angle_coefficient_variation: -0.553 (menor que el promedio de 0.156 por 455.7%, z-score: -0.59)
+  - cv_dead_end_distances: 0.780 (mayor que el promedio de 0.213 por 266.5%, z-score: 0.52)
 
 --------------------------------------------------
 
-Cluster 3: organico_bajo_mean
-Patrón dominante: organico (100.0%)
-Comparación con otros clusters de tipo 'organico':
-  - cv_dead_end_distances: -1.014 (menor que el promedio de 0.312 por 425.0%, z-score: -1.21)
-  - edge_length_density: -0.850 (menor que el promedio de 0.745 por 214.1%, z-score: -1.20)
-  - street_density_km2: -0.831 (menor que el promedio de 0.750 por 210.9%, z-score: -1.17)
-  - k_avg: 1.765 (mayor que el promedio de 0.605 por 191.9%, z-score: 1.17)
-  - std_intersection_angle: 1.774 (mayor que el promedio de 0.532 por 233.2%, z-score: 1.14)
+Cluster 2: cul_de_sac_bajo_mean
+Patrón dominante: cul_de_sac (100.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - edge_length_avg: 2.212 (mayor que el promedio de 0.145 por 1428.8%, z-score: 1.61)
+  - street_length_avg: 2.194 (mayor que el promedio de 0.155 por 1317.4%, z-score: 1.60)
+  - circuity_avg: -0.945 (menor que el promedio de -0.272 por 247.3%, z-score: -1.39)
+  - node_density_km2: -1.281 (menor que el promedio de -0.140 por 814.5%, z-score: -0.91)
+  - edge_density_km2: -1.267 (menor que el promedio de -0.150 por 744.7%, z-score: -0.90)
 
-EXPLICACIÓN DEL NOMBRE 'organico_bajo_mean':
-  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'bajo'.
+--------------------------------------------------
+
+Cluster 3: cul_de_sac_bajo_mean
+Patrón dominante: cul_de_sac (100.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - k_avg: 1.765 (mayor que el promedio de -0.103 por 1821.9%, z-score: 1.78)
+  - std_intersection_angle: 1.774 (mayor que el promedio de 0.221 por 701.2%, z-score: 1.56)
+  - angle_coefficient_variation: 1.701 (mayor que el promedio de 0.156 por 993.5%, z-score: 1.28)
+  - cv_dead_end_distances: -1.014 (menor que el promedio de 0.213 por 576.1%, z-score: -1.11)
+  - dead_end_ratio: -0.776 (menor que el promedio de 0.249 por 411.9%, z-score: -0.90)
 
 --------------------------------------------------
 
 Cluster 4: cul_de_sac_alto_mean
-Patrón dominante: cul_de_sac (50.0%)
+Patrón dominante: cul_de_sac (100.0%)
 Comparación con otros clusters de tipo 'cul_de_sac':
-  - dead_end_ratio: 1.507 (mayor que el promedio de 0.128 por 1080.8%, z-score: 1.15)
-  - orthogonal_proportion: 0.979 (mayor que el promedio de -0.175 por 658.4%, z-score: 1.15)
-  - street_density_km2: 0.274 (mayor que el promedio de -0.413 por 166.4%, z-score: 1.11)
-  - edge_length_density: 0.107 (mayor que el promedio de -0.438 por 124.5%, z-score: 1.06)
-  - intersection_density_km2: 0.407 (mayor que el promedio de -0.419 por 197.2%, z-score: 1.04)
+  - dead_end_ratio: 1.507 (mayor que el promedio de 0.249 por 505.5%, z-score: 1.10)
+  - cv_dead_end_distances: 1.026 (mayor que el promedio de 0.213 por 381.9%, z-score: 0.74)
+  - k_avg: -0.794 (menor que el promedio de -0.103 por 674.9%, z-score: -0.66)
+  - orthogonal_proportion: 0.979 (mayor que el promedio de 0.148 por 561.4%, z-score: 0.64)
+  - streets_per_node_avg: 0.657 (mayor que el promedio de 0.123 por 434.6%, z-score: 0.52)
 
 --------------------------------------------------
 
-Cluster 5: hibrido
-Patrón dominante: hibrido (100.0%)
-  Este es el único cluster con este patrón base.
-
-Características principales:
-  - mean_intersection_angle: 2.792
-  - orthogonal_proportion: 2.434
-  - circuity_avg: 0.557
-  - street_length_avg: 0.079
-  - dead_end_ratio: 0.025
+Cluster 5: cul_de_sac_alto_mean
+Patrón dominante: cul_de_sac (100.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - mean_intersection_angle: 2.792 (mayor que el promedio de -0.009 por 31489.5%, z-score: 1.94)
+  - orthogonal_proportion: 2.434 (mayor que el promedio de 0.148 por 1544.0%, z-score: 1.77)
+  - circuity_avg: 0.557 (mayor que el promedio de -0.272 por 304.7%, z-score: 1.71)
+  - angle_coefficient_variation: -1.666 (menor que el promedio de 0.156 por 1170.7%, z-score: -1.51)
+  - k_avg: -1.436 (menor que el promedio de -0.103 por 1300.9%, z-score: -1.27)
 
 --------------------------------------------------
 
 Cluster 6: cul_de_sac_alto_mean
-Patrón dominante: cul_de_sac (50.0%)
+Patrón dominante: cul_de_sac (100.0%)
 Comparación con otros clusters de tipo 'cul_de_sac':
-  - cv_dead_end_distances: -0.985 (menor que el promedio de 0.332 por 396.2%, z-score: -1.15)
-  - network_connectivity_index: -1.207 (menor que el promedio de -0.067 por 1708.7%, z-score: -1.14)
-  - streets_per_node_avg: -1.217 (menor que el promedio de -0.096 por 1172.8%, z-score: -1.13)
-  - std_intersection_angle: -0.967 (menor que el promedio de 0.015 por 6520.5%, z-score: -1.13)
-  - angle_coefficient_variation: -0.692 (menor que el promedio de 0.094 por 835.7%, z-score: -1.04)
+  - streets_per_node_avg: -1.217 (menor que el promedio de 0.123 por 1090.4%, z-score: -1.30)
+  - network_connectivity_index: -1.207 (menor que el promedio de 0.139 por 967.6%, z-score: -1.29)
+  - std_intersection_angle: -0.967 (menor que el promedio de 0.221 por 536.7%, z-score: -1.19)
+  - cv_dead_end_distances: -0.985 (menor que el promedio de 0.213 por 562.5%, z-score: -1.09)
+  - circuity_avg: -0.619 (menor que el promedio de -0.272 por 127.3%, z-score: -0.71)
 
 --------------------------------------------------
 
-Cluster 7: organico_bajo_mean
-Patrón dominante: organico (100.0%)
-Comparación con otros clusters de tipo 'organico':
-  - dead_end_ratio: 2.177 (mayor que el promedio de 0.227 por 859.1%, z-score: 1.46)
-  - intersection_density_km2: 2.447 (mayor que el promedio de 0.751 por 225.8%, z-score: 1.21)
-  - edge_length_avg: -1.932 (menor que el promedio de -0.376 por 414.1%, z-score: -1.18)
-  - street_length_avg: -1.958 (menor que el promedio de -0.402 por 386.7%, z-score: -1.18)
-  - node_density_km2: 2.384 (mayor que el promedio de 0.721 por 230.6%, z-score: 1.17)
-
-EXPLICACIÓN DEL NOMBRE 'organico_bajo_mean':
-  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'bajo'.
+Cluster 7: cul_de_sac_bajo_mean
+Patrón dominante: cul_de_sac (100.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - intersection_density_km2: 2.447 (mayor que el promedio de -0.108 por 2360.8%, z-score: 2.02)
+  - segment_density_km2: 2.370 (mayor que el promedio de -0.131 por 1905.2%, z-score: 2.01)
+  - edge_density_km2: 2.341 (mayor que el promedio de -0.150 por 1660.9%, z-score: 2.01)
+  - node_density_km2: 2.384 (mayor que el promedio de -0.140 por 1801.9%, z-score: 2.01)
+  - street_density_km2: 2.179 (mayor que el promedio de -0.139 por 1671.7%, z-score: 1.99)
 
 --------------------------------------------------
 
@@ -107,13 +98,13 @@ RESUMEN DE TODOS LOS CLUSTERS
 Cluster | Nombre | Patrón Base | Característica Distintiva
 ------------------------------------------------------------
 0 | organico | organico | N/A
-1 | organico_alto_mean | organico | alto
-2 | cul_de_sac | cul_de_sac | N/A
-3 | organico_bajo_mean | organico | bajo
+1 | cul_de_sac | cul_de_sac | N/A
+2 | cul_de_sac_bajo_mean | cul_de_sac | de
+3 | cul_de_sac_bajo_mean | cul_de_sac | de
 4 | cul_de_sac_alto_mean | cul_de_sac | de
-5 | hibrido | hibrido | N/A
+5 | cul_de_sac_alto_mean | cul_de_sac | de
 6 | cul_de_sac_alto_mean | cul_de_sac | de
-7 | organico_bajo_mean | organico | bajo
+7 | cul_de_sac_bajo_mean | cul_de_sac | de
 
 
 NOTA SOBRE NOMENCLATURA:

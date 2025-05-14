@@ -1,0 +1,106 @@
+INTERPRETACIÓN DE RESULTADOS DEL ANÁLISIS GLOBAL
+=============================================
+
+Total de registros analizados: 1220
+Número de patrones distintos: 4
+Número de ciudades distintas: 6
+
+ANÁLISIS POR VARIABLE DE MOVILIDAD
+--------------------------------
+
+Variable: a
+  R² ajustado: 0.1794
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 0.0597)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = -0.1554)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: b
+  R² ajustado: 0.3717
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 0.0898)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Salt_Lake_UT (coef = -0.2063)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: c
+  R² ajustado: 0.3558
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: hibrido (coef = 0.0828)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = 0.4389)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: car_mode
+  R² ajustado: 0.2053
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: hibrido (coef = 264.6633)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = 1277.9650)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: transit_mode
+  R² ajustado: 0.3027
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 151.5218)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Santa_Fe_NM (coef = -327.6475)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: bicycle_mode
+  R² ajustado: 0.0946
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 27.5435)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Santa_Fe_NM (coef = -35.5957)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: walked_mode
+  R² ajustado: 0.1491
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 89.6124)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = -164.9813)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: car_share
+  R² ajustado: 0.3558
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: hibrido (coef = 0.0828)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = 0.4389)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: transit_share
+  R² ajustado: 0.3717
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 0.0898)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Salt_Lake_UT (coef = -0.2063)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: bicycle_share
+  R² ajustado: 0.1063
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 0.0137)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = -0.0255)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+Variable: walked_share
+  R² ajustado: 0.1515
+  Efecto de patrón: Sí (p = 0.000000)
+  Patrón más influyente: gridiron (coef = 0.0460)
+  Efecto de ciudad: Sí (p = 0.000000)
+  Ciudad más influyente: Peachtree_GA (coef = -0.1300)
+  Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
+
+CONCLUSIONES GENERALES
+--------------------
+
+El patrón de calle mostró efecto significativo en 11 de 11 variables de movilidad (100.0%).
+La ciudad mostró efecto significativo en 11 de 11 variables de movilidad (100.0%).
+
+El patrón 'gridiron' aparece como el más influyente en 8 variables de movilidad.
+La ciudad 'Peachtree_GA' aparece como la más influyente en 7 variables de movilidad.

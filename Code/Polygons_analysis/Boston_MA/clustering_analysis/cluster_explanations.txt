@@ -2,78 +2,71 @@ EXPLICACIÓN DETALLADA DE CLUSTERS
 ================================
 
 Cluster 0: gridiron
-Patrón dominante: gridiron (95.3%)
+Patrón dominante: gridiron (74.4%)
 Comparación con otros clusters de tipo 'gridiron':
-  - circuity_avg: -0.514 (menor que el promedio de -0.253 por 103.2%, z-score: -0.86)
-  - streets_per_node_avg: 0.922 (mayor que el promedio de 0.004 por 21594.6%, z-score: 0.86)
-  - angle_coefficient_variation: 0.246 (mayor que el promedio de -0.913 por 127.0%, z-score: 0.66)
-  - network_connectivity_index: 0.956 (mayor que el promedio de -0.824 por 216.1%, z-score: 0.58)
-  - std_intersection_angle: 0.336 (mayor que el promedio de -1.141 por 129.4%, z-score: 0.58)
+  - angle_coefficient_variation: 0.246 (mayor que el promedio de -1.315 por 118.7%, z-score: 0.79)
+  - k_avg: -0.176 (mayor que el promedio de -1.081 por 83.7%, z-score: 0.68)
+  - std_intersection_angle: 0.336 (mayor que el promedio de -1.631 por 120.6%, z-score: 0.67)
+  - streets_per_node_avg: 0.922 (mayor que el promedio de 0.089 por 942.1%, z-score: 0.66)
+  - circuity_avg: -0.514 (menor que el promedio de -0.367 por 40.0%, z-score: -0.60)
 
 --------------------------------------------------
 
-Cluster 1: gridiron_bajo_street
-Patrón dominante: gridiron (49.0%)
-Comparación con otros clusters de tipo 'gridiron':
-  - circuity_avg: 0.245 (mayor que el promedio de -0.253 por 197.0%, z-score: 1.64)
-  - dead_end_ratio: -0.569 (menor que el promedio de 0.192 por 396.9%, z-score: -1.08)
-  - k_avg: 0.484 (mayor que el promedio de -0.765 por 163.2%, z-score: 1.01)
-  - street_density_km2: -0.740 (menor que el promedio de 0.077 por 1061.9%, z-score: -0.69)
-  - streets_per_node_avg: -0.669 (menor que el promedio de 0.004 por 15842.4%, z-score: -0.63)
-
-EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
-  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+Cluster 1: cul_de_sac
+Patrón dominante: cul_de_sac (41.3%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - k_avg: 0.484 (mayor que el promedio de -0.147 por 429.1%, z-score: 1.15)
+  - dead_end_ratio: -0.569 (menor que el promedio de 0.356 por 260.0%, z-score: -1.12)
+  - streets_per_node_avg: -0.669 (menor que el promedio de -0.134 por 399.6%, z-score: -1.12)
+  - network_connectivity_index: -0.549 (menor que el promedio de -0.169 por 224.2%, z-score: -0.93)
+  - cv_dead_end_distances: -0.331 (menor que el promedio de 0.535 por 161.9%, z-score: -0.87)
 
 --------------------------------------------------
 
 Cluster 2: gridiron_alto_street
 Patrón dominante: gridiron (100.0%)
 Comparación con otros clusters de tipo 'gridiron':
-  - street_length_avg: 11.877 (mayor que el promedio de 1.531 por 675.7%, z-score: 2.26)
-  - edge_length_avg: 11.695 (mayor que el promedio de 1.508 por 675.7%, z-score: 2.26)
-  - network_connectivity_index: -7.629 (menor que el promedio de -0.824 por 826.4%, z-score: -2.24)
-  - mean_intersection_angle: -4.918 (menor que el promedio de -0.216 por 2178.5%, z-score: -2.05)
-  - orthogonal_proportion: -3.074 (menor que el promedio de -0.020 por 15344.4%, z-score: -2.04)
+  - street_length_avg: 11.877 (mayor que el promedio de 2.178 por 445.3%, z-score: 1.78)
+  - edge_length_avg: 11.695 (mayor que el promedio de 2.148 por 444.6%, z-score: 1.78)
+  - network_connectivity_index: -7.629 (menor que el promedio de -1.096 por 596.3%, z-score: -1.78)
+  - streets_per_node_avg: -2.025 (menor que el promedio de 0.089 por 2387.2%, z-score: -1.68)
+  - orthogonal_proportion: -3.074 (menor que el promedio de -0.012 por 25546.9%, z-score: -1.67)
 
 EXPLICACIÓN DEL NOMBRE 'gridiron_alto_street':
   Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
 
 --------------------------------------------------
 
-Cluster 3: gridiron_bajo_street
-Patrón dominante: gridiron (81.5%)
-Comparación con otros clusters de tipo 'gridiron':
-  - cv_dead_end_distances: 1.614 (mayor que el promedio de -0.044 por 3775.9%, z-score: 1.97)
-  - dead_end_ratio: 1.028 (mayor que el promedio de 0.192 por 436.0%, z-score: 1.18)
-  - angle_coefficient_variation: 0.109 (mayor que el promedio de -0.913 por 111.9%, z-score: 0.59)
-  - std_intersection_angle: 0.130 (mayor que el promedio de -1.141 por 111.4%, z-score: 0.50)
-
-EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
-  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+Cluster 3: cul_de_sac_bajo_street
+Patrón dominante: cul_de_sac (72.2%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - angle_coefficient_variation: 0.109 (mayor que el promedio de 0.088 por 23.4%, z-score: 1.14)
+  - street_density_km2: 0.494 (mayor que el promedio de -0.475 por 203.9%, z-score: 1.12)
+  - intersection_density_km2: 0.498 (mayor que el promedio de -0.481 por 203.5%, z-score: 1.11)
+  - cv_dead_end_distances: 1.614 (mayor que el promedio de 0.535 por 201.8%, z-score: 1.09)
+  - segment_density_km2: 0.473 (mayor que el promedio de -0.505 por 193.7%, z-score: 1.08)
 
 --------------------------------------------------
 
-Cluster 4: organico
-Patrón dominante: organico (75.0%)
-  Este es el único cluster con este patrón base.
-
-Características principales:
-  - circuity_avg: 1.424
-  - edge_length_avg: 1.356
-  - street_length_avg: 1.320
-  - dead_end_ratio: 0.609
-  - cv_dead_end_distances: 0.322
+Cluster 4: cul_de_sac_alto_street
+Patrón dominante: cul_de_sac (50.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - std_intersection_angle: -0.874 (menor que el promedio de -0.235 por 271.5%, z-score: -1.15)
+  - street_length_avg: 1.320 (mayor que el promedio de 0.382 por 245.2%, z-score: 1.14)
+  - edge_length_avg: 1.356 (mayor que el promedio de 0.391 por 247.0%, z-score: 1.14)
+  - circuity_avg: 1.424 (mayor que el promedio de 0.496 por 186.9%, z-score: 1.12)
+  - mean_intersection_angle: -1.142 (menor que el promedio de -0.391 por 192.1%, z-score: -1.11)
 
 --------------------------------------------------
 
 Cluster 5: gridiron_bajo_street
-Patrón dominante: gridiron (83.0%)
+Patrón dominante: gridiron (60.6%)
 Comparación con otros clusters de tipo 'gridiron':
-  - dead_end_ratio: -0.525 (menor que el promedio de 0.192 por 373.7%, z-score: -1.02)
-  - k_avg: 0.396 (mayor que el promedio de -0.765 por 151.7%, z-score: 0.94)
-  - edge_length_density: 0.756 (mayor que el promedio de -0.053 por 1538.3%, z-score: 0.70)
-  - angle_coefficient_variation: 0.283 (mayor que el promedio de -0.913 por 131.0%, z-score: 0.68)
-  - std_intersection_angle: 0.408 (mayor que el promedio de -1.141 por 135.8%, z-score: 0.61)
+  - k_avg: 0.396 (mayor que el promedio de -1.081 por 136.6%, z-score: 1.11)
+  - dead_end_ratio: -0.525 (menor que el promedio de 0.177 por 396.9%, z-score: -1.07)
+  - angle_coefficient_variation: 0.283 (mayor que el promedio de -1.315 por 121.5%, z-score: 0.81)
+  - std_intersection_angle: 0.408 (mayor que el promedio de -1.631 por 125.0%, z-score: 0.70)
+  - edge_length_density: 0.756 (mayor que el promedio de -0.025 por 3109.4%, z-score: 0.56)
 
 EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
   Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
@@ -81,13 +74,13 @@ EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
 --------------------------------------------------
 
 Cluster 6: gridiron_bajo_street
-Patrón dominante: gridiron (92.3%)
+Patrón dominante: gridiron (69.2%)
 Comparación con otros clusters de tipo 'gridiron':
-  - angle_coefficient_variation: -3.554 (menor que el promedio de -0.913 por 289.3%, z-score: -1.51)
-  - mean_intersection_angle: 2.680 (mayor que el promedio de -0.216 por 1341.8%, z-score: 1.26)
-  - orthogonal_proportion: 1.771 (mayor que el promedio de -0.020 por 8999.1%, z-score: 1.19)
-  - edge_length_density: -1.353 (menor que el promedio de -0.053 por 2472.3%, z-score: -1.12)
-  - streets_per_node_avg: 1.062 (mayor que el promedio de 0.004 por 24868.5%, z-score: 0.99)
+  - circuity_avg: -0.079 (mayor que el promedio de -0.367 por 78.5%, z-score: 1.18)
+  - angle_coefficient_variation: -3.554 (menor que el promedio de -1.315 por 170.3%, z-score: -1.14)
+  - mean_intersection_angle: 2.680 (mayor que el promedio de -0.296 por 1005.6%, z-score: 1.06)
+  - orthogonal_proportion: 1.771 (mayor que el promedio de -0.012 por 14877.7%, z-score: 0.98)
+  - dead_end_ratio: 0.807 (mayor que el promedio de 0.177 por 356.7%, z-score: 0.96)
 
 EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
   Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
@@ -95,13 +88,13 @@ EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
 --------------------------------------------------
 
 Cluster 7: gridiron_bajo_street
-Patrón dominante: gridiron (94.7%)
+Patrón dominante: gridiron (63.2%)
 Comparación con otros clusters de tipo 'gridiron':
-  - street_density_km2: 2.309 (mayor que el promedio de 0.077 por 2902.2%, z-score: 1.87)
-  - node_density_km2: 2.446 (mayor que el promedio de 0.050 por 4748.6%, z-score: 1.85)
-  - segment_density_km2: 2.440 (mayor que el promedio de 0.008 por 28715.4%, z-score: 1.79)
-  - intersection_density_km2: 2.456 (mayor que el promedio de 0.010 por 23356.3%, z-score: 1.76)
-  - edge_length_density: 1.954 (mayor que el promedio de -0.053 por 3816.3%, z-score: 1.73)
+  - cv_dead_end_distances: 0.538 (mayor que el promedio de -0.318 por 269.2%, z-score: 1.69)
+  - street_density_km2: 2.309 (mayor que el promedio de 0.157 por 1372.1%, z-score: 1.56)
+  - node_density_km2: 2.446 (mayor que el promedio de 0.107 por 2181.9%, z-score: 1.53)
+  - segment_density_km2: 2.440 (mayor que el promedio de 0.054 por 4451.8%, z-score: 1.48)
+  - intersection_density_km2: 2.456 (mayor que el promedio de 0.060 por 3981.1%, z-score: 1.46)
 
 EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_street':
   Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
@@ -115,10 +108,10 @@ RESUMEN DE TODOS LOS CLUSTERS
 Cluster | Nombre | Patrón Base | Característica Distintiva
 ------------------------------------------------------------
 0 | gridiron | gridiron | N/A
-1 | gridiron_bajo_street | gridiron | bajo
+1 | cul_de_sac | cul_de_sac | N/A
 2 | gridiron_alto_street | gridiron | alto
-3 | gridiron_bajo_street | gridiron | bajo
-4 | organico | organico | N/A
+3 | cul_de_sac_bajo_street | cul_de_sac | de
+4 | cul_de_sac_alto_street | cul_de_sac | de
 5 | gridiron_bajo_street | gridiron | bajo
 6 | gridiron_bajo_street | gridiron | bajo
 7 | gridiron_bajo_street | gridiron | bajo
