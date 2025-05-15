@@ -34,7 +34,7 @@ from math import degrees, atan2
 import fiona
 import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
-
+plt.rcParams.update({'font.size': 14}) 
 
 def convert_shapefile_to_geojson(shapefile_paths, output_directory):
     # Ensure the output directory exists
@@ -2813,20 +2813,20 @@ def urban_pattern_clustering(
         'unknown': '#CCCCCC'       # Gris para desconocidos
     }
     
-    # Añadir colores para nombres de cluster
-    # Añadir colores para nombres de cluster
+    
     # Añadir colores para nombres de cluster
     for cluster, name in cluster_names.items():
-        # Manejo especial para cul_de_sac (tiene dos guiones bajos)
+    # Manejo especial para cul_de_sac (tiene dos guiones bajos)
         if name.startswith('cul_de_sac'):
             pattern = 'cul_de_sac'
             # Usar el mismo enfoque para obtener el sufijo
-            if '_' in name:
-                suffix = name.split('_')[2]
+            parts = name.split('_')
+            if len(parts) > 3:  # Si tiene sufijo (cul_de_sac_algo)
+                suffix = parts[3]  # Tomar el cuarto elemento (índice 3)
                 if suffix.startswith('alto'):
-                    color_map[name] = '#e93939'  # Color específico para cul_de_sac_alto
+                    color_map[name] = '#b24a4a'  # Color específico para cul_de_sac_alto
                 elif suffix.startswith('bajo'):
-                    color_map[name] = '#fa8072'  # Color específico para cul_de_sac_bajo
+                    color_map[name] = '#ff9797'  # Color específico para cul_de_sac_bajo
                 else:
                     # Para otros sufijos de cul_de_sac, usar el color base
                     color_map[name] = color_map[pattern]
@@ -2890,11 +2890,11 @@ def urban_pattern_clustering(
     # 1. Patrones originales
     # 2. Clusters
     # 3. Gráfico de exactitud
-    fig = plt.figure(figsize=(18, 12))
+    fig = plt.figure(figsize=(16, 9))
     import matplotlib.gridspec as gridspec
 
     # Definir cuadrícula: 2 filas, 3 columnas con diferentes tamaños
-    gs = gridspec.GridSpec(2, 3, height_ratios=[2, 1])
+    gs = gridspec.GridSpec(1, 3, height_ratios=[1])
     
     # Mapa de patrones originales
     ax1 = plt.subplot(gs[0, 0])
@@ -2919,7 +2919,7 @@ def urban_pattern_clustering(
         if pattern in color_map
     ]
     ax1.legend(handles=pattern_legend_elements, loc='lower right', title="Patrones originales")
-    ax1.set_title('Patrones de calle teóricos', fontsize=14)
+    ax1.set_title('Patrones de calle teóricos', fontsize=16)
     ax1.axis('off')
     
     # Mapa de clusters
@@ -2940,7 +2940,7 @@ def urban_pattern_clustering(
         if name != 'unknown'
     ]
     ax2.legend(handles=cluster_legend_elements, loc='lower right', title="Clusters identificados")
-    ax2.set_title('Agrupación por características morfológicas', fontsize=14)
+    ax2.set_title('Agrupación por características morfológicas', fontsize=16)
     ax2.axis('off')
     
     # Gráfico de barras de exactitud
@@ -2955,44 +2955,54 @@ def urban_pattern_clustering(
     
     # Crear gráfico de barras
     bars = ax3.bar(accuracy_df['Patrón'], accuracy_df['Exactitud (%)'], color=bar_colors)
-    ax3.set_title('Exactitud del Clustering vs. Clasificación Original', fontsize=14)
     ax3.set_ylabel('Porcentaje de Coincidencia (%)')
     ax3.set_ylim(0, 100)
     
     # Añadir etiquetas de valores
-    for bar in bars:
-        height = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width()/2., height + 2,
-                f'{height:.1f}%', ha='center', va='bottom')
-    
-    # Distribución original vs. clustering
-    ax4 = plt.subplot(gs[1, :])
-    
-    # Preparar datos para la comparación
-    pattern_counts = results_df['original_pattern'].value_counts(normalize=True) * 100
-    cluster_pattern_counts = results_df['cluster_pattern'].value_counts(normalize=True) * 100
-    
-    # Crear DataFrame para visualización
-    compare_df = pd.DataFrame({
-        'Clasificación Original (%)': pattern_counts,
-        'Clasificación por Clustering (%)': cluster_pattern_counts
-    }).fillna(0).sort_index()
-    
-    # Gráfico de barras agrupadas
-    compare_df.plot(kind='bar', ax=ax4, width=0.7)
-    ax4.set_title('Distribución de Patrones: Clasificación Original vs. Clustering', fontsize=14)
-    ax4.set_ylabel('Porcentaje (%)')
-    ax4.set_ylim(0, max(compare_df.max().max() * 1.1, 100))
-    
-    # Añadir etiquetas de valores
-    for container in ax4.containers:
-        ax4.bar_label(container, fmt='%.1f%%')
+    for container in ax3.containers:
+        ax3.bar_label(container, fmt='%.1f%%')
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'urban_pattern_comparison_accuracy.png'), 
                 dpi=300, 
                 bbox_inches='tight')
     plt.close()
+   
+    
+    # # Añadir etiquetas de valores
+    # for bar in bars:
+    #     height = bar.get_height()
+    #     ax3.text(bar.get_x() + bar.get_width()/2., height + 2,
+    #             f'{height:.1f}%', ha='center', va='bottom')
+    
+    # # Distribución original vs. clustering
+    # ax4 = plt.subplot(gs[1, :])
+    
+    # # Preparar datos para la comparación
+    # pattern_counts = results_df['original_pattern'].value_counts(normalize=True) * 100
+    # cluster_pattern_counts = results_df['cluster_pattern'].value_counts(normalize=True) * 100
+    
+    # Crear DataFrame para visualización
+    # compare_df = pd.DataFrame({
+    #     'Clasificación Original (%)': pattern_counts,
+    #     'Clasificación por Clustering (%)': cluster_pattern_counts
+    # }).fillna(0).sort_index()
+    
+    # # Gráfico de barras agrupadas
+    # compare_df.plot(kind='bar', ax=ax4, width=0.7)
+    # ax4.set_title('Distribución de Patrones: Clasificación Original vs. Clustering', fontsize=16)
+    # ax4.set_ylabel('Porcentaje (%)')
+    # ax4.set_ylim(0, max(compare_df.max().max() * 1.1, 100))
+    
+    # # Añadir etiquetas de valores
+    # for container in ax3.containers:
+    #     ax3.bar_label(container, fmt='%.1f%%')
+    
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(output_dir, 'urban_pattern_comparison_accuracy.png'), 
+    #             dpi=300, 
+    #             bbox_inches='tight')
+    # plt.close()
     
     # Visualización original de comparación (mantenida para compatibilidad)
     fig, axes = plt.subplots(1, 2, figsize=(18, 10))
@@ -3004,7 +3014,7 @@ def urban_pattern_clustering(
                      linewidth=0.5)
     
     axes[0].legend(handles=pattern_legend_elements, loc='lower right', title="Patrones originales")
-    axes[0].set_title('Patrones de calle teóricos', fontsize=14)
+    axes[0].set_title('Patrones de calle teóricos', fontsize=16)
     axes[0].axis('off')
     
     # Mapa de clusters
@@ -3014,7 +3024,7 @@ def urban_pattern_clustering(
                      linewidth=0.5)
     
     axes[1].legend(handles=cluster_legend_elements, loc='lower right', title="Clusters identificados")
-    axes[1].set_title('Agrupación por características morfológicas', fontsize=14)
+    axes[1].set_title('Agrupación por características morfológicas', fontsize=16)
     axes[1].axis('off')
     
     plt.tight_layout()
@@ -3094,7 +3104,7 @@ def urban_pattern_clustering(
 ciudades = [
     # "Moscow_ID",
     # "Philadelphia_PA",
-    # "Peachtree_GA",
+    "Peachtree_GA",
     # "Boston_MA",
     # "Chandler_AZ",
     # "Salt_Lake_UT",
@@ -3721,33 +3731,32 @@ def plot_street_patterns_optimized(
 #     network_type="drive",
 #     simplify=False,
 #     filter_poly_ids= [
-#     # La candelaria
-#     (236, 0), (235, 0), (234, 0), (233, 0),(231, 0),(230, 0), (229, 0), (228, 0), (226, 0), (225, 0),
-#     (224, 0), (222, 0), (221, 0), (220, 0), (218, 0), (217, 0), (216, 0), (191, 0),
-#     (190, 0), (189, 0), (188, 0), (187, 0), (185, 0), (184, 0), (183, 0), (182, 0),
-#     (181, 0), (181, 0), (179, 0), (178, 0), (177, 0), (176, 0), (175, 0),
+#     # # La candelaria
+#     # (236, 0), (234, 0), (233, 0),(231, 0),(230, 0), (229, 0), (228, 0), (226, 0), (225, 0),
+#     # (224, 0), (222, 0), (221, 0), (220, 0),(219,0), (218, 0), (217, 0),  (191, 0),
+#     # (190, 0), (189, 0), (188, 0), (187, 0),(186,0) ,(185, 0),  (183, 0), (182, 0),
+#     # (181, 0),(180,0),  (179, 0), (178, 0), (177, 0),  (175, 0),
 
-#     # # Poblado
-#     # (283, 0), (284, 0), (285, 0), (286, 0), (289, 0), (290, 0), (291, 0), (296, 0), (297, 0), 
-#     # (298, 0), (299, 0), (299, 0), (304, 0), (305, 0), (306, 0), (310, 0), (433, 0),
-
-#     # # Envigado
-#     # (21, 0), (142, 0), (143, 0), (144, 0), (145, 0), 
-#     # (357, 0), (359, 0), (389, 0), (393, 0), (394, 0), (407, 0),
-#     # (425, 0), (426, 0), (427, 0),  (444, 0),
+#     # Poblado
+#     (283, 0), (284, 0), (285, 0), (286, 0), (289, 0), (290, 0), (291, 0), (296, 0), (297, 0), 
+#     (298, 0), (299, 0), (299, 0), (304, 0), (305, 0), (306, 0), (310, 0), (433, 0),
 
 #     # Envigado
-#     (18.0),  (142, 0),  (144, 0), (145, 0), 
-#     (407, 0),(425, 0), (426, 0),   (444, 0),
+#     (21, 0), (142, 0), (143, 0), (144, 0), (145, 0), 
+#     (357, 0), (359, 0), (389, 0), (393, 0), (394, 0), (407, 0),
+#     (425, 0), (426, 0), (427, 0),  (444, 0),
+
+    
+    
 
 
 #     # # San anotnio de prado
 #     # (7, 0), (430, 0), (432, 0), (355, 0),
 
 #     # # Manrique 
-#     # (0,0), (36,0), (37,0), (42,0), (43,0), (44,0), (46,0), (47,0), (48,0), (52,0), (52,0), (61,0), (62,0),
-#     # (63,0), (64,0), (65,0), (96,0), (143,0),(144,0), (145,0), (357,0), (358,0), (359,0), (389,0), (393,0), (394,0),
-#     # (407,0), (408,0), (425,0), (426,0), (427,0), (433,0), (435,0), (436,0), (439,0), (443,0), (444,0)
+#     #  (36,0),  (42,0), (43,0), (44,0), (46,0), (47,0),  (61,0), (62,0),
+#     # (63,0), (64,0),  (143,0),(144,0), (145,0), (357,0), (358,0), (359,0), (389,0), (393,0), (394,0),
+#     # (407,0), (408,0), (425,0), (426,0), (427,0), (433,0),  (439,0), (443,0), (444,0)
 
 #     ]
 

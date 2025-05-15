@@ -900,97 +900,171 @@ class StreetPatternMobilityAnalyzer:
                     print(f"Omitiendo visualización para {col} - Sin datos válidos")
                     continue
                     
-                # A. RIDGE PLOTS MEJORADOS con etiquetas claras y mejor estética
-                # Ordenar los patrones por su mediana para mejor visualización
-                pattern_medians = combined_data.groupby('pattern')[col].median().sort_values()
-                if len(pattern_medians) <= 1:
+                # A. RIDGE PLOTS MEJORADOS con etiquetas claras y mejor estética (colores fijos y sin media)
+                # Definir orden fijo de patrones
+                fixed_pattern_order = ['cul_de_sac', 'gridiron', 'organico', 'hibrido']
+                # Colores fijos para cada patrón
+                pattern_color_dict = {
+                    'cul_de_sac': '#FF6B6B',  # Rojo para callejones sin salida
+                    'gridiron': '#006400',    # Verde oscuro para grid
+                    'organico': '#45B7D1',    # Azul para orgánico
+                    'hibrido': '#FDCB6E',     # Amarillo para híbrido
+                }
+                # Filtrar solo los patrones disponibles en los datos manteniendo el orden fijo
+                available_patterns = [p for p in fixed_pattern_order if p in combined_data['pattern'].unique()]
+                if len(available_patterns) <= 1:
                     print(f"Omitiendo ridge plot para {col} - Se necesitan múltiples patrones")
-                    continue
+                else:
+                    # Crear figura con espacio adecuado y mejor estética
+                    fig = plt.figure(figsize=(14, max(8, len(available_patterns) * 1.2)))
+                    # Crear grid para ridge plot con espacio adecuado
+                    gs = gridspec.GridSpec(len(available_patterns), 1, hspace=0.4)
+                    # Obtener valores extremos para establecer límites consistentes en todos los subplots
+                    x_min = combined_data[col].min()
+                    x_max = combined_data[col].max()
+                    x_range = x_max - x_min
+                    x_padding = x_range  * 0.1 # 10% padding
+                    # Crear los ridge plots manualmente para más control
+                    for i, pattern in enumerate(available_patterns):
+                        ax = plt.subplot(gs[i])
+                        
+                        # Obtener datos del patrón actual
+                        pattern_data = combined_data[combined_data['pattern'] == pattern][col].dropna()
+                        
+                        if len(pattern_data) <= 1:
+                            continue
+                        
+                        # Crear KDE plot con mejor estética y color fijo
+                        sns.kdeplot(pattern_data, fill=True, color=pattern_color_dict[pattern],
+                                    alpha=0.7, linewidth=1.5, ax=ax, bw_adjust=0.8)
+                        
+                        # Añadir la mediana
+                        median_val = pattern_data.median()
+                        ax.axvline(x=median_val, color="red", linestyle="--", alpha=0.8, linewidth=1.5)
+                        
+                        # Ya no añadimos la media
+                        
+                        # Etiquetas claras y mejor posicionadas
+                        ax.text(x_min + x_padding,
+                                ax.get_ylim()[1] * 0.7,
+                                f'{pattern}',
+                                fontsize=12, fontweight='bold',
+                                color=pattern_color_dict[pattern])
+                        
+                        ax.text(median_val + x_padding*0.5,
+                                ax.get_ylim()[1] * 0.5,
+                                f'Mediana: {median_val:.2f}',
+                                fontsize=10, color='darkred')
+                        
+                        # Configuración del eje Y
+                        ax.set_yticks([])
+                        ax.set_ylabel('')
+                        
+                        # Configuración del eje X para todos excepto el último
+                        if i < len(available_patterns) - 1:
+                            ax.set_xticks([])
+                            ax.set_xlabel('')
+                        else:
+                            ax.set_xlabel(col, fontsize=12)
+                        
+                        # Límites consistentes
+                        ax.set_xlim(x_min - x_padding, x_max + x_padding)
+                        
+                        # Eliminar bordes innecesarios
+                        sns.despine(bottom=True, left=True, ax=ax)
+                    # Título general más elegante
+                    plt.suptitle(f'Distribución de {col} por Patrón', fontsize=16, y=0.98)
+                    # Actualizar la leyenda para mostrar solo la mediana
+                    legend_elements = [
+                        plt.Line2D([0], [0], color='red', linestyle='--', lw=1.5, label='Mediana')
+                    ]
+                    fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.95, 0.98))
+                    # Guardar con bbox_inches='tight' para evitar problemas de márgenes
+                    plt.savefig(os.path.join(viz_dir, f"ridge_plot_{col}.png"), dpi=300, bbox_inches='tight')
+                    plt.close()
+
+                # GRÁFICO ADICIONAL: Densidad de A share (Activa), B share (Pública) y C share (Privada) 
+                # para cada patrón de calle por separado
+                mobility_cols = ['a', 'b', 'car_share']  # Columnas que representan movilidad activa, pública y privada
+                mobility_labels = ['MOVILIDAD ACTIVA', 'MOVILIDAD PÚBLICA', 'MOVILIDAD PRIVADA']
+                mobility_colors = ['#FF6B6B', '#4ECDC4', '#6A67CE']  # Colores distintivos para cada tipo de movilidad
+
+                # Aumentar el tamaño de la fuente para todos los elementos del gráfico
+                plt.rcParams.update({'font.size': 11})
+
+                # Crear un gráfico de densidad separado para cada patrón de calle
+                for pattern in fixed_pattern_order:
+                    # Filtrar datos para el patrón actual
+                    pattern_data = combined_data[combined_data['pattern'] == pattern]
                     
-                pattern_order = pattern_medians.index.tolist()
-                
-                # Crear figura con espacio adecuado y mejor estética
-                fig = plt.figure(figsize=(14, max(8, len(pattern_order) * 1.2)))
-                
-                # Crear grid para ridge plot con espacio adecuado
-                gs = gridspec.GridSpec(len(pattern_order), 1, hspace=0.4)
-                
-                # Obtener valores extremos para establecer límites consistentes en todos los subplots
-                x_min = combined_data[col].min()
-                x_max = combined_data[col].max()
-                x_range = x_max - x_min
-                x_padding = x_range * 0.1  # 10% padding
-                
-                # Crear los ridge plots manualmente para más control
-                for i, pattern in enumerate(pattern_order):
-                    ax = plt.subplot(gs[i])
-                    
-                    # Obtener datos del patrón actual
-                    pattern_data = combined_data[combined_data['pattern'] == pattern][col].dropna()
-                    
+                    # Verificar si hay suficientes datos para este patrón
                     if len(pattern_data) <= 1:
+                        print(f"Omitiendo gráfico de densidad de movilidad para patrón {pattern} - datos insuficientes")
                         continue
                     
-                    # Crear KDE plot con mejor estética
-                    sns.kdeplot(pattern_data, fill=True, color=pattern_color_dict[pattern], 
-                            alpha=0.7, linewidth=1.5, ax=ax, bw_adjust=0.8)
+                    # Crear un nuevo gráfico para las densidades de movilidad de este patrón
+                    plt.figure(figsize=(16, 9))
                     
-                    # Añadir la mediana
-                    median_val = pattern_data.median()
-                    ax.axvline(x=median_val, color="red", linestyle="--", alpha=0.8, linewidth=1.5)
+                    # Crear KDE plot para cada tipo de movilidad dentro de este patrón
+                    for i, (col, label, color) in enumerate(zip(mobility_cols, mobility_labels, mobility_colors)):
+                        # Filtrar datos no nulos para la columna actual
+                        data = pattern_data[col].dropna()
+                        
+                        if len(data) > 1:
+                            # Crear el gráfico de densidad con etiquetas en mayúsculas
+                            sns.kdeplot(data, fill=True, alpha=0.5, color=color, linewidth=2, label=label)
+                            
+                            # Añadir la mediana
+                            median_val = data.median()
+                            plt.axvline(x=median_val, color=color, linestyle="--", alpha=0.8, linewidth=1.5)
+                            
+                            # Altura base y separación entre etiquetas (en coordenadas de la figura, no pixeles)
+                            y_base = 2.9
+                            dy = 1  # Separación vertical entre etiquetas (~1 cm visual en la mayoría de figuras)
+
+                            # Dibujar línea de la mediana
+                            plt.axvline(median_val, color=color, linestyle='--', lw=1.5)
+
+                            # Añadir etiqueta con fondo negro y texto blanco, con separación por 'i'
+                            plt.text(median_val + 0.01, y_base - i * dy, f'MEDIANA {label}: {median_val:.2f}', 
+                                    fontsize=11, color='black', fontweight='bold',
+                                    bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.3'))
+
+
+
+
+
+                            # Agregar una leyenda general (solo una entrada para todas las medianas)
+                            legend_elements = [
+                                plt.Line2D([0], [0], color='red', linestyle='--', lw=1.5, label='Mediana'),
+                                plt.Line2D([0], [0], color='blue', linestyle='-.', lw=1.5, label='Media')
+
+                            ]
+                            fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.95, 0.98))
+
+
                     
-                    # Añadir media
-                    mean_val = pattern_data.mean()
-                    ax.axvline(x=mean_val, color="blue", linestyle="-.", alpha=0.6, linewidth=1.5)
+                    # Configuración del gráfico
+                    plt.title(f'DISTRIBUCIÓN DE SHARES DE MOVILIDAD - PATRÓN {pattern.upper()}', fontsize=14, fontweight='bold')
+                    plt.xlabel('PORCENTAJE DE SHARE', fontsize=11, fontweight='bold')
+                    plt.ylabel('DENSIDAD', fontsize=11, fontweight='bold')
+                    plt.legend(fontsize=11)
                     
-                    # Etiquetas claras y mejor posicionadas
-                    ax.text(x_min + x_padding, 
-                        ax.get_ylim()[1] * 0.7, 
-                        f'{pattern}',
-                        fontsize=12, fontweight='bold', 
-                        color=pattern_color_dict[pattern])
+                    # Ajustar estética
+                    sns.despine()
+                    plt.tight_layout()
                     
-                    ax.text(median_val + x_padding*0.5, 
-                        ax.get_ylim()[1] * 0.5, 
-                        f'Mediana: {median_val:.2f}',
-                        fontsize=10, color='darkred')
-                    
-                    ax.text(mean_val + x_padding*0.5, 
-                        ax.get_ylim()[1] * 0.3, 
-                        f'Media: {mean_val:.2f}',
-                        fontsize=10, color='darkblue')
-                    
-                    # Configuración del eje Y
-                    ax.set_yticks([])
-                    ax.set_ylabel('')
-                    
-                    # Configuración del eje X para todos excepto el último
-                    if i < len(pattern_order) - 1:
-                        ax.set_xticks([])
-                        ax.set_xlabel('')
-                    else:
-                        ax.set_xlabel(col, fontsize=12)
-                    
-                    # Límites consistentes
-                    ax.set_xlim(x_min - x_padding, x_max + x_padding)
-                    
-                    # Eliminar bordes innecesarios
-                    sns.despine(bottom=True, left=True, ax=ax)
+                    # Guardar el gráfico
+                    plt.savefig(os.path.join(viz_dir, f"mobility_shares_density_{pattern}.png"), dpi=300, bbox_inches='tight')
+                    plt.close()
+
+                # Restaurar configuración original de tamaño de fuente si es necesario
+                plt.rcParams.update({'font.size': plt.rcParams['font.size']})
+
+
                 
-                # Título general más elegante
-                plt.suptitle(f'Distribución de {col} por Patrón', fontsize=16, y=0.98)
-                
-                # Añadir una leyenda para mediana y media
-                legend_elements = [
-                    plt.Line2D([0], [0], color='red', linestyle='--', lw=1.5, label='Mediana'),
-                    plt.Line2D([0], [0], color='blue', linestyle='-.', lw=1.5, label='Media')
-                ]
-                fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.95, 0.98))
-                
-                # Guardar con bbox_inches='tight' para evitar problemas de márgenes
-                plt.savefig(os.path.join(viz_dir, f"ridge_plot_{col}.png"), dpi=300, bbox_inches='tight')
-                plt.close()
-                
+
+
                 # B. BOXPLOT MEJORADO (una sola versión)
                 plt.figure(figsize=(14, 8))
                 

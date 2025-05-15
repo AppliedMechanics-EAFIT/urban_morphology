@@ -3,7 +3,7 @@
     "total_records": 1220,
     "total_patterns": 4,
     "total_cities": 6,
-    "filled_combinations": 23,
+    "filled_combinations": 22,
     "total_combinations": 24,
     "rare_patterns": [],
     "rare_cities": [
@@ -11,10 +11,10 @@
       "Peachtree_GA"
     ],
     "pattern_counts": {
-      "gridiron": 666,
-      "organico": 340,
-      "hibrido": 119,
-      "cul_de_sac": 95
+      "gridiron": 542,
+      "cul_de_sac": 380,
+      "organico": 209,
+      "hibrido": 89
     },
     "city_counts": {
       "Philadelphia_PA": 627,
@@ -27,19 +27,19 @@
   },
   "a_main_effects": [
     {
-      "sum_sq": 1.481337256856411,
+      "sum_sq": 1.014279495544486,
       "df": 3.0,
-      "F": 24.084252238134027,
-      "PR(>F)": 3.8518675331862286e-15
+      "F": 16.18612775972308,
+      "PR(>F)": 2.5531076889522656e-10
     },
     {
-      "sum_sq": 3.7306256428368747,
+      "sum_sq": 4.079310767485987,
       "df": 5.0,
-      "F": 36.39252111115037,
-      "PR(>F)": 8.327369988005295e-35
+      "F": 39.0592014592764,
+      "PR(>F)": 2.849421789686596e-37
     },
     {
-      "sum_sq": 24.828110367386675,
+      "sum_sq": 25.295168128698595,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -48,159 +48,159 @@
   "a_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.1690616946745177,
-      "p_value": 3.458882548975539e-22,
+      "coefficient": 0.18194610362523023,
+      "p_value": 3.775844340989251e-68,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 0.05965209538169368,
-      "p_value": 0.0004161412266335575,
+      "coefficient": 0.04729165577382676,
+      "p_value": 6.038199454338264e-06,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": -0.026653187676633043,
-      "p_value": 0.19164256240106492,
-      "significant": false
+      "coefficient": -0.0353147347851922,
+      "p_value": 0.041216937689922475,
+      "significant": true
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": -0.01574054149634349,
-      "p_value": 0.36146694935436996,
+      "coefficient": -0.01955053421356294,
+      "p_value": 0.11843558469914599,
       "significant": false
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -0.13512074591992612,
-      "p_value": 1.4430338751102812e-15,
+      "coefficient": -0.15196553620784523,
+      "p_value": 1.103253502677197e-19,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -0.1554451931091353,
-      "p_value": 5.3605890235071884e-05,
+      "coefficient": -0.17050296104350876,
+      "p_value": 5.316692876144311e-06,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -0.11792365258179616,
-      "p_value": 7.229775728818543e-33,
+      "coefficient": -0.11810994081765011,
+      "p_value": 5.59708990006393e-32,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -0.1340767823956394,
-      "p_value": 8.939120164004759e-13,
+      "coefficient": -0.13597122062130185,
+      "p_value": 6.732309097387375e-13,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -0.11370528818506084,
-      "p_value": 2.191702490082186e-06,
+      "coefficient": -0.12848343335051912,
+      "p_value": 8.781916405801175e-08,
       "significant": true
     }
   ],
   "a_model_fit": {
-    "r_squared": 0.18478110791798918,
-    "adj_r_squared": 0.1793956817110065,
-    "aic": -1271.2381445468827,
-    "bic": -1225.278689307337,
-    "f_value": 34.31132482669662,
-    "f_pvalue": 4.555331011332809e-49
+    "r_squared": 0.16944549416885935,
+    "adj_r_squared": 0.16395875920052816,
+    "aic": -1248.501125792941,
+    "bic": -1202.541670553395,
+    "f_value": 30.882755435951992,
+    "f_pvalue": 2.802564741267812e-44
   },
   "a_by_city": {
     "Boston_MA": {
-      "f_value": 6.149033210313038,
-      "p_value": 0.00043872791766954363,
-      "r_squared": 0.04979685263919509,
+      "f_value": 3.0299922315740506,
+      "p_value": 0.02946027161236498,
+      "r_squared": 0.02517371647346256,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 11.078211080692437,
-      "p_value": 2.30547951376623e-06,
-      "r_squared": 0.24395142740996123,
-      "significant": "True",
+      "f_value": 0.4522085391283334,
+      "p_value": 0.7162862681817816,
+      "r_squared": 0.012999899233604562,
+      "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 13.374935941608229,
-      "p_value": 1.8077029873046867e-08,
-      "r_squared": 0.060508681550373145,
+      "f_value": 11.497109771629408,
+      "p_value": 2.409610180383193e-07,
+      "r_squared": 0.05245898733117671,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 4.615320360547812,
-      "p_value": 0.005349323158873062,
-      "r_squared": 0.16917097555775218,
+      "f_value": 5.079935667262328,
+      "p_value": 0.0031171677681431343,
+      "r_squared": 0.1830831611786392,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 5.52267530885789,
-      "p_value": 0.003010050756473964,
-      "r_squared": 0.30362150078266503,
+      "f_value": 3.2008381940273787,
+      "p_value": 0.03400522011163342,
+      "r_squared": 0.20172284313939537,
       "significant": "True",
       "n_observations": 42
     }
   },
   "a_by_pattern": {
-    "organico": {
-      "f_value": 22.687012373143386,
-      "p_value": 1.3379344742281585e-19,
-      "r_squared": 0.25352296128228047,
+    "cul_de_sac": {
+      "f_value": 16.987255197330615,
+      "p_value": 3.836503001256404e-15,
+      "r_squared": 0.18507204688505208,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 19.324232222174714,
-      "p_value": 4.760934460971112e-15,
-      "r_squared": 0.10469626225460249,
+      "f_value": 13.58383398725366,
+      "p_value": 1.4796552822913328e-10,
+      "r_squared": 0.09188582627455144,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 14.13745509884609,
+      "p_value": 7.240808233117233e-12,
+      "r_squared": 0.25827753726066305,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 4.150533902127592,
-      "p_value": 0.0016895479881936949,
-      "r_squared": 0.1551570491008959,
+      "f_value": 4.725748157902049,
+      "p_value": 0.0017299569026025658,
+      "r_squared": 0.18369720984967597,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 4.037026264148738,
-      "p_value": 0.002389215604366545,
-      "r_squared": 0.18487069692161273,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "a_effects_summary": {
-    "cities_with_significant_patterns": 5,
+    "cities_with_significant_patterns": 4,
     "total_cities_analyzed": 5,
     "patterns_with_significant_cities": 4,
     "total_patterns_analyzed": 4,
-    "percent_cities_significant": 1.0,
+    "percent_cities_significant": 0.8,
     "percent_patterns_significant": 1.0
   },
-  "a_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.14416430759146412, 'std': 0.1774783554196097, 'count': 666}, {'pattern': 'hibrido', 'mean': 0.07387045379192793, 'std': 0.10859115103962053, 'count': 119}, {'pattern': 'cul_de_sac', 'mean': 0.06586738737449518, 'std': 0.14136116997583714, 'count': 95}, {'pattern': 'organico', 'mean': 0.062018562996732134, 'std': 0.11317786330503918, 'count': 340}]",
+  "a_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.14000253253946665, 'std': 0.17428697057395554, 'count': 542}, {'pattern': 'cul_de_sac', 'mean': 0.09378394019575584, 'std': 0.1517616460617668, 'count': 380}, {'pattern': 'hibrido', 'mean': 0.07257042570942207, 'std': 0.11794338782913913, 'count': 89}, {'pattern': 'organico', 'mean': 0.06779755156796066, 'std': 0.11985526252401019, 'count': 209}]",
   "a_city_means": "[{'city': 'Boston_MA', 'mean': 0.19386378485871575, 'std': 0.19850420664489712, 'count': 356}, {'city': 'Philadelphia_PA', 'mean': 0.08586767252621012, 'std': 0.1344427396349209, 'count': 627}, {'city': 'Salt_Lake_UT', 'mean': 0.06532870942338115, 'std': 0.07361174942927735, 'count': 72}, {'city': 'Santa_Fe_NM', 'mean': 0.04658517728805054, 'std': 0.06474769522830268, 'count': 42}, {'city': 'Chandler_AZ', 'mean': 0.02326125472450416, 'std': 0.06493235066883202, 'count': 107}, {'city': 'Peachtree_GA', 'mean': 0.008999325805026413, 'std': 0.013345874755799007, 'count': 16}]",
   "b_main_effects": [
     {
-      "sum_sq": 2.0479707767520248,
+      "sum_sq": 2.12451271762867,
       "df": 3.0,
-      "F": 49.21049181207925,
-      "PR(>F)": 5.1933043052145875e-30
+      "F": 51.28337218123081,
+      "PR(>F)": 3.3297632524410075e-31
     },
     {
-      "sum_sq": 5.644017143520167,
+      "sum_sq": 6.695716161754655,
       "df": 5.0,
-      "F": 81.37172539217273,
-      "PR(>F)": 9.662510945013585e-74
+      "F": 96.97628103438724,
+      "PR(>F)": 4.816536200115525e-86
     },
     {
-      "sum_sq": 16.799213062920703,
+      "sum_sq": 16.72267112204407,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -209,132 +209,132 @@
   "b_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.2105684424836446,
-      "p_value": 1.508276608484291e-46,
+      "coefficient": 0.23588231836973883,
+      "p_value": 8.306633497313988e-146,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 0.08981149512461392,
-      "p_value": 1.344775255240205e-10,
+      "coefficient": 0.07743981254005844,
+      "p_value": 2.273624522882977e-19,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 0.009407235858128415,
-      "p_value": 0.5751872331111878,
+      "coefficient": -0.02326087758945896,
+      "p_value": 0.09809303446371052,
       "significant": false
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": -0.004183777228551541,
-      "p_value": 0.7680515061514326,
-      "significant": false
+      "coefficient": -0.023854735348819187,
+      "p_value": 0.019200494573182743,
+      "significant": true
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -0.20494749956456612,
-      "p_value": 2.548719930612789e-46,
+      "coefficient": -0.22095200337575194,
+      "p_value": 1.98371870338765e-55,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -0.20288954471146545,
-      "p_value": 1.804310603342984e-10,
+      "coefficient": -0.22541808466818117,
+      "p_value": 1.9760112609798086e-13,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -0.09970455469463449,
-      "p_value": 1.5919887570325698e-34,
+      "coefficient": -0.10459011730970372,
+      "p_value": 2.9861123283261784e-37,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -0.20628052228009058,
-      "p_value": 7.572581101487742e-39,
+      "coefficient": -0.21394556519810243,
+      "p_value": 1.0998891425865681e-41,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -0.2013468119062021,
-      "p_value": 1.1431111516102748e-23,
+      "coefficient": -0.2156312696473719,
+      "p_value": 2.209667510565621e-27,
       "significant": true
     }
   ],
   "b_model_fit": {
-    "r_squared": 0.37578405078974997,
-    "adj_r_squared": 0.3716604111583033,
-    "aic": -1747.8243735483593,
-    "bic": -1701.8649183088135,
-    "f_value": 91.12921699656616,
-    "f_pvalue": 2.3775683896404287e-118
+    "r_squared": 0.3786281542664872,
+    "adj_r_squared": 0.3745233030973145,
+    "aic": -1753.39573878788,
+    "bic": -1707.4362835483341,
+    "f_value": 92.23919179091688,
+    "f_pvalue": 1.5311997766366576e-119
   },
   "b_by_city": {
     "Boston_MA": {
-      "f_value": 7.405720385304448,
-      "p_value": 7.997097855762135e-05,
-      "r_squared": 0.059369701505102346,
+      "f_value": 9.253178781476306,
+      "p_value": 6.620094721188338e-06,
+      "r_squared": 0.07309766757049119,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 0.6518338701319392,
-      "p_value": 0.5835802489053212,
-      "r_squared": 0.018631720875908142,
+      "f_value": 0.9877935233568241,
+      "p_value": 0.4016545019442911,
+      "r_squared": 0.027966081811733767,
       "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 41.325006486922405,
-      "p_value": 2.29802285968141e-24,
-      "r_squared": 0.16596943168228484,
+      "f_value": 38.69742484364713,
+      "p_value": 6.093038832649505e-23,
+      "r_squared": 0.1570741279965595,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 2.189490732059065,
-      "p_value": 0.09721879059775695,
-      "r_squared": 0.08808645266187887,
+      "f_value": 2.3908731051336307,
+      "p_value": 0.0762123211792317,
+      "r_squared": 0.09541531718226837,
       "significant": "False",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 0.25999377367703913,
-      "p_value": 0.8537396473565757,
-      "r_squared": 0.020112988569391588,
+      "f_value": 0.44913083915555535,
+      "p_value": 0.7193648786527638,
+      "r_squared": 0.03424350207878568,
       "significant": "False",
       "n_observations": 42
     }
   },
   "b_by_pattern": {
-    "organico": {
-      "f_value": 62.49499615535714,
-      "p_value": 7.068885266877716e-46,
-      "r_squared": 0.48335200907748166,
+    "cul_de_sac": {
+      "f_value": 57.1653948213872,
+      "p_value": 4.380950768511413e-44,
+      "r_squared": 0.43318473679224423,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 33.38797363022471,
-      "p_value": 2.1808232656335627e-25,
-      "r_squared": 0.16808454607162993,
+      "f_value": 27.85460945803549,
+      "p_value": 4.878557211541701e-21,
+      "r_squared": 0.17183107594017122,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 29.013693985889883,
+      "p_value": 3.6697838702086674e-22,
+      "r_squared": 0.4167814164806528,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 10.749047158647322,
-      "p_value": 1.8097274391642857e-08,
-      "r_squared": 0.3223194686046711,
+      "f_value": 8.098598273986784,
+      "p_value": 1.4256727179049728e-05,
+      "r_squared": 0.2783157524541886,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 12.022966215434513,
-      "p_value": 6.642261729409503e-09,
-      "r_squared": 0.40314454734593674,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "b_effects_summary": {
@@ -345,23 +345,23 @@
     "percent_cities_significant": 0.4,
     "percent_patterns_significant": 1.0
   },
-  "b_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.221739166792445, 'std': 0.1451472772700658, 'count': 666}, {'pattern': 'hibrido', 'mean': 0.14710711911592603, 'std': 0.1312919315936139, 'count': 119}, {'pattern': 'organico', 'mean': 0.09525910616190482, 'std': 0.11998664499535078, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 0.08245967760297901, 'std': 0.12710531107776002, 'count': 95}]",
+  "b_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.22704882763972833, 'std': 0.14465841864277476, 'count': 542}, {'pattern': 'hibrido', 'mean': 0.13545109755836668, 'std': 0.1184143878882618, 'count': 89}, {'pattern': 'cul_de_sac', 'mean': 0.12972004785583147, 'std': 0.14440276597033624, 'count': 380}, {'pattern': 'organico', 'mean': 0.10046204438876014, 'std': 0.11930263208593705, 'count': 209}]",
   "b_city_means": "[{'city': 'Boston_MA', 'mean': 0.26007933535823147, 'std': 0.13770611916353026, 'count': 356}, {'city': 'Philadelphia_PA', 'mean': 0.17089743733526516, 'std': 0.1375529200429676, 'count': 627}, {'city': 'Salt_Lake_UT', 'mean': 0.05789576498560124, 'std': 0.05505698024270826, 'count': 72}, {'city': 'Santa_Fe_NM', 'mean': 0.01374347977760722, 'std': 0.027110374545154005, 'count': 42}, {'city': 'Peachtree_GA', 'mean': 0.007482391782955629, 'std': 0.015801795476300156, 'count': 16}, {'city': 'Chandler_AZ', 'mean': 0.007471230196284874, 'std': 0.014342054385623675, 'count': 107}]",
   "c_main_effects": [
     {
-      "sum_sq": 4.9541858597943556,
+      "sum_sq": 4.0995321034930186,
       "df": 3.0,
-      "F": 37.50337639376776,
-      "PR(>F)": 3.550045132405386e-23
+      "F": 30.544070139974554,
+      "PR(>F)": 4.911587834098606e-19
     },
     {
-      "sum_sq": 20.196769305865335,
+      "sum_sq": 22.934979623321105,
       "df": 5.0,
-      "F": 91.7341895502569,
-      "PR(>F)": 5.659670328533974e-82
+      "F": 102.52793859231697,
+      "PR(>F)": 2.747216009924017e-90
     },
     {
-      "sum_sq": 53.32425729014231,
+      "sum_sq": 54.17891104644359,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -370,177 +370,177 @@
   "c_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.5257518136112683,
-      "p_value": 1.7171353050406774e-83,
+      "coefficient": 0.5241842400152708,
+      "p_value": 2.793754791224217e-198,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": -0.06990879910977094,
-      "p_value": 0.004725340879199586,
+      "coefficient": -0.06966306877206943,
+      "p_value": 5.256203592987815e-06,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 0.08278593411551531,
-      "p_value": 0.005709604899765019,
+      "coefficient": 0.10765694688208216,
+      "p_value": 2.2352979200632093e-05,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 0.07284389788392436,
-      "p_value": 0.004011162309806926,
+      "coefficient": 0.06610416385313118,
+      "p_value": 0.00031888859014241614,
       "significant": true
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": 0.3781459116331626,
-      "p_value": 2.8243218660807594e-49,
+      "coefficient": 0.4115510696187132,
+      "p_value": 7.624189660098437e-59,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": 0.43893411706528906,
-      "p_value": 1.2248969550799805e-14,
+      "coefficient": 0.45107102191510584,
+      "p_value": 3.6244513376969474e-16,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": 0.21132166625181897,
-      "p_value": 4.986491136884976e-47,
+      "coefficient": 0.2104953846174466,
+      "p_value": 1.9460657879649247e-45,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": 0.3717118812388093,
-      "p_value": 1.2166967647553688e-39,
+      "coefficient": 0.37154635049712303,
+      "p_value": 4.1354336960197516e-39,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": 0.36246604170682284,
-      "p_value": 4.120535364376053e-24,
+      "coefficient": 0.38849533201740194,
+      "p_value": 1.9851206254171457e-27,
       "significant": true
     }
   ],
   "c_model_fit": {
-    "r_squared": 0.3600650579960746,
-    "adj_r_squared": 0.3558375769588893,
-    "aic": -338.6520367532139,
-    "bic": -292.6925815136682,
-    "f_value": 85.17248328943641,
-    "f_pvalue": 7.255953099865622e-112
+    "r_squared": 0.3498085100427438,
+    "adj_r_squared": 0.3455132731148677,
+    "aic": -319.2535470817388,
+    "bic": -273.2940918421931,
+    "f_value": 81.44102779813598,
+    "f_pvalue": 1.0103504696011628e-107
   },
   "c_by_city": {
     "Boston_MA": {
-      "f_value": 13.484564013778614,
-      "p_value": 2.3865725722210293e-08,
-      "r_squared": 0.10307889277564752,
+      "f_value": 10.853182582398444,
+      "p_value": 7.773425399296713e-07,
+      "r_squared": 0.08466711576382335,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 3.6656581135776944,
-      "p_value": 0.014769655775714765,
-      "r_squared": 0.09646724752416236,
-      "significant": "True",
+      "f_value": 0.5999188842730513,
+      "p_value": 0.6164970143955428,
+      "r_squared": 0.01717329038063886,
+      "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 19.17930274826629,
-      "p_value": 6.6088096205205534e-12,
-      "r_squared": 0.08454769021346231,
+      "f_value": 15.347808682758236,
+      "p_value": 1.2069448834840843e-09,
+      "r_squared": 0.06881978696096247,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 4.4926840060192985,
-      "p_value": 0.006175172321624051,
-      "r_squared": 0.1654194189015561,
+      "f_value": 4.882156780576245,
+      "p_value": 0.0039198533236959,
+      "r_squared": 0.1772183407369744,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 6.844345332751598,
-      "p_value": 0.0008451537313275855,
-      "r_squared": 0.35079396870627044,
+      "f_value": 3.956545835902012,
+      "p_value": 0.015029439910068526,
+      "r_squared": 0.23801331032077178,
       "significant": "True",
       "n_observations": 42
     }
   },
   "c_by_pattern": {
-    "organico": {
-      "f_value": 42.40979855899441,
-      "p_value": 8.977930000750907e-34,
-      "r_squared": 0.3883332733745949,
+    "cul_de_sac": {
+      "f_value": 42.674705159538945,
+      "p_value": 9.437708607208663e-35,
+      "r_squared": 0.36326718251034273,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 50.29366533630545,
-      "p_value": 5.689779914744621e-37,
-      "r_squared": 0.23333399874143346,
+      "f_value": 38.727443403647776,
+      "p_value": 1.7019744510181302e-28,
+      "r_squared": 0.22388724588370856,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 20.564318896025178,
+      "p_value": 1.3560430311890789e-16,
+      "r_squared": 0.3362143038162986,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 7.515214442705095,
-      "p_value": 4.015381078263768e-06,
-      "r_squared": 0.24954876071040333,
+      "f_value": 7.35956782669988,
+      "p_value": 3.938685881454462e-05,
+      "r_squared": 0.2595091671238733,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 6.908473938185221,
-      "p_value": 1.7183376601779744e-05,
-      "r_squared": 0.27959937774662225,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "c_effects_summary": {
-    "cities_with_significant_patterns": 5,
+    "cities_with_significant_patterns": 4,
     "total_cities_analyzed": 5,
     "patterns_with_significant_cities": 4,
     "total_patterns_analyzed": 4,
-    "percent_cities_significant": 1.0,
+    "percent_cities_significant": 0.8,
     "percent_patterns_significant": 1.0
   },
-  "c_pattern_means": "[{'pattern': 'organico', 'mean': 0.8133105661354807, 'std': 0.23814740579676055, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 0.7779887244962099, 'std': 0.31711817903478856, 'count': 95}, {'pattern': 'hibrido', 'mean': 0.7538123430585326, 'std': 0.2322680240379391, 'count': 119}, {'pattern': 'gridiron', 'mean': 0.6175800090995743, 'std': 0.24053821731145308, 'count': 666}]",
+  "c_pattern_means": "[{'pattern': 'organico', 'mean': 0.8030322700719873, 'std': 0.23830141832762303, 'count': 209}, {'pattern': 'hibrido', 'mean': 0.7807425216760314, 'std': 0.2060190465483789, 'count': 89}, {'pattern': 'cul_de_sac', 'mean': 0.7264960119484126, 'std': 0.29163491529881813, 'count': 380}, {'pattern': 'gridiron', 'mean': 0.6237235475698825, 'std': 0.23285068651023824, 'count': 542}]",
   "c_city_means": "[{'city': 'Peachtree_GA', 'mean': 0.983518282412018, 'std': 0.017847925167571832, 'count': 16}, {'city': 'Chandler_AZ', 'mean': 0.9599217206866877, 'std': 0.11446032966488423, 'count': 107}, {'city': 'Santa_Fe_NM', 'mean': 0.9396713429343422, 'std': 0.06582909526497688, 'count': 42}, {'city': 'Salt_Lake_UT', 'mean': 0.8767755255910177, 'std': 0.11227756126143261, 'count': 72}, {'city': 'Philadelphia_PA', 'mean': 0.711336963503756, 'std': 0.23934097881456914, 'count': 627}, {'city': 'Boston_MA', 'mean': 0.5179669921426033, 'std': 0.23707356650743142, 'count': 356}]",
   "c_mixed_model": {
     "AIC": NaN,
     "BIC": NaN,
-    "Log-Likelihood": 152.58575607205603,
+    "Log-Likelihood": 142.44796699375456,
     "Parameters": {
-      "Intercept": 0.8183111662592543,
-      "pattern[T.gridiron]": -0.07277391254663557,
-      "pattern[T.hibrido]": 0.08011695993924849,
-      "pattern[T.organico]": 0.07091366197426077,
-      "Group Var": 0.5896514438577684
+      "Intercept": 0.8271448987642008,
+      "pattern[T.gridiron]": -0.07066834626653097,
+      "pattern[T.hibrido]": 0.10665349150187883,
+      "pattern[T.organico]": 0.06585814387031072,
+      "Group Var": 0.6451918813040666
     },
     "P-Values": {
-      "Intercept": 4.0295325369039717e-32,
-      "pattern[T.gridiron]": 0.003180823547883545,
-      "pattern[T.hibrido]": 0.0073326635020498025,
-      "pattern[T.organico]": 0.004927152919382798
+      "Intercept": 1.3848048732283242e-31,
+      "pattern[T.gridiron]": 3.4371919850437695e-06,
+      "pattern[T.hibrido]": 2.4714435963922875e-05,
+      "pattern[T.organico]": 0.00032142848557908813
     }
   },
   "car_mode_main_effects": [
     {
-      "sum_sq": 19127887.470572043,
+      "sum_sq": 15275899.003741069,
       "df": 3.0,
-      "F": 15.61303397202659,
-      "PR(>F)": 5.741644448005243e-10
+      "F": 12.372499812519232,
+      "PR(>F)": 5.6594715920526505e-08
     },
     {
-      "sum_sq": 97084532.49885824,
+      "sum_sq": 103414957.73780638,
       "df": 5.0,
-      "F": 47.54683254159678,
-      "PR(>F)": 5.547693832674902e-45
+      "F": 50.255695389554894,
+      "PR(>F)": 2.1222317988271557e-47
     },
     {
-      "sum_sq": 494541329.3441186,
+      "sum_sq": 498393317.81094956,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -549,132 +549,132 @@
   "car_mode_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 782.7822780947133,
-      "p_value": 1.0776161899096571e-23,
+      "coefficient": 912.2688084515663,
+      "p_value": 7.651312334169449e-84,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": -37.694359504981264,
-      "p_value": 0.6163642638126909,
-      "significant": false
+      "coefficient": -188.62071035601343,
+      "p_value": 4.716752189197436e-05,
+      "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 264.6632541080538,
-      "p_value": 0.0037181448662340568,
+      "coefficient": 178.12836763376532,
+      "p_value": 0.020390417785390736,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 232.12688764592687,
-      "p_value": 0.0026101470858354387,
-      "significant": true
+      "coefficient": 21.251608277622296,
+      "p_value": 0.7020599242821582,
+      "significant": false
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": 790.967895066763,
-      "p_value": 3.277088693597397e-25,
+      "coefficient": 841.3706641736145,
+      "p_value": 3.2259662703747804e-29,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": 1277.9649770899146,
-      "p_value": 1.5581419761008555e-13,
+      "coefficient": 1205.8872405137354,
+      "p_value": 5.76756131071835e-13,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": 272.43411754144745,
-      "p_value": 2.6946423854553647e-10,
+      "coefficient": 278.34389249510116,
+      "p_value": 1.795881661515868e-10,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": 913.0246872806104,
-      "p_value": 5.489937624956131e-27,
+      "coefficient": 908.087796463313,
+      "p_value": 1.400226175602497e-26,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": 27.071941143307967,
-      "p_value": 0.7996790126073546,
+      "coefficient": 67.25402376278075,
+      "p_value": 0.5256737149641932,
       "significant": false
     }
   ],
   "car_mode_model_fit": {
-    "r_squared": 0.21047593056261626,
-    "adj_r_squared": 0.20526024719721658,
-    "aic": 19233.50289896133,
-    "bic": 19279.462354200878,
-    "f_value": 40.35443024760487,
-    "f_pvalue": 2.5404497227020028e-57
+    "r_squared": 0.20432631792297773,
+    "adj_r_squared": 0.1990700095360115,
+    "aic": 19242.968677032903,
+    "bic": 19288.92813227245,
+    "f_value": 38.87258944502415,
+    "f_pvalue": 2.552052419675358e-55
   },
   "car_mode_by_city": {
     "Boston_MA": {
-      "f_value": 6.0651591239018305,
-      "p_value": 0.0004915604999973017,
-      "r_squared": 0.0491509985505193,
+      "f_value": 5.40921953364251,
+      "p_value": 0.001196028518030895,
+      "r_squared": 0.044069635243002,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 0.5551909737392775,
-      "p_value": 0.6458120664558047,
-      "r_squared": 0.01591328337228437,
+      "f_value": 0.3646126227328431,
+      "p_value": 0.7786853360493663,
+      "r_squared": 0.010508190403965334,
       "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 11.043650480488612,
-      "p_value": 4.511584503531883e-07,
-      "r_squared": 0.050494419397042356,
+      "f_value": 7.029636122337201,
+      "p_value": 0.00011827793131511036,
+      "r_squared": 0.032742231845723446,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 5.137963004451914,
-      "p_value": 0.0029151353842321683,
-      "r_squared": 0.18478803944613775,
+      "f_value": 6.876058872430979,
+      "p_value": 0.0004106134547157053,
+      "r_squared": 0.23274964469107684,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 2.469996514422565,
-      "p_value": 0.07662063095512882,
-      "r_squared": 0.16317972362022426,
+      "f_value": 1.091964318886893,
+      "p_value": 0.3642720958908106,
+      "r_squared": 0.07936576829725617,
       "significant": "False",
       "n_observations": 42
     }
   },
   "car_mode_by_pattern": {
-    "organico": {
-      "f_value": 18.419899040656667,
-      "p_value": 3.7044031149390115e-16,
-      "r_squared": 0.21614551587146225,
+    "cul_de_sac": {
+      "f_value": 22.973134025500364,
+      "p_value": 4.024798048307387e-20,
+      "r_squared": 0.23496366618982167,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 20.466837629311012,
-      "p_value": 6.509402882444032e-16,
-      "r_squared": 0.11020453444378919,
+      "f_value": 15.923250355551685,
+      "p_value": 2.5075889347027292e-12,
+      "r_squared": 0.10603253454161532,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 10.821915362906747,
+      "p_value": 3.0635637205858186e-09,
+      "r_squared": 0.21045336966800632,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 4.871062284644717,
-      "p_value": 0.0004506888287508667,
-      "r_squared": 0.1773161239333455,
+      "f_value": 4.499251990230719,
+      "p_value": 0.002420430374484676,
+      "r_squared": 0.1764464303484069,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 8.23763052213059,
-      "p_value": 1.9824482074697237e-06,
-      "r_squared": 0.3163740462147293,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "car_mode_effects_summary": {
@@ -685,40 +685,40 @@
     "percent_cities_significant": 0.6,
     "percent_patterns_significant": 1.0
   },
-  "car_mode_pattern_means": "[{'pattern': 'organico', 'mean': 1349.229411764706, 'std': 770.0961823732457, 'count': 340}, {'pattern': 'hibrido', 'mean': 1268.1932773109243, 'std': 743.764021685926, 'count': 119}, {'pattern': 'cul_de_sac', 'mean': 1257.6842105263158, 'std': 931.1810992721325, 'count': 95}, {'pattern': 'gridiron', 'mean': 981.9024024024025, 'std': 605.4880472996898, 'count': 666}]",
+  "car_mode_pattern_means": "[{'pattern': 'hibrido', 'mean': 1316.7191011235955, 'std': 675.0246289911483, 'count': 89}, {'pattern': 'organico', 'mean': 1256.4736842105262, 'std': 737.9109288847883, 'count': 209}, {'pattern': 'cul_de_sac', 'mean': 1248.0657894736842, 'std': 828.6589212682914, 'count': 380}, {'pattern': 'gridiron', 'mean': 976.0590405904059, 'std': 589.8113456816736, 'count': 542}]",
   "car_mode_city_means": "[{'city': 'Peachtree_GA', 'mean': 2120.8125, 'std': 843.0342989266017, 'count': 16}, {'city': 'Chandler_AZ', 'mean': 1760.9906542056074, 'std': 827.2863857593544, 'count': 107}, {'city': 'Salt_Lake_UT', 'mean': 1740.486111111111, 'std': 684.1516591824713, 'count': 72}, {'city': 'Philadelphia_PA', 'mean': 1097.2456140350878, 'std': 637.980547661127, 'count': 627}, {'city': 'Santa_Fe_NM', 'mean': 987.1190476190476, 'std': 650.5776870946409, 'count': 42}, {'city': 'Boston_MA', 'mean': 859.4775280898876, 'std': 593.5856733499105, 'count': 356}]",
   "car_mode_mixed_model": {
     "AIC": NaN,
     "BIC": NaN,
-    "Log-Likelihood": -9601.622052448913,
+    "Log-Likelihood": -9606.359290637864,
     "Parameters": {
-      "Intercept": 1327.5256705992606,
-      "pattern[T.gridiron]": -47.233381414581864,
-      "pattern[T.hibrido]": 255.2157156226573,
-      "pattern[T.organico]": 222.99767192570306,
-      "Group Var": 0.6261736618577205
+      "Intercept": 1454.1380568316506,
+      "pattern[T.gridiron]": -190.9664441498618,
+      "pattern[T.hibrido]": 175.44025407250527,
+      "pattern[T.organico]": 19.128710232482405,
+      "Group Var": 0.5688192985506287
     },
     "P-Values": {
-      "Intercept": 9.579444621563413e-10,
-      "pattern[T.hibrido]": 0.005067232207330788,
-      "pattern[T.organico]": 0.003753362062574094
+      "Intercept": 6.049044049838027e-13,
+      "pattern[T.gridiron]": 3.496496329913494e-05,
+      "pattern[T.hibrido]": 0.022168955194985678
     }
   },
   "transit_mode_main_effects": [
     {
-      "sum_sq": 4804838.582542468,
+      "sum_sq": 4004451.0685222675,
       "df": 3.0,
-      "F": 34.98112233624832,
-      "PR(>F)": 1.1075631848019956e-21
+      "F": 28.739121075513435,
+      "PR(>F)": 5.950768490188135e-18
     },
     {
-      "sum_sq": 14436110.599950757,
+      "sum_sq": 17000357.189702924,
       "df": 5.0,
-      "F": 63.06035163694598,
-      "PR(>F)": 1.503626225276978e-58
+      "F": 73.20483860208229,
+      "PR(>F)": 4.5246869635790976e-67
     },
     {
-      "sum_sq": 55445710.2846153,
+      "sum_sq": 56246097.7986355,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -727,132 +727,132 @@
   "transit_mode_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 319.8993403503794,
-      "p_value": 7.497958492847559e-34,
+      "coefficient": 379.751758988603,
+      "p_value": 4.4987437384171017e-119,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 151.52175359799054,
-      "p_value": 2.361542883583249e-09,
+      "coefficient": 101.45491980185831,
+      "p_value": 9.108779327405266e-11,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 26.150935307609217,
-      "p_value": 0.3911861176733876,
+      "coefficient": -21.521524734227825,
+      "p_value": 0.40379338012328503,
       "significant": false
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 12.080491640675785,
-      "p_value": 0.6392604468593175,
-      "significant": false
+      "coefficient": -47.54654797684537,
+      "p_value": 0.010947986689941814,
+      "significant": true
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -323.4235889337773,
-      "p_value": 4.7155812494496085e-36,
+      "coefficient": -350.04239419434947,
+      "p_value": 8.257418628210694e-43,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -312.1738659897269,
-      "p_value": 6.172478492405131e-08,
+      "coefficient": -362.18344049149823,
+      "p_value": 1.0741067153526744e-10,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -178.36760804461716,
-      "p_value": 1.3804320491270519e-33,
+      "coefficient": -182.46173939523717,
+      "p_value": 4.558784168277664e-34,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -310.6975056216105,
-      "p_value": 8.841223494815817e-28,
+      "coefficient": -321.6998686485514,
+      "p_value": 3.1166366557060535e-29,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -327.64750149236374,
-      "p_value": 1.9004031944433972e-19,
+      "coefficient": -351.82609285778744,
+      "p_value": 3.254189482205749e-22,
       "significant": true
     }
   ],
   "transit_mode_model_fit": {
-    "r_squared": 0.30730458201526845,
-    "adj_r_squared": 0.3027285594356831,
-    "aic": 16563.866719414484,
-    "bic": 16609.82617465403,
-    "f_value": 67.1553902260497,
-    "f_pvalue": 3.079047049589247e-91
+    "r_squared": 0.2973051652753982,
+    "adj_r_squared": 0.2926630854423703,
+    "aic": 16581.352146484034,
+    "bic": 16627.31160172358,
+    "f_value": 64.0456812397112,
+    "f_pvalue": 1.6385315597791682e-87
   },
   "transit_mode_by_city": {
     "Boston_MA": {
-      "f_value": 4.952883507674395,
-      "p_value": 0.0022191918859562326,
-      "r_squared": 0.040502385596849044,
+      "f_value": 4.473401591047174,
+      "p_value": 0.00424455807669688,
+      "r_squared": 0.03672540433683191,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 0.31952140175898464,
-      "p_value": 0.8112340397822482,
-      "r_squared": 0.009220637208726457,
+      "f_value": 1.385230150483161,
+      "p_value": 0.2515246982278573,
+      "r_squared": 0.03878179902477841,
       "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 32.53250965260061,
-      "p_value": 1.519421349225146e-19,
-      "r_squared": 0.13543972194708587,
+      "f_value": 28.185583672040607,
+      "p_value": 4.224936924875357e-17,
+      "r_squared": 0.11950525649665544,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 1.6941965408307869,
-      "p_value": 0.17645288139840887,
-      "r_squared": 0.06954583367593359,
+      "f_value": 1.3485311605263113,
+      "p_value": 0.26599137411578533,
+      "r_squared": 0.05615323972052966,
       "significant": "False",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 0.41645963253920343,
-      "p_value": 0.7421766294993881,
-      "r_squared": 0.03183181320847461,
+      "f_value": 0.8495624819222749,
+      "p_value": 0.4755102662609917,
+      "r_squared": 0.06285499251179583,
       "significant": "False",
       "n_observations": 42
     }
   },
   "transit_mode_by_pattern": {
-    "organico": {
-      "f_value": 45.737080894189155,
-      "p_value": 6.39295434569834e-36,
-      "r_squared": 0.40641787160973697,
+    "cul_de_sac": {
+      "f_value": 42.42322903283374,
+      "p_value": 1.4011544327805871e-34,
+      "r_squared": 0.36190121516744067,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 25.82384447873931,
-      "p_value": 6.581903527370157e-20,
-      "r_squared": 0.13515112206586033,
+      "f_value": 20.68747960368935,
+      "p_value": 7.151791496486801e-16,
+      "r_squared": 0.13352146721765024,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 19.91997331274292,
+      "p_value": 3.8519149581875625e-16,
+      "r_squared": 0.3291470934695311,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 11.190273299395056,
-      "p_value": 8.949900696847365e-09,
-      "r_squared": 0.3311684756215155,
+      "f_value": 5.90028554425202,
+      "p_value": 0.00031084377787694156,
+      "r_squared": 0.2193391417554219,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 9.322688060063507,
-      "p_value": 3.6195853257643585e-07,
-      "r_squared": 0.34372286549984676,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "transit_mode_effects_summary": {
@@ -863,38 +863,40 @@
     "percent_cities_significant": 0.4,
     "percent_patterns_significant": 1.0
   },
-  "transit_mode_pattern_means": "[{'pattern': 'gridiron', 'mean': 334.97297297297297, 'std': 264.39893392546526, 'count': 666}, {'pattern': 'hibrido', 'mean': 223.05882352941177, 'std': 226.379136537847, 'count': 119}, {'pattern': 'organico', 'mean': 148.6264705882353, 'std': 203.5237772615533, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 112.33684210526316, 'std': 187.4964175842912, 'count': 95}]",
+  "transit_mode_pattern_means": "[{'pattern': 'gridiron', 'mean': 334.5332103321033, 'std': 248.66881412200962, 'count': 542}, {'pattern': 'hibrido', 'mean': 229.0, 'std': 243.8629924586941, 'count': 89}, {'pattern': 'cul_de_sac', 'mean': 205.73684210526315, 'std': 266.7736269428028, 'count': 380}, {'pattern': 'organico', 'mean': 148.14832535885168, 'std': 190.98757009888953, 'count': 209}]",
   "transit_mode_city_means": "[{'city': 'Boston_MA', 'mean': 409.7696629213483, 'std': 278.04271184888216, 'count': 356}, {'city': 'Philadelphia_PA', 'mean': 247.47846889952154, 'std': 226.18170499191882, 'count': 627}, {'city': 'Salt_Lake_UT', 'mean': 104.22222222222223, 'std': 96.54382675828124, 'count': 72}, {'city': 'Chandler_AZ', 'mean': 14.317757009345794, 'std': 29.375448011305757, 'count': 107}, {'city': 'Santa_Fe_NM', 'mean': 13.619047619047619, 'std': 22.899517921171775, 'count': 42}, {'city': 'Peachtree_GA', 'mean': 11.625, 'std': 20.892981277612503, 'count': 16}]",
   "transit_mode_mixed_model": {
     "AIC": NaN,
     "BIC": NaN,
-    "Log-Likelihood": -8269.844229779203,
+    "Log-Likelihood": -8279.23673709538,
     "Parameters": {
-      "Intercept": 79.20646854941079,
-      "pattern[T.gridiron]": 154.28136459463877,
-      "pattern[T.hibrido]": 28.67297832708247,
-      "pattern[T.organico]": 13.538358240818548,
-      "Group Var": 0.3759988277913599
+      "Intercept": 121.21664280896448,
+      "pattern[T.gridiron]": 102.60088072393472,
+      "pattern[T.hibrido]": -20.39208407647979,
+      "pattern[T.organico]": -47.35432133241208,
+      "Group Var": 0.4459627531211511
     },
     "P-Values": {
-      "pattern[T.gridiron]": 7.955403609750979e-10
+      "Intercept": 0.04485693990472476,
+      "pattern[T.gridiron]": 3.641714297535107e-11,
+      "pattern[T.organico]": 0.011115758513778178
     }
   },
   "bicycle_mode_main_effects": [
     {
-      "sum_sq": 122106.15735547926,
+      "sum_sq": 80760.61176336065,
       "df": 3.0,
-      "F": 11.998681120637618,
-      "PR(>F)": 9.616821849261251e-08
+      "F": 7.856811691613721,
+      "PR(>F)": 3.4077911258862143e-05
     },
     {
-      "sum_sq": 291388.9534663637,
+      "sum_sq": 328023.9054655846,
       "df": 5.0,
-      "F": 17.179886143861147,
-      "PR(>F)": 1.8904752497720726e-16
+      "F": 19.147121345309294,
+      "PR(>F)": 2.2585640886417815e-18
     },
     {
-      "sum_sq": 4107966.9526664177,
+      "sum_sq": 4149312.498258533,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -903,174 +905,176 @@
   "bicycle_mode_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 37.51641400495396,
-      "p_value": 8.492416690777215e-08,
+      "coefficient": 53.83427583903776,
+      "p_value": 2.9120684478643803e-39,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 27.54349575630735,
-      "p_value": 6.236320017374799e-05,
+      "coefficient": 11.012965047679021,
+      "p_value": 0.009076313787525143,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 10.977969475424988,
-      "p_value": 0.18611638686928753,
+      "coefficient": -8.814439390968918,
+      "p_value": 0.20814443481349632,
       "significant": false
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 5.4924503226036165,
-      "p_value": 0.4337005863333978,
-      "significant": false
+      "coefficient": -10.630338600731235,
+      "p_value": 0.03614233686375436,
+      "significant": true
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -34.83372577829995,
-      "p_value": 3.4248562732496987e-07,
+      "coefficient": -41.30571681553863,
+      "p_value": 7.778547984730499e-10,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -34.29487153265564,
-      "p_value": 0.02808517463823039,
+      "coefficient": -47.5679835139464,
+      "p_value": 0.0016749378818867093,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -34.530372447442254,
-      "p_value": 2.8578288069232224e-18,
+      "coefficient": -34.672488523145134,
+      "p_value": 5.351569347575852e-18,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -28.004364545095797,
-      "p_value": 0.0002173747044999345,
+      "coefficient": -29.664121495554106,
+      "p_value": 9.639233780332991e-05,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -35.59572291456165,
-      "p_value": 0.00026129694453761164,
+      "coefficient": -41.29407664145958,
+      "p_value": 2.0909703543414142e-05,
       "significant": true
     }
   ],
   "bicycle_mode_model_fit": {
-    "r_squared": 0.10053709477220807,
-    "adj_r_squared": 0.094595143292586,
-    "aic": 13388.845875543248,
-    "bic": 13434.805330782794,
-    "f_value": 16.919878110247122,
-    "f_pvalue": 5.441057858520269e-24
+    "r_squared": 0.09148425063178156,
+    "adj_r_squared": 0.0854824950620493,
+    "aic": 13401.06345579596,
+    "bic": 13447.022911035507,
+    "f_value": 15.242915105231933,
+    "f_pvalue": 1.77145985683078e-21
   },
   "bicycle_mode_by_city": {
     "Boston_MA": {
-      "f_value": 1.5067150524338644,
-      "p_value": 0.21249246386575066,
-      "r_squared": 0.012678512613381931,
+      "f_value": 1.875026198401255,
+      "p_value": 0.13343933856301046,
+      "r_squared": 0.015728982478800946,
       "significant": "False",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 3.5400472675754178,
-      "p_value": 0.017285234635214107,
-      "r_squared": 0.09347059099050892,
+      "f_value": 4.681336305534818,
+      "p_value": 0.004167563582549151,
+      "r_squared": 0.11998913098244102,
       "significant": "True",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 8.97532748897663,
-      "p_value": 7.935066957820796e-06,
-      "r_squared": 0.04142930609532902,
+      "f_value": 10.063692264246118,
+      "p_value": 1.7530948034619113e-06,
+      "r_squared": 0.04622089594515111,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 8.707962637602392,
-      "p_value": 5.7472383471517745e-05,
-      "r_squared": 0.2775479051291141,
+      "f_value": 6.755987250681162,
+      "p_value": 0.00046875847366887046,
+      "r_squared": 0.2296185541134268,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 2.8691567402046294,
-      "p_value": 0.049041943975622136,
-      "r_squared": 0.18468005621997718,
+      "f_value": 5.342848553564979,
+      "p_value": 0.0035995581050913376,
+      "r_squared": 0.29666809396195715,
       "significant": "True",
       "n_observations": 42
     }
   },
   "bicycle_mode_by_pattern": {
-    "organico": {
-      "f_value": 10.296630280394805,
-      "p_value": 3.3997382493893334e-09,
-      "r_squared": 0.13355486800067284,
+    "cul_de_sac": {
+      "f_value": 17.1169139175566,
+      "p_value": 2.9731341650717176e-15,
+      "r_squared": 0.186221590652068,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 6.903718050985951,
-      "p_value": 1.9024415347319522e-05,
-      "r_squared": 0.040102056052842894,
+      "f_value": 2.311759969393939,
+      "p_value": 0.05662973675958532,
+      "r_squared": 0.016928311189838507,
+      "significant": "False",
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 5.338420683908705,
+      "p_value": 0.000124103219974922,
+      "r_squared": 0.11620818923317155,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 4.798450429611298,
-      "p_value": 0.0005146601571491019,
-      "r_squared": 0.17513583266100696,
+      "f_value": 4.447795064986652,
+      "p_value": 0.0026128343061446666,
+      "r_squared": 0.17478115701687358,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 3.342432080366389,
-      "p_value": 0.008191366355596818,
-      "r_squared": 0.15809118211477147,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "bicycle_mode_effects_summary": {
     "cities_with_significant_patterns": 4,
     "total_cities_analyzed": 5,
-    "patterns_with_significant_cities": 4,
+    "patterns_with_significant_cities": 3,
     "total_patterns_analyzed": 4,
     "percent_cities_significant": 0.8,
-    "percent_patterns_significant": 1.0
+    "percent_patterns_significant": 0.75
   },
-  "bicycle_mode_pattern_means": "[{'pattern': 'gridiron', 'mean': 41.054054054054056, 'std': 69.63451367546214, 'count': 666}, {'pattern': 'hibrido', 'mean': 29.327731092436974, 'std': 53.04365155447126, 'count': 119}, {'pattern': 'organico', 'mean': 17.73235294117647, 'std': 47.842559030891366, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 10.410526315789474, 'std': 26.666775382383843, 'count': 95}]",
+  "bicycle_mode_pattern_means": "[{'pattern': 'gridiron', 'mean': 39.3690036900369, 'std': 66.95762722325084, 'count': 542}, {'pattern': 'cul_de_sac', 'mean': 28.91578947368421, 'std': 62.86072273236899, 'count': 380}, {'pattern': 'hibrido', 'mean': 24.078651685393258, 'std': 43.71582424100546, 'count': 89}, {'pattern': 'organico', 'mean': 16.177033492822968, 'std': 43.0829058641126, 'count': 209}]",
   "bicycle_mode_city_means": "[{'city': 'Boston_MA', 'mean': 55.59550561797753, 'std': 77.93369794587112, 'count': 356}, {'city': 'Salt_Lake_UT', 'mean': 27.944444444444443, 'std': 31.18499498738243, 'count': 72}, {'city': 'Philadelphia_PA', 'mean': 23.38915470494418, 'std': 56.04566608849882, 'count': 627}, {'city': 'Chandler_AZ', 'mean': 8.794392523364486, 'std': 16.6635622806832, 'count': 107}, {'city': 'Santa_Fe_NM', 'mean': 8.595238095238095, 'std': 12.579618676235341, 'count': 42}, {'city': 'Peachtree_GA', 'mean': 4.9375, 'std': 13.203377093254083, 'count': 16}]",
   "bicycle_mode_mixed_model": {
     "AIC": NaN,
     "BIC": NaN,
-    "Log-Likelihood": -6683.196550892182,
+    "Log-Likelihood": -6690.263381478724,
     "Parameters": {
-      "Intercept": 10.101108459839802,
-      "pattern[T.gridiron]": 28.571974812366488,
-      "pattern[T.hibrido]": 12.019244635434761,
-      "pattern[T.organico]": 5.968606469079793,
-      "Group Var": 0.06022843725755645
+      "Intercept": 22.823574088416414,
+      "pattern[T.gridiron]": 11.583378266012762,
+      "pattern[T.hibrido]": -8.17413519538143,
+      "pattern[T.organico]": -10.555359652277943,
+      "Group Var": 0.07975847178903117
     },
     "P-Values": {
-      "pattern[T.gridiron]": 2.1626055439677696e-05
+      "Intercept": 0.0030557426274026656,
+      "pattern[T.gridiron]": 0.0057053456806531455,
+      "pattern[T.organico]": 0.0369501196666154
     }
   },
   "walked_mode_main_effects": [
     {
-      "sum_sq": 2392736.8366680695,
+      "sum_sq": 1385470.2707943344,
       "df": 3.0,
-      "F": 21.98092706677078,
-      "PR(>F)": 7.306077330819737e-14
+      "F": 12.442433017509858,
+      "PR(>F)": 5.125114071704915e-08
     },
     {
-      "sum_sq": 4981530.8121989835,
+      "sum_sq": 5491681.801421865,
       "df": 5.0,
-      "F": 27.45776228771473,
-      "PR(>F)": 2.1493656583250055e-26
+      "F": 29.59134572919867,
+      "PR(>F)": 2.0081859911369243e-28
     },
     {
-      "sum_sq": 43941190.47546796,
+      "sum_sq": 44948457.04134166,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -1079,174 +1083,176 @@
   "walked_mode_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 177.65451113242915,
-      "p_value": 1.2978157860951102e-14,
+      "coefficient": 210.89909727863903,
+      "p_value": 1.915421709879445e-53,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 89.61239192388093,
-      "p_value": 6.807400257779235e-05,
+      "coefficient": 52.78726680170318,
+      "p_value": 0.00014835074085932495,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": -28.512325382917854,
-      "p_value": 0.2936744259565511,
-      "significant": false
+      "coefficient": -47.81933756953103,
+      "p_value": 0.03812193600266138,
+      "significant": true
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 1.913539240111819,
-      "p_value": 0.9335289910008797,
+      "coefficient": -23.8362839589071,
+      "p_value": 0.15323913746221676,
       "significant": false
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -157.3294589575207,
-      "p_value": 2.4323439011384174e-12,
+      "coefficient": -178.75103249383264,
+      "p_value": 8.955449243879193e-16,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -164.9812794035151,
-      "p_value": 0.001253117403638376,
+      "coefficient": -196.66956178377592,
+      "p_value": 8.047969717390316e-05,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -136.59012911192522,
-      "p_value": 1.1984642089358532e-25,
+      "coefficient": -135.33217945979072,
+      "p_value": 2.183703975783311e-24,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -144.9746284906363,
-      "p_value": 5.584784818945942e-09,
+      "coefficient": -147.26702094262194,
+      "p_value": 4.66817602671122e-09,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -153.78229620297927,
-      "p_value": 1.4877238077596412e-06,
+      "coefficient": -173.22184287677766,
+      "p_value": 6.285974895770575e-08,
       "significant": true
     }
   ],
   "walked_mode_model_fit": {
-    "r_squared": 0.15469135134453915,
-    "adj_r_squared": 0.14910714887612986,
-    "aic": 16280.153048658853,
-    "bic": 16326.1125038984,
-    "f_value": 27.701601476603248,
-    "f_pvalue": 9.129491215908674e-40
+    "r_squared": 0.1353142900855847,
+    "adj_r_squared": 0.12960208060638134,
+    "aic": 16307.803463454671,
+    "bic": 16353.762918694218,
+    "f_value": 23.68860781073017,
+    "f_pvalue": 5.597637155176411e-34
   },
   "walked_mode_by_city": {
     "Boston_MA": {
-      "f_value": 7.42096112536756,
-      "p_value": 7.833907984304449e-05,
-      "r_squared": 0.0594846145983714,
-      "significant": "True",
+      "f_value": 2.593912816411491,
+      "p_value": 0.052451198243507316,
+      "r_squared": 0.021629053444391255,
+      "significant": "False",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 3.3796591330169,
-      "p_value": 0.021132918930160196,
-      "r_squared": 0.08961524694791678,
+      "f_value": 3.301319457407497,
+      "p_value": 0.023313831958578963,
+      "r_squared": 0.0877202049867114,
       "significant": "True",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 11.508921643000877,
-      "p_value": 2.3705836613853537e-07,
-      "r_squared": 0.052510052473271895,
+      "f_value": 8.87114475371149,
+      "p_value": 9.169869306923405e-06,
+      "r_squared": 0.04096810942865492,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 2.7005901831443953,
-      "p_value": 0.05240702567095898,
-      "r_squared": 0.10645968537841766,
+      "f_value": 2.5631982156481863,
+      "p_value": 0.061875682903493004,
+      "r_squared": 0.10159381461629968,
       "significant": "False",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 0.8087948353453116,
-      "p_value": 0.49689671344028963,
-      "r_squared": 0.06001982456961141,
+      "f_value": 0.8199153557091544,
+      "p_value": 0.49098369927445684,
+      "r_squared": 0.060794896316117675,
       "significant": "False",
       "n_observations": 42
     }
   },
   "walked_mode_by_pattern": {
-    "organico": {
-      "f_value": 15.33475020710936,
-      "p_value": 1.4140608952448122e-13,
-      "r_squared": 0.1867023418034578,
+    "cul_de_sac": {
+      "f_value": 12.875952278598476,
+      "p_value": 1.4445379873152294e-11,
+      "r_squared": 0.14685842518920056,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 16.21417158849795,
-      "p_value": 1.1222878050697938e-12,
-      "r_squared": 0.08935191694626332,
+      "f_value": 10.73167839887792,
+      "p_value": 2.249225742537667e-08,
+      "r_squared": 0.07402092814343486,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 9.687291735887987,
+      "p_value": 2.599438632557109e-08,
+      "r_squared": 0.19263896307572603,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 4.860431108121603,
-      "p_value": 0.0004595293155590494,
-      "r_squared": 0.17699762574681865,
+      "f_value": 3.248873240732042,
+      "p_value": 0.015757714283598952,
+      "r_squared": 0.13398037956150255,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 2.6439976059419834,
-      "p_value": 0.02820820393584257,
-      "r_squared": 0.12932879649592177,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "walked_mode_effects_summary": {
-    "cities_with_significant_patterns": 3,
+    "cities_with_significant_patterns": 2,
     "total_cities_analyzed": 5,
     "patterns_with_significant_cities": 4,
     "total_patterns_analyzed": 4,
-    "percent_cities_significant": 0.6,
+    "percent_cities_significant": 0.4,
     "percent_patterns_significant": 1.0
   },
-  "walked_mode_pattern_means": "[{'pattern': 'gridiron', 'mean': 169.8948948948949, 'std': 241.55881191336485, 'count': 666}, {'pattern': 'organico', 'mean': 72.36470588235294, 'std': 147.14569242029597, 'count': 340}, {'pattern': 'hibrido', 'mean': 69.60504201680672, 'std': 98.4110385918953, 'count': 119}, {'pattern': 'cul_de_sac', 'mean': 59.242105263157896, 'std': 131.95564340075774, 'count': 95}]",
+  "walked_mode_pattern_means": "[{'pattern': 'gridiron', 'mean': 161.92435424354244, 'std': 227.2755861262439, 'count': 542}, {'pattern': 'cul_de_sac', 'mean': 107.96315789473684, 'std': 205.14900617371927, 'count': 380}, {'pattern': 'hibrido', 'mean': 78.20224719101124, 'std': 156.33902407728596, 'count': 89}, {'pattern': 'organico', 'mean': 76.1531100478469, 'std': 145.33940880676633, 'count': 209}]",
   "walked_mode_city_means": "[{'city': 'Boston_MA', 'mean': 223.05898876404495, 'std': 272.8287176720592, 'count': 356}, {'city': 'Philadelphia_PA', 'mean': 99.29665071770334, 'std': 174.10927503525224, 'count': 627}, {'city': 'Salt_Lake_UT', 'mean': 84.19444444444444, 'std': 102.80511288990803, 'count': 72}, {'city': 'Santa_Fe_NM', 'mean': 28.833333333333332, 'std': 36.443686372577126, 'count': 42}, {'city': 'Chandler_AZ', 'mean': 23.77570093457944, 'std': 34.11144565596575, 'count': 107}, {'city': 'Peachtree_GA', 'mean': 11.25, 'std': 17.410724664221572, 'count': 16}]",
   "walked_mode_mixed_model": {
     "AIC": NaN,
     "BIC": NaN,
-    "Log-Likelihood": -8125.490564067697,
+    "Log-Likelihood": -8140.029139394495,
     "Parameters": {
-      "Intercept": 52.960091398092075,
-      "pattern[T.gridiron]": 93.18695490214854,
-      "pattern[T.hibrido]": -24.991462449953072,
-      "pattern[T.organico]": 3.997467404971668,
-      "Group Var": 0.10917763448974958
+      "Intercept": 76.3388692029638,
+      "pattern[T.gridiron]": 54.32736481446741,
+      "pattern[T.hibrido]": -46.13780216179801,
+      "pattern[T.organico]": -23.580488861320358,
+      "Group Var": 0.13349418728809845
     },
     "P-Values": {
-      "pattern[T.gridiron]": 2.6376938309168075e-05
+      "Intercept": 0.0147466002645846,
+      "pattern[T.gridiron]": 8.487832891921264e-05,
+      "pattern[T.hibrido]": 0.045028143376584506
     }
   },
   "car_share_main_effects": [
     {
-      "sum_sq": 4.9541858597943556,
+      "sum_sq": 4.0995321034930186,
       "df": 3.0,
-      "F": 37.50337639376776,
-      "PR(>F)": 3.550045132405386e-23
+      "F": 30.544070139974554,
+      "PR(>F)": 4.911587834098606e-19
     },
     {
-      "sum_sq": 20.196769305865335,
+      "sum_sq": 22.934979623321105,
       "df": 5.0,
-      "F": 91.7341895502569,
-      "PR(>F)": 5.659670328533974e-82
+      "F": 102.52793859231697,
+      "PR(>F)": 2.747216009924017e-90
     },
     {
-      "sum_sq": 53.32425729014231,
+      "sum_sq": 54.17891104644359,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -1255,177 +1261,177 @@
   "car_share_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.5257518136112683,
-      "p_value": 1.7171353050406774e-83,
+      "coefficient": 0.5241842400152708,
+      "p_value": 2.793754791224217e-198,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": -0.06990879910977094,
-      "p_value": 0.004725340879199586,
+      "coefficient": -0.06966306877206943,
+      "p_value": 5.256203592987815e-06,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 0.08278593411551531,
-      "p_value": 0.005709604899765019,
+      "coefficient": 0.10765694688208216,
+      "p_value": 2.2352979200632093e-05,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 0.07284389788392436,
-      "p_value": 0.004011162309806926,
+      "coefficient": 0.06610416385313118,
+      "p_value": 0.00031888859014241614,
       "significant": true
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": 0.3781459116331626,
-      "p_value": 2.8243218660807594e-49,
+      "coefficient": 0.4115510696187132,
+      "p_value": 7.624189660098437e-59,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": 0.43893411706528906,
-      "p_value": 1.2248969550799805e-14,
+      "coefficient": 0.45107102191510584,
+      "p_value": 3.6244513376969474e-16,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": 0.21132166625181897,
-      "p_value": 4.986491136884976e-47,
+      "coefficient": 0.2104953846174466,
+      "p_value": 1.9460657879649247e-45,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": 0.3717118812388093,
-      "p_value": 1.2166967647553688e-39,
+      "coefficient": 0.37154635049712303,
+      "p_value": 4.1354336960197516e-39,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": 0.36246604170682284,
-      "p_value": 4.120535364376053e-24,
+      "coefficient": 0.38849533201740194,
+      "p_value": 1.9851206254171457e-27,
       "significant": true
     }
   ],
   "car_share_model_fit": {
-    "r_squared": 0.3600650579960746,
-    "adj_r_squared": 0.3558375769588893,
-    "aic": -338.6520367532139,
-    "bic": -292.6925815136682,
-    "f_value": 85.17248328943641,
-    "f_pvalue": 7.255953099865622e-112
+    "r_squared": 0.3498085100427438,
+    "adj_r_squared": 0.3455132731148677,
+    "aic": -319.2535470817388,
+    "bic": -273.2940918421931,
+    "f_value": 81.44102779813598,
+    "f_pvalue": 1.0103504696011628e-107
   },
   "car_share_by_city": {
     "Boston_MA": {
-      "f_value": 13.484564013778614,
-      "p_value": 2.3865725722210293e-08,
-      "r_squared": 0.10307889277564752,
+      "f_value": 10.853182582398444,
+      "p_value": 7.773425399296713e-07,
+      "r_squared": 0.08466711576382335,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 3.6656581135776944,
-      "p_value": 0.014769655775714765,
-      "r_squared": 0.09646724752416236,
-      "significant": "True",
+      "f_value": 0.5999188842730513,
+      "p_value": 0.6164970143955428,
+      "r_squared": 0.01717329038063886,
+      "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 19.17930274826629,
-      "p_value": 6.6088096205205534e-12,
-      "r_squared": 0.08454769021346231,
+      "f_value": 15.347808682758236,
+      "p_value": 1.2069448834840843e-09,
+      "r_squared": 0.06881978696096247,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 4.4926840060192985,
-      "p_value": 0.006175172321624051,
-      "r_squared": 0.1654194189015561,
+      "f_value": 4.882156780576245,
+      "p_value": 0.0039198533236959,
+      "r_squared": 0.1772183407369744,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 6.844345332751598,
-      "p_value": 0.0008451537313275855,
-      "r_squared": 0.35079396870627044,
+      "f_value": 3.956545835902012,
+      "p_value": 0.015029439910068526,
+      "r_squared": 0.23801331032077178,
       "significant": "True",
       "n_observations": 42
     }
   },
   "car_share_by_pattern": {
-    "organico": {
-      "f_value": 42.40979855899441,
-      "p_value": 8.977930000750907e-34,
-      "r_squared": 0.3883332733745949,
+    "cul_de_sac": {
+      "f_value": 42.674705159538945,
+      "p_value": 9.437708607208663e-35,
+      "r_squared": 0.36326718251034273,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 50.29366533630545,
-      "p_value": 5.689779914744621e-37,
-      "r_squared": 0.23333399874143346,
+      "f_value": 38.727443403647776,
+      "p_value": 1.7019744510181302e-28,
+      "r_squared": 0.22388724588370856,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 20.564318896025178,
+      "p_value": 1.3560430311890789e-16,
+      "r_squared": 0.3362143038162986,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 7.515214442705095,
-      "p_value": 4.015381078263768e-06,
-      "r_squared": 0.24954876071040333,
+      "f_value": 7.35956782669988,
+      "p_value": 3.938685881454462e-05,
+      "r_squared": 0.2595091671238733,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 6.908473938185221,
-      "p_value": 1.7183376601779744e-05,
-      "r_squared": 0.27959937774662225,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "car_share_effects_summary": {
-    "cities_with_significant_patterns": 5,
+    "cities_with_significant_patterns": 4,
     "total_cities_analyzed": 5,
     "patterns_with_significant_cities": 4,
     "total_patterns_analyzed": 4,
-    "percent_cities_significant": 1.0,
+    "percent_cities_significant": 0.8,
     "percent_patterns_significant": 1.0
   },
-  "car_share_pattern_means": "[{'pattern': 'organico', 'mean': 0.8133105661354807, 'std': 0.23814740579676055, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 0.7779887244962099, 'std': 0.31711817903478856, 'count': 95}, {'pattern': 'hibrido', 'mean': 0.7538123430585326, 'std': 0.2322680240379391, 'count': 119}, {'pattern': 'gridiron', 'mean': 0.6175800090995743, 'std': 0.24053821731145308, 'count': 666}]",
+  "car_share_pattern_means": "[{'pattern': 'organico', 'mean': 0.8030322700719873, 'std': 0.23830141832762303, 'count': 209}, {'pattern': 'hibrido', 'mean': 0.7807425216760314, 'std': 0.2060190465483789, 'count': 89}, {'pattern': 'cul_de_sac', 'mean': 0.7264960119484126, 'std': 0.29163491529881813, 'count': 380}, {'pattern': 'gridiron', 'mean': 0.6237235475698825, 'std': 0.23285068651023824, 'count': 542}]",
   "car_share_city_means": "[{'city': 'Peachtree_GA', 'mean': 0.983518282412018, 'std': 0.017847925167571832, 'count': 16}, {'city': 'Chandler_AZ', 'mean': 0.9599217206866877, 'std': 0.11446032966488423, 'count': 107}, {'city': 'Santa_Fe_NM', 'mean': 0.9396713429343422, 'std': 0.06582909526497688, 'count': 42}, {'city': 'Salt_Lake_UT', 'mean': 0.8767755255910177, 'std': 0.11227756126143261, 'count': 72}, {'city': 'Philadelphia_PA', 'mean': 0.711336963503756, 'std': 0.23934097881456914, 'count': 627}, {'city': 'Boston_MA', 'mean': 0.5179669921426033, 'std': 0.23707356650743142, 'count': 356}]",
   "car_share_mixed_model": {
     "AIC": NaN,
     "BIC": NaN,
-    "Log-Likelihood": 152.58575607205603,
+    "Log-Likelihood": 142.44796699375456,
     "Parameters": {
-      "Intercept": 0.8183111662592543,
-      "pattern[T.gridiron]": -0.07277391254663557,
-      "pattern[T.hibrido]": 0.08011695993924849,
-      "pattern[T.organico]": 0.07091366197426077,
-      "Group Var": 0.5896514438577684
+      "Intercept": 0.8271448987642008,
+      "pattern[T.gridiron]": -0.07066834626653097,
+      "pattern[T.hibrido]": 0.10665349150187883,
+      "pattern[T.organico]": 0.06585814387031072,
+      "Group Var": 0.6451918813040666
     },
     "P-Values": {
-      "Intercept": 4.0295325369039717e-32,
-      "pattern[T.gridiron]": 0.003180823547883545,
-      "pattern[T.hibrido]": 0.0073326635020498025,
-      "pattern[T.organico]": 0.004927152919382798
+      "Intercept": 1.3848048732283242e-31,
+      "pattern[T.gridiron]": 3.4371919850437695e-06,
+      "pattern[T.hibrido]": 2.4714435963922875e-05,
+      "pattern[T.organico]": 0.00032142848557908813
     }
   },
   "transit_share_main_effects": [
     {
-      "sum_sq": 2.0479707767520248,
+      "sum_sq": 2.12451271762867,
       "df": 3.0,
-      "F": 49.21049181207925,
-      "PR(>F)": 5.1933043052145875e-30
+      "F": 51.28337218123081,
+      "PR(>F)": 3.3297632524410075e-31
     },
     {
-      "sum_sq": 5.644017143520167,
+      "sum_sq": 6.695716161754655,
       "df": 5.0,
-      "F": 81.37172539217273,
-      "PR(>F)": 9.662510945013585e-74
+      "F": 96.97628103438724,
+      "PR(>F)": 4.816536200115525e-86
     },
     {
-      "sum_sq": 16.799213062920703,
+      "sum_sq": 16.72267112204407,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -1434,132 +1440,132 @@
   "transit_share_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.2105684424836446,
-      "p_value": 1.508276608484291e-46,
+      "coefficient": 0.23588231836973883,
+      "p_value": 8.306633497313988e-146,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 0.08981149512461392,
-      "p_value": 1.344775255240205e-10,
+      "coefficient": 0.07743981254005844,
+      "p_value": 2.273624522882977e-19,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 0.009407235858128415,
-      "p_value": 0.5751872331111878,
+      "coefficient": -0.02326087758945896,
+      "p_value": 0.09809303446371052,
       "significant": false
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": -0.004183777228551541,
-      "p_value": 0.7680515061514326,
-      "significant": false
+      "coefficient": -0.023854735348819187,
+      "p_value": 0.019200494573182743,
+      "significant": true
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -0.20494749956456612,
-      "p_value": 2.548719930612789e-46,
+      "coefficient": -0.22095200337575194,
+      "p_value": 1.98371870338765e-55,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -0.20288954471146545,
-      "p_value": 1.804310603342984e-10,
+      "coefficient": -0.22541808466818117,
+      "p_value": 1.9760112609798086e-13,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -0.09970455469463449,
-      "p_value": 1.5919887570325698e-34,
+      "coefficient": -0.10459011730970372,
+      "p_value": 2.9861123283261784e-37,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -0.20628052228009058,
-      "p_value": 7.572581101487742e-39,
+      "coefficient": -0.21394556519810243,
+      "p_value": 1.0998891425865681e-41,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -0.2013468119062021,
-      "p_value": 1.1431111516102748e-23,
+      "coefficient": -0.2156312696473719,
+      "p_value": 2.209667510565621e-27,
       "significant": true
     }
   ],
   "transit_share_model_fit": {
-    "r_squared": 0.37578405078974997,
-    "adj_r_squared": 0.3716604111583033,
-    "aic": -1747.8243735483593,
-    "bic": -1701.8649183088135,
-    "f_value": 91.12921699656616,
-    "f_pvalue": 2.3775683896404287e-118
+    "r_squared": 0.3786281542664872,
+    "adj_r_squared": 0.3745233030973145,
+    "aic": -1753.39573878788,
+    "bic": -1707.4362835483341,
+    "f_value": 92.23919179091688,
+    "f_pvalue": 1.5311997766366576e-119
   },
   "transit_share_by_city": {
     "Boston_MA": {
-      "f_value": 7.405720385304448,
-      "p_value": 7.997097855762135e-05,
-      "r_squared": 0.059369701505102346,
+      "f_value": 9.253178781476306,
+      "p_value": 6.620094721188338e-06,
+      "r_squared": 0.07309766757049119,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 0.6518338701319392,
-      "p_value": 0.5835802489053212,
-      "r_squared": 0.018631720875908142,
+      "f_value": 0.9877935233568241,
+      "p_value": 0.4016545019442911,
+      "r_squared": 0.027966081811733767,
       "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 41.325006486922405,
-      "p_value": 2.29802285968141e-24,
-      "r_squared": 0.16596943168228484,
+      "f_value": 38.69742484364713,
+      "p_value": 6.093038832649505e-23,
+      "r_squared": 0.1570741279965595,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 2.189490732059065,
-      "p_value": 0.09721879059775695,
-      "r_squared": 0.08808645266187887,
+      "f_value": 2.3908731051336307,
+      "p_value": 0.0762123211792317,
+      "r_squared": 0.09541531718226837,
       "significant": "False",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 0.25999377367703913,
-      "p_value": 0.8537396473565757,
-      "r_squared": 0.020112988569391588,
+      "f_value": 0.44913083915555535,
+      "p_value": 0.7193648786527638,
+      "r_squared": 0.03424350207878568,
       "significant": "False",
       "n_observations": 42
     }
   },
   "transit_share_by_pattern": {
-    "organico": {
-      "f_value": 62.49499615535714,
-      "p_value": 7.068885266877716e-46,
-      "r_squared": 0.48335200907748166,
+    "cul_de_sac": {
+      "f_value": 57.1653948213872,
+      "p_value": 4.380950768511413e-44,
+      "r_squared": 0.43318473679224423,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 33.38797363022471,
-      "p_value": 2.1808232656335627e-25,
-      "r_squared": 0.16808454607162993,
+      "f_value": 27.85460945803549,
+      "p_value": 4.878557211541701e-21,
+      "r_squared": 0.17183107594017122,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 29.013693985889883,
+      "p_value": 3.6697838702086674e-22,
+      "r_squared": 0.4167814164806528,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 10.749047158647322,
-      "p_value": 1.8097274391642857e-08,
-      "r_squared": 0.3223194686046711,
+      "f_value": 8.098598273986784,
+      "p_value": 1.4256727179049728e-05,
+      "r_squared": 0.2783157524541886,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 12.022966215434513,
-      "p_value": 6.642261729409503e-09,
-      "r_squared": 0.40314454734593674,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "transit_share_effects_summary": {
@@ -1570,23 +1576,23 @@
     "percent_cities_significant": 0.4,
     "percent_patterns_significant": 1.0
   },
-  "transit_share_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.221739166792445, 'std': 0.1451472772700658, 'count': 666}, {'pattern': 'hibrido', 'mean': 0.14710711911592603, 'std': 0.1312919315936139, 'count': 119}, {'pattern': 'organico', 'mean': 0.09525910616190482, 'std': 0.11998664499535078, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 0.08245967760297901, 'std': 0.12710531107776002, 'count': 95}]",
+  "transit_share_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.22704882763972833, 'std': 0.14465841864277476, 'count': 542}, {'pattern': 'hibrido', 'mean': 0.13545109755836668, 'std': 0.1184143878882618, 'count': 89}, {'pattern': 'cul_de_sac', 'mean': 0.12972004785583147, 'std': 0.14440276597033624, 'count': 380}, {'pattern': 'organico', 'mean': 0.10046204438876014, 'std': 0.11930263208593705, 'count': 209}]",
   "transit_share_city_means": "[{'city': 'Boston_MA', 'mean': 0.26007933535823147, 'std': 0.13770611916353026, 'count': 356}, {'city': 'Philadelphia_PA', 'mean': 0.17089743733526516, 'std': 0.1375529200429676, 'count': 627}, {'city': 'Salt_Lake_UT', 'mean': 0.05789576498560124, 'std': 0.05505698024270826, 'count': 72}, {'city': 'Santa_Fe_NM', 'mean': 0.01374347977760722, 'std': 0.027110374545154005, 'count': 42}, {'city': 'Peachtree_GA', 'mean': 0.007482391782955629, 'std': 0.015801795476300156, 'count': 16}, {'city': 'Chandler_AZ', 'mean': 0.007471230196284874, 'std': 0.014342054385623675, 'count': 107}]",
   "bicycle_share_main_effects": [
     {
-      "sum_sq": 0.039828070584849905,
+      "sum_sq": 0.029752043050866313,
       "df": 3.0,
-      "F": 11.014031842068952,
-      "PR(>F)": 3.886967940517874e-07
+      "F": 8.17120896442611,
+      "PR(>F)": 2.184590941909525e-05
     },
     {
-      "sum_sq": 0.1252907880303187,
+      "sum_sq": 0.14055313992337226,
       "df": 5.0,
-      "F": 20.78870568350494,
-      "PR(>F)": 5.697637570790464e-20
+      "F": 23.161214339933984,
+      "PR(>F)": 2.8662522163394827e-22
     },
     {
-      "sum_sq": 1.4597074643767338,
+      "sum_sq": 1.4697834919107178,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -1595,159 +1601,159 @@
   "bicycle_share_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.02811717296470346,
-      "p_value": 1.9252682696358763e-11,
+      "coefficient": 0.034677203330398434,
+      "p_value": 3.446924068685146e-45,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 0.013682216053074708,
-      "p_value": 0.0008384908918112698,
+      "coefficient": 0.007692915830670023,
+      "p_value": 0.0022082421481355407,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": 0.0060942890266221785,
-      "p_value": 0.21818839215694677,
+      "coefficient": -0.002440060900734889,
+      "p_value": 0.5581494168161885,
       "significant": false
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": 9.436111917222596e-05,
-      "p_value": 0.9819964564952253,
+      "coefficient": -0.005818862833311088,
+      "p_value": 0.053934190174636756,
       "significant": false
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -0.02427036382605898,
-      "p_value": 2.7195357818556826e-09,
+      "coefficient": -0.027698276083531908,
+      "p_value": 4.709190164409708e-12,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -0.025477579673699118,
-      "p_value": 0.006230331426711453,
+      "coefficient": -0.030911666411221964,
+      "p_value": 0.0006038460801057356,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -0.02233185223348287,
-      "p_value": 4.033113264945421e-21,
+      "coefficient": -0.02267705122162038,
+      "p_value": 2.767985599058989e-21,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -0.020591716060964292,
-      "p_value": 5.243633022654758e-06,
+      "coefficient": -0.021630599100040962,
+      "p_value": 1.8412495453496117e-06,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -0.02049886991623299,
-      "p_value": 0.0004191425337598947,
+      "coefficient": -0.023471709542031708,
+      "p_value": 4.8043573095774085e-05,
       "significant": true
     }
   ],
   "bicycle_share_model_fit": {
-    "r_squared": 0.11221190523821711,
-    "adj_r_squared": 0.1063470788483788,
-    "aic": -4728.401487497683,
-    "bic": -4682.442032258137,
-    "f_value": 19.133031019066465,
-    "f_pvalue": 2.7605633650227536e-27
+    "r_squared": 0.10608370660563538,
+    "adj_r_squared": 0.10017839665753059,
+    "aic": -4720.0090382628305,
+    "bic": -4674.049583023285,
+    "f_value": 17.964121703667875,
+    "f_pvalue": 1.5062614109063138e-25
   },
   "bicycle_share_by_city": {
     "Boston_MA": {
-      "f_value": 1.1515982986567943,
-      "p_value": 0.32825362052607293,
-      "r_squared": 0.009719365009498548,
+      "f_value": 0.9862344579153036,
+      "p_value": 0.3993178333784324,
+      "r_squared": 0.008335345339118505,
       "significant": "False",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 1.2798148675743344,
-      "p_value": 0.285310211702834,
-      "r_squared": 0.035936583319014614,
-      "significant": "False",
+      "f_value": 2.770576187208714,
+      "p_value": 0.04535951838330814,
+      "r_squared": 0.07467073478267361,
+      "significant": "True",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 8.670621082342462,
-      "p_value": 1.2113642083161099e-05,
-      "r_squared": 0.04007917993500021,
+      "f_value": 9.291142467647335,
+      "p_value": 5.118951343905308e-06,
+      "r_squared": 0.04282465104491995,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 8.259362491627016,
-      "p_value": 9.216030456151025e-05,
-      "r_squared": 0.26706831482799775,
+      "f_value": 7.6117116087275365,
+      "p_value": 0.0001841700047340165,
+      "r_squared": 0.2513909939130793,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 2.0754365963967114,
-      "p_value": 0.11966110258484884,
-      "r_squared": 0.14078293709940004,
+      "f_value": 1.417079084096863,
+      "p_value": 0.2527670976349504,
+      "r_squared": 0.10061805354729858,
       "significant": "False",
       "n_observations": 42
     }
   },
   "bicycle_share_by_pattern": {
-    "organico": {
-      "f_value": 13.934302658436815,
-      "p_value": 2.2297403125055466e-12,
-      "r_squared": 0.17259457503942,
+    "cul_de_sac": {
+      "f_value": 19.36616854489571,
+      "p_value": 3.73898694942601e-17,
+      "r_squared": 0.20565951492082302,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 8.524792909055172,
-      "p_value": 1.0374948975265128e-06,
-      "r_squared": 0.04905655628383698,
+      "f_value": 3.7036708578942656,
+      "p_value": 0.005506426970185592,
+      "r_squared": 0.026847207724609246,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 7.941960606216269,
+      "p_value": 7.435240322936884e-07,
+      "r_squared": 0.16361021489517713,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 3.5698383317443096,
-      "p_value": 0.004918900187714079,
-      "r_squared": 0.13641040829106132,
+      "f_value": 3.1113328362364823,
+      "p_value": 0.01938355168724235,
+      "r_squared": 0.12904026738665053,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 2.943186202681052,
-      "p_value": 0.01663234674571097,
-      "r_squared": 0.14188689114214503,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "bicycle_share_effects_summary": {
-    "cities_with_significant_patterns": 2,
+    "cities_with_significant_patterns": 3,
     "total_cities_analyzed": 5,
     "patterns_with_significant_cities": 4,
     "total_patterns_analyzed": 4,
-    "percent_cities_significant": 0.4,
+    "percent_cities_significant": 0.6,
     "percent_patterns_significant": 1.0
   },
-  "bicycle_share_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.026112196589004488, 'std': 0.040503352070013265, 'count': 666}, {'pattern': 'hibrido', 'mean': 0.021630662213846113, 'std': 0.039272870171215356, 'count': 119}, {'pattern': 'organico', 'mean': 0.011541184867363816, 'std': 0.026731877607219658, 'count': 340}, {'pattern': 'cul_de_sac', 'mean': 0.009827766830649736, 'std': 0.027251006327359162, 'count': 95}]",
+  "bicycle_share_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.02556067593586984, 'std': 0.04078925336685045, 'count': 542}, {'pattern': 'hibrido', 'mean': 0.018429643918640007, 'std': 0.035063915129522866, 'count': 89}, {'pattern': 'cul_de_sac', 'mean': 0.018363426668005604, 'std': 0.0349318539474891, 'count': 380}, {'pattern': 'organico', 'mean': 0.011244907347835205, 'std': 0.025904579337211964, 'count': 209}]",
   "bicycle_share_city_means": "[{'city': 'Boston_MA', 'mean': 0.03652567762891535, 'std': 0.04544459665848073, 'count': 356}, {'city': 'Salt_Lake_UT', 'mean': 0.016222985794160732, 'std': 0.018919742791121925, 'count': 72}, {'city': 'Philadelphia_PA', 'mean': 0.015436102992311681, 'std': 0.033970066727112676, 'count': 627}, {'city': 'Santa_Fe_NM', 'mean': 0.00923892008662605, 'std': 0.014810956198957084, 'count': 42}, {'city': 'Chandler_AZ', 'mean': 0.005010599416904145, 'std': 0.009002587489171637, 'count': 107}, {'city': 'Peachtree_GA', 'mean': 0.00303817906501264, 'std': 0.008178575708078109, 'count': 16}]",
   "walked_share_main_effects": [
     {
-      "sum_sq": 1.0765704651306507,
+      "sum_sq": 0.7102575012884875,
       "df": 3.0,
-      "F": 21.162858371188385,
-      "PR(>F)": 2.301435847081055e-13
+      "F": 13.71730414336678,
+      "PR(>F)": 8.40963383917835e-09
     },
     {
-      "sum_sq": 2.4971799378231854,
+      "sum_sq": 2.7124636915864104,
       "df": 5.0,
-      "F": 29.453231569999428,
-      "PR(>F)": 2.7151348986856424e-28
+      "F": 31.431718244015382,
+      "PR(>F)": 3.6525309164405436e-30
     },
     {
-      "sum_sq": 20.53482584766121,
+      "sum_sq": 20.901138811503376,
       "df": 1211.0,
       "F": NaN,
       "PR(>F)": NaN
@@ -1756,142 +1762,142 @@
   "walked_share_coefficients": [
     {
       "variable": "Intercept",
-      "coefficient": 0.1409445217098142,
-      "p_value": 5.28493696883017e-19,
+      "coefficient": 0.1472689002948318,
+      "p_value": 1.027249930041844e-55,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.gridiron]",
-      "coefficient": 0.04596987932861894,
-      "p_value": 0.002761824249410001,
+      "coefficient": 0.03959873994315675,
+      "p_value": 3.033871965397676e-05,
       "significant": true
     },
     {
       "variable": "C(pattern)[T.hibrido]",
-      "coefficient": -0.03274747670325523,
-      "p_value": 0.07781027756855036,
-      "significant": false
+      "coefficient": -0.0328746738844573,
+      "p_value": 0.03657873462710661,
+      "significant": true
     },
     {
       "variable": "C(pattern)[T.organico]",
-      "coefficient": -0.015834902615515706,
-      "p_value": 0.3127718541056781,
+      "coefficient": -0.013731671380251852,
+      "p_value": 0.227553874691072,
       "significant": false
     },
     {
       "variable": "C(city)[T.Chandler_AZ]",
-      "coefficient": -0.110850382093867,
-      "p_value": 5.294269995289337e-13,
+      "coefficient": -0.12426726012431336,
+      "p_value": 2.5516653605801773e-16,
       "significant": true
     },
     {
       "variable": "C(city)[T.Peachtree_GA]",
-      "coefficient": -0.12996761343543614,
-      "p_value": 0.0002027948616756485,
+      "coefficient": -0.13959129463228684,
+      "p_value": 4.0783550042044456e-05,
       "significant": true
     },
     {
       "variable": "C(city)[T.Philadelphia_PA]",
-      "coefficient": -0.09559180034831324,
-      "p_value": 9.50423907112482e-27,
+      "coefficient": -0.09543288959602977,
+      "p_value": 6.762042640332585e-26,
       "significant": true
     },
     {
       "variable": "C(city)[T.Salt_Lake_UT]",
-      "coefficient": -0.11348506633467505,
-      "p_value": 2.7378901546096633e-11,
+      "coefficient": -0.11434062152126087,
+      "p_value": 2.8002141998161325e-11,
       "significant": true
     },
     {
       "variable": "C(city)[T.Santa_Fe_NM]",
-      "coefficient": -0.0932064182688278,
-      "p_value": 1.9419117236883096e-05,
+      "coefficient": -0.10501172380848733,
+      "p_value": 1.4643851748443232e-06,
       "significant": true
     }
   ],
   "walked_share_model_fit": {
-    "r_squared": 0.15707552446366146,
-    "adj_r_squared": 0.15150707210669145,
-    "aic": -1502.860301736555,
-    "bic": -1456.900846497009,
-    "f_value": 28.208111409456517,
-    "f_pvalue": 1.7275317791793713e-40
+    "r_squared": 0.14203891469548136,
+    "adj_r_squared": 0.13637112883054647,
+    "aic": -1481.289018796415,
+    "bic": -1435.329563556869,
+    "f_value": 25.060741192471475,
+    "f_pvalue": 5.7196950283590954e-36
   },
   "walked_share_by_city": {
     "Boston_MA": {
-      "f_value": 6.280557650905633,
-      "p_value": 0.0003670822140594394,
-      "r_squared": 0.050807863104207374,
+      "f_value": 3.296282377598682,
+      "p_value": 0.020660841898006224,
+      "r_squared": 0.02732564767094714,
       "significant": "True",
       "n_observations": 356
     },
     "Chandler_AZ": {
-      "f_value": 9.656677065119013,
-      "p_value": 1.1295489229110425e-05,
-      "r_squared": 0.2195197722767248,
-      "significant": "True",
+      "f_value": 0.33873512689062013,
+      "p_value": 0.7973538400181182,
+      "r_squared": 0.009769683261880324,
+      "significant": "False",
       "n_observations": 107
     },
     "Philadelphia_PA": {
-      "f_value": 11.134785259697102,
-      "p_value": 3.9770895112213277e-07,
-      "r_squared": 0.050889905718927486,
+      "f_value": 9.07280202093384,
+      "p_value": 6.930869512532624e-06,
+      "r_squared": 0.04186040537919289,
       "significant": "True",
       "n_observations": 627
     },
     "Salt_Lake_UT": {
-      "f_value": 2.8276079173870325,
-      "p_value": 0.04495273443738531,
-      "r_squared": 0.11091148752103186,
+      "f_value": 3.1642463104351877,
+      "p_value": 0.02995992256749118,
+      "r_squared": 0.12249843097842394,
       "significant": "True",
       "n_observations": 72
     },
     "Santa_Fe_NM": {
-      "f_value": 4.47472740225991,
-      "p_value": 0.008717104654475838,
-      "r_squared": 0.2610480445328287,
+      "f_value": 2.8617726431562636,
+      "p_value": 0.04944582524952237,
+      "r_squared": 0.1842923545668863,
       "significant": "True",
       "n_observations": 42
     }
   },
   "walked_share_by_pattern": {
-    "organico": {
-      "f_value": 17.94183206982334,
-      "p_value": 9.19668945281353e-16,
-      "r_squared": 0.21172343849068664,
+    "cul_de_sac": {
+      "f_value": 11.482929243150542,
+      "p_value": 2.5042145462979e-10,
+      "r_squared": 0.1330846013675654,
       "significant": "True",
-      "n_observations": 340
+      "n_observations": 380
     },
     "gridiron": {
-      "f_value": 16.736775312639693,
-      "p_value": 4.4612159554025026e-13,
-      "r_squared": 0.09196698652353807,
+      "f_value": 12.790005192776567,
+      "p_value": 5.958563190146069e-10,
+      "r_squared": 0.08698316608468726,
       "significant": "True",
-      "n_observations": 666
+      "n_observations": 542
+    },
+    "organico": {
+      "f_value": 12.328902191071426,
+      "p_value": 1.8888539456207103e-10,
+      "r_squared": 0.23293326860558217,
+      "significant": "True",
+      "n_observations": 209
     },
     "hibrido": {
-      "f_value": 2.8933119261874585,
-      "p_value": 0.01699537401328716,
-      "r_squared": 0.11349297943573056,
+      "f_value": 3.443211795935958,
+      "p_value": 0.011760904781252756,
+      "r_squared": 0.14086576775104664,
       "significant": "True",
-      "n_observations": 119
-    },
-    "cul_de_sac": {
-      "f_value": 3.285069664732503,
-      "p_value": 0.00906978891417612,
-      "r_squared": 0.15580074986554138,
-      "significant": "True",
-      "n_observations": 95
+      "n_observations": 89
     }
   },
   "walked_share_effects_summary": {
-    "cities_with_significant_patterns": 5,
+    "cities_with_significant_patterns": 4,
     "total_cities_analyzed": 5,
     "patterns_with_significant_cities": 4,
     "total_patterns_analyzed": 4,
-    "percent_cities_significant": 1.0,
+    "percent_cities_significant": 0.8,
     "percent_patterns_significant": 1.0
   },
-  "walked_share_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.11805211100245962, 'std': 0.16094224554337036, 'count': 666}, {'pattern': 'cul_de_sac', 'mean': 0.056039620543845446, 'std': 0.12907438482270397, 'count': 95}, {'pattern': 'hibrido', 'mean': 0.05223979157808182, 'std': 0.08412920857799208, 'count': 119}, {'pattern': 'organico', 'mean': 0.05047737812936832, 'std': 0.10023093728452345, 'count': 340}]",
+  "walked_share_pattern_means": "[{'pattern': 'gridiron', 'mean': 0.1144418566035968, 'std': 0.15720888802880872, 'count': 542}, {'pattern': 'cul_de_sac', 'mean': 0.07542051352775024, 'std': 0.13633974194593923, 'count': 380}, {'pattern': 'organico', 'mean': 0.05655264422012545, 'std': 0.10498946848621246, 'count': 209}, {'pattern': 'hibrido', 'mean': 0.05414078179078206, 'std': 0.10142138591197646, 'count': 89}]",
   "walked_share_city_means": "[{'city': 'Boston_MA', 'mean': 0.1573381072298004, 'std': 0.18430744581572092, 'count': 356}, {'city': 'Philadelphia_PA', 'mean': 0.07043156953389845, 'std': 0.11763378799414423, 'count': 627}, {'city': 'Salt_Lake_UT', 'mean': 0.049105723629220416, 'std': 0.06395904157176206, 'count': 72}, {'city': 'Santa_Fe_NM', 'mean': 0.03734625720142449, 'std': 0.0607374815113973, 'count': 42}, {'city': 'Chandler_AZ', 'mean': 0.018250655307600016, 'std': 0.06493291686563454, 'count': 107}, {'city': 'Peachtree_GA', 'mean': 0.005961146740013773, 'std': 0.00928120193238176, 'count': 16}]"
 }

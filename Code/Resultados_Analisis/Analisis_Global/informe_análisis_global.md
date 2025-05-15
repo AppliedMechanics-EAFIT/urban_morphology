@@ -6,26 +6,27 @@
 
 | Fuente | Suma cuadrados | gl | F | p-valor |
 |--------|---|---|---|---|
-| C(pattern) | 1.4813 | 3 | 24.0843 | 0.0000 |
-| C(city) | 3.7306 | 5 | 36.3925 | 0.0000 |
-| Residual | 24.8281 | 1211 | nan | nan |
+| C(pattern) | 1.0143 | 3 | 16.1861 | 0.0000 |
+| C(city) | 4.0793 | 5 | 39.0592 | 0.0000 |
+| Residual | 25.2952 | 1211 | nan | nan |
 
 ### Resumen de efectos entre ciudades y patrones
 
-- 5 de 5 ciudades muestran diferencias significativas entre patrones
+- 4 de 5 ciudades muestran diferencias significativas entre patrones
 - 4 de 4 patrones muestran diferencias significativas entre ciudades
 
 ### Efectos significativos
 
 | Variable | Coeficiente | p-value |
 |----------|-------------|--------|
-| Intercept | 0.1691 | 0.0000 |
-| C(pattern)[T.gridiron] | 0.0597 | 0.0004 |
-| C(city)[T.Chandler_AZ] | -0.1351 | 0.0000 |
-| C(city)[T.Peachtree_GA] | -0.1554 | 0.0001 |
-| C(city)[T.Philadelphia_PA] | -0.1179 | 0.0000 |
-| C(city)[T.Salt_Lake_UT] | -0.1341 | 0.0000 |
-| C(city)[T.Santa_Fe_NM] | -0.1137 | 0.0000 |
+| Intercept | 0.1819 | 0.0000 |
+| C(pattern)[T.gridiron] | 0.0473 | 0.0000 |
+| C(pattern)[T.hibrido] | -0.0353 | 0.0412 |
+| C(city)[T.Chandler_AZ] | -0.1520 | 0.0000 |
+| C(city)[T.Peachtree_GA] | -0.1705 | 0.0000 |
+| C(city)[T.Philadelphia_PA] | -0.1181 | 0.0000 |
+| C(city)[T.Salt_Lake_UT] | -0.1360 | 0.0000 |
+| C(city)[T.Santa_Fe_NM] | -0.1285 | 0.0000 |
 
 ## Análisis para la variable: b
 
@@ -33,9 +34,9 @@
 
 | Fuente | Suma cuadrados | gl | F | p-valor |
 |--------|---|---|---|---|
-| C(pattern) | 2.0480 | 3 | 49.2105 | 0.0000 |
-| C(city) | 5.6440 | 5 | 81.3717 | 0.0000 |
-| Residual | 16.7992 | 1211 | nan | nan |
+| C(pattern) | 2.1245 | 3 | 51.2834 | 0.0000 |
+| C(city) | 6.6957 | 5 | 96.9763 | 0.0000 |
+| Residual | 16.7227 | 1211 | nan | nan |
 
 ### Resumen de efectos entre ciudades y patrones
 
@@ -46,13 +47,14 @@
 
 | Variable | Coeficiente | p-value |
 |----------|-------------|--------|
-| Intercept | 0.2106 | 0.0000 |
-| C(pattern)[T.gridiron] | 0.0898 | 0.0000 |
-| C(city)[T.Chandler_AZ] | -0.2049 | 0.0000 |
-| C(city)[T.Peachtree_GA] | -0.2029 | 0.0000 |
-| C(city)[T.Philadelphia_PA] | -0.0997 | 0.0000 |
-| C(city)[T.Salt_Lake_UT] | -0.2063 | 0.0000 |
-| C(city)[T.Santa_Fe_NM] | -0.2013 | 0.0000 |
+| Intercept | 0.2359 | 0.0000 |
+| C(pattern)[T.gridiron] | 0.0774 | 0.0000 |
+| C(pattern)[T.organico] | -0.0239 | 0.0192 |
+| C(city)[T.Chandler_AZ] | -0.2210 | 0.0000 |
+| C(city)[T.Peachtree_GA] | -0.2254 | 0.0000 |
+| C(city)[T.Philadelphia_PA] | -0.1046 | 0.0000 |
+| C(city)[T.Salt_Lake_UT] | -0.2139 | 0.0000 |
+| C(city)[T.Santa_Fe_NM] | -0.2156 | 0.0000 |
 
 ## Análisis para la variable: bicycle
 
@@ -62,28 +64,28 @@
 
 | Fuente | Suma cuadrados | gl | F | p-valor |
 |--------|---|---|---|---|
-| C(pattern) | 4.9542 | 3 | 37.5034 | 0.0000 |
-| C(city) | 20.1968 | 5 | 91.7342 | 0.0000 |
-| Residual | 53.3243 | 1211 | nan | nan |
+| C(pattern) | 4.0995 | 3 | 30.5441 | 0.0000 |
+| C(city) | 22.9350 | 5 | 102.5279 | 0.0000 |
+| Residual | 54.1789 | 1211 | nan | nan |
 
 ### Resumen de efectos entre ciudades y patrones
 
-- 5 de 5 ciudades muestran diferencias significativas entre patrones
+- 4 de 5 ciudades muestran diferencias significativas entre patrones
 - 4 de 4 patrones muestran diferencias significativas entre ciudades
 
 ### Efectos significativos
 
 | Variable | Coeficiente | p-value |
 |----------|-------------|--------|
-| Intercept | 0.5258 | 0.0000 |
-| C(pattern)[T.gridiron] | -0.0699 | 0.0047 |
-| C(pattern)[T.hibrido] | 0.0828 | 0.0057 |
-| C(pattern)[T.organico] | 0.0728 | 0.0040 |
-| C(city)[T.Chandler_AZ] | 0.3781 | 0.0000 |
-| C(city)[T.Peachtree_GA] | 0.4389 | 0.0000 |
-| C(city)[T.Philadelphia_PA] | 0.2113 | 0.0000 |
-| C(city)[T.Salt_Lake_UT] | 0.3717 | 0.0000 |
-| C(city)[T.Santa_Fe_NM] | 0.3625 | 0.0000 |
+| Intercept | 0.5242 | 0.0000 |
+| C(pattern)[T.gridiron] | -0.0697 | 0.0000 |
+| C(pattern)[T.hibrido] | 0.1077 | 0.0000 |
+| C(pattern)[T.organico] | 0.0661 | 0.0003 |
+| C(city)[T.Chandler_AZ] | 0.4116 | 0.0000 |
+| C(city)[T.Peachtree_GA] | 0.4511 | 0.0000 |
+| C(city)[T.Philadelphia_PA] | 0.2105 | 0.0000 |
+| C(city)[T.Salt_Lake_UT] | 0.3715 | 0.0000 |
+| C(city)[T.Santa_Fe_NM] | 0.3885 | 0.0000 |
 
 ## Análisis para la variable: car
 
@@ -100,11 +102,11 @@
 - **total_records**: 1220
 - **total_patterns**: 4
 - **total_cities**: 6
-- **filled_combinations**: 23
+- **filled_combinations**: 22
 - **total_combinations**: 24
 - **rare_patterns**: []
 - **rare_cities**: ['Santa_Fe_NM', 'Peachtree_GA']
-- **pattern_counts**: {'gridiron': 666, 'organico': 340, 'hibrido': 119, 'cul_de_sac': 95}
+- **pattern_counts**: {'gridiron': 542, 'cul_de_sac': 380, 'organico': 209, 'hibrido': 89}
 - **city_counts**: {'Philadelphia_PA': 627, 'Boston_MA': 356, 'Chandler_AZ': 107, 'Salt_Lake_UT': 72, 'Santa_Fe_NM': 42, 'Peachtree_GA': 16}
 
 ## Conclusiones generales

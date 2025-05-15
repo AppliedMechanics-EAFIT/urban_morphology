@@ -9,91 +9,91 @@ ANÁLISIS POR VARIABLE DE MOVILIDAD
 --------------------------------
 
 Variable: a
-  R² ajustado: 0.1794
+  R² ajustado: 0.1640
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 0.0597)
+  Patrón más influyente: gridiron (coef = 0.0473)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = -0.1554)
+  Ciudad más influyente: Peachtree_GA (coef = -0.1705)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: b
-  R² ajustado: 0.3717
+  R² ajustado: 0.3745
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 0.0898)
+  Patrón más influyente: gridiron (coef = 0.0774)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Salt_Lake_UT (coef = -0.2063)
+  Ciudad más influyente: Peachtree_GA (coef = -0.2254)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: c
-  R² ajustado: 0.3558
+  R² ajustado: 0.3455
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: hibrido (coef = 0.0828)
+  Patrón más influyente: hibrido (coef = 0.1077)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = 0.4389)
+  Ciudad más influyente: Peachtree_GA (coef = 0.4511)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: car_mode
-  R² ajustado: 0.2053
+  R² ajustado: 0.1991
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: hibrido (coef = 264.6633)
+  Patrón más influyente: gridiron (coef = -188.6207)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = 1277.9650)
+  Ciudad más influyente: Peachtree_GA (coef = 1205.8872)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: transit_mode
-  R² ajustado: 0.3027
+  R² ajustado: 0.2927
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 151.5218)
+  Patrón más influyente: gridiron (coef = 101.4549)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Santa_Fe_NM (coef = -327.6475)
+  Ciudad más influyente: Peachtree_GA (coef = -362.1834)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: bicycle_mode
-  R² ajustado: 0.0946
-  Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 27.5435)
+  R² ajustado: 0.0855
+  Efecto de patrón: Sí (p = 0.000034)
+  Patrón más influyente: gridiron (coef = 11.0130)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Santa_Fe_NM (coef = -35.5957)
+  Ciudad más influyente: Peachtree_GA (coef = -47.5680)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: walked_mode
-  R² ajustado: 0.1491
+  R² ajustado: 0.1296
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 89.6124)
+  Patrón más influyente: gridiron (coef = 52.7873)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = -164.9813)
+  Ciudad más influyente: Peachtree_GA (coef = -196.6696)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: car_share
-  R² ajustado: 0.3558
+  R² ajustado: 0.3455
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: hibrido (coef = 0.0828)
+  Patrón más influyente: hibrido (coef = 0.1077)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = 0.4389)
+  Ciudad más influyente: Peachtree_GA (coef = 0.4511)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: transit_share
-  R² ajustado: 0.3717
+  R² ajustado: 0.3745
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 0.0898)
+  Patrón más influyente: gridiron (coef = 0.0774)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Salt_Lake_UT (coef = -0.2063)
+  Ciudad más influyente: Peachtree_GA (coef = -0.2254)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: bicycle_share
-  R² ajustado: 0.1063
-  Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 0.0137)
+  R² ajustado: 0.1002
+  Efecto de patrón: Sí (p = 0.000022)
+  Patrón más influyente: gridiron (coef = 0.0077)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = -0.0255)
+  Ciudad más influyente: Peachtree_GA (coef = -0.0309)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 Variable: walked_share
-  R² ajustado: 0.1515
+  R² ajustado: 0.1364
   Efecto de patrón: Sí (p = 0.000000)
-  Patrón más influyente: gridiron (coef = 0.0460)
+  Patrón más influyente: gridiron (coef = 0.0396)
   Efecto de ciudad: Sí (p = 0.000000)
-  Ciudad más influyente: Peachtree_GA (coef = -0.1300)
+  Ciudad más influyente: Peachtree_GA (coef = -0.1396)
   Interpretación: Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.
 
 CONCLUSIONES GENERALES
@@ -102,5 +102,5 @@ CONCLUSIONES GENERALES
 El patrón de calle mostró efecto significativo en 11 de 11 variables de movilidad (100.0%).
 La ciudad mostró efecto significativo en 11 de 11 variables de movilidad (100.0%).
 
-El patrón 'gridiron' aparece como el más influyente en 8 variables de movilidad.
-La ciudad 'Peachtree_GA' aparece como la más influyente en 7 variables de movilidad.
+El patrón 'gridiron' aparece como el más influyente en 9 variables de movilidad.
+La ciudad 'Peachtree_GA' aparece como la más influyente en 11 variables de movilidad.
