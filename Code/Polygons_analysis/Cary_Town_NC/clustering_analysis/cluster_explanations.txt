@@ -1,0 +1,78 @@
+EXPLICACIÓN DETALLADA DE CLUSTERS
+================================
+
+Cluster 0: cul_de_sac
+Patrón dominante: cul_de_sac (52.4%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - angle_coefficient_variation: 0.294 (mayor que el promedio de 0.114 por 156.9%, z-score: 1.27)
+  - std_intersection_angle: 0.287 (mayor que el promedio de -0.018 por 1730.7%, z-score: 0.94)
+  - orthogonal_proportion: 0.311 (mayor que el promedio de -0.649 por 147.9%, z-score: 0.60)
+  - k_avg: 0.187 (mayor que el promedio de -0.677 por 127.6%, z-score: 0.54)
+  - edge_length_avg: -0.135 (menor que el promedio de 0.375 por 135.9%, z-score: -0.51)
+
+--------------------------------------------------
+
+Cluster 1: cul_de_sac_alto_std
+Patrón dominante: cul_de_sac (50.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - node_density_km2: 1.014 (mayor que el promedio de -0.410 por 347.6%, z-score: 1.29)
+  - segment_density_km2: 1.000 (mayor que el promedio de -0.401 por 349.3%, z-score: 1.26)
+  - edge_density_km2: 1.015 (mayor que el promedio de -0.438 por 331.6%, z-score: 1.26)
+  - intersection_density_km2: 0.987 (mayor que el promedio de -0.386 por 355.8%, z-score: 1.25)
+  - street_density_km2: 0.940 (mayor que el promedio de -0.312 por 401.6%, z-score: 1.25)
+
+--------------------------------------------------
+
+Cluster 2: cul_de_sac_bajo_std
+Patrón dominante: cul_de_sac (100.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - orthogonal_proportion: -3.047 (menor que el promedio de -0.649 por 369.7%, z-score: -1.50)
+  - dead_end_ratio: 5.076 (mayor que el promedio de 1.190 por 326.7%, z-score: 1.49)
+  - k_avg: -3.068 (menor que el promedio de -0.677 por 353.1%, z-score: -1.48)
+  - mean_intersection_angle: -0.852 (menor que el promedio de -0.128 por 562.9%, z-score: -1.48)
+  - edge_length_avg: 1.824 (mayor que el promedio de 0.375 por 385.7%, z-score: 1.45)
+
+--------------------------------------------------
+
+Cluster 3: cul_de_sac_alto_std
+Patrón dominante: cul_de_sac (59.1%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - circuity_avg: -0.329 (menor que el promedio de 0.017 por 2025.8%, z-score: -1.43)
+  - network_connectivity_index: -0.872 (menor que el promedio de 0.595 por 246.6%, z-score: -0.96)
+  - streets_per_node_avg: -0.852 (menor que el promedio de 0.587 por 245.1%, z-score: -0.96)
+  - street_density_km2: -1.149 (menor que el promedio de -0.312 por 268.7%, z-score: -0.84)
+  - cv_dead_end_distances: -0.375 (menor que el promedio de 0.439 por 185.5%, z-score: -0.79)
+
+--------------------------------------------------
+
+Cluster 4: gridiron
+Patrón dominante: gridiron (100.0%)
+  Este es el único cluster con este patrón base.
+
+Características principales:
+  - street_length_avg: 6.598
+  - edge_length_avg: 6.518
+  - network_connectivity_index: 2.183
+  - streets_per_node_avg: 2.055
+  - cv_dead_end_distances: -0.522
+
+--------------------------------------------------
+
+
+RESUMEN DE TODOS LOS CLUSTERS
+=========================
+
+Cluster | Nombre | Patrón Base | Característica Distintiva
+------------------------------------------------------------
+0 | cul_de_sac | cul_de_sac | N/A
+1 | cul_de_sac_alto_std | cul_de_sac | de
+2 | cul_de_sac_bajo_std | cul_de_sac | de
+3 | cul_de_sac_alto_std | cul_de_sac | de
+4 | gridiron | gridiron | N/A
+
+
+NOTA SOBRE NOMENCLATURA:
+- 'alto_[característica]': Indica que este cluster tiene valores significativamente mayores
+  que el promedio de otros clusters del mismo patrón base para esta característica.
+- 'bajo_[característica]': Indica que este cluster tiene valores significativamente menores
+  que el promedio de otros clusters del mismo patrón base para esta característica.

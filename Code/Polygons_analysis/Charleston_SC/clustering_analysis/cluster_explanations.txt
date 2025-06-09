@@ -1,0 +1,109 @@
+EXPLICACIÓN DETALLADA DE CLUSTERS
+================================
+
+Cluster 0: organico
+Patrón dominante: organico (83.3%)
+Comparación con otros clusters de tipo 'organico':
+  - street_density_km2: -0.633 (menor que el promedio de -0.098 por 545.9%, z-score: -0.71)
+  - node_density_km2: -0.624 (menor que el promedio de -0.106 por 488.1%, z-score: -0.71)
+  - edge_density_km2: -0.617 (menor que el promedio de -0.087 por 611.6%, z-score: -0.71)
+  - edge_length_avg: 0.127 (mayor que el promedio de -0.032 por 499.2%, z-score: 0.71)
+  - streets_per_node_avg: -0.458 (menor que el promedio de -0.251 por 82.6%, z-score: -0.71)
+
+--------------------------------------------------
+
+Cluster 1: gridiron
+Patrón dominante: gridiron (85.7%)
+Comparación con otros clusters de tipo 'gridiron':
+  - network_connectivity_index: 1.731 (mayor que el promedio de 1.064 por 62.6%, z-score: 1.15)
+  - streets_per_node_avg: 1.709 (mayor que el promedio de 1.033 por 65.5%, z-score: 1.15)
+  - std_intersection_angle: 1.354 (menor que el promedio de 1.380 por 1.9%, z-score: -1.15)
+  - orthogonal_proportion: 1.525 (mayor que el promedio de 1.372 por 11.2%, z-score: 1.10)
+  - dead_end_ratio: 1.088 (mayor que el promedio de 0.183 por 494.5%, z-score: 1.00)
+
+--------------------------------------------------
+
+Cluster 2: cul_de_sac
+Patrón dominante: cul_de_sac (60.0%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - edge_density_km2: -1.135 (menor que el promedio de -0.861 por 31.8%, z-score: -0.71)
+  - edge_length_density: -1.062 (menor que el promedio de -0.780 por 36.1%, z-score: -0.71)
+  - street_density_km2: -1.045 (menor que el promedio de -0.726 por 43.9%, z-score: -0.71)
+  - edge_length_avg: 2.586 (mayor que el promedio de 1.326 por 95.0%, z-score: 0.71)
+  - streets_per_node_avg: -1.812 (menor que el promedio de -0.928 por 95.2%, z-score: -0.71)
+
+--------------------------------------------------
+
+Cluster 3: cul_de_sac_bajo_edge
+Patrón dominante: cul_de_sac (85.7%)
+Comparación con otros clusters de tipo 'cul_de_sac':
+  - std_intersection_angle: -0.607 (mayor que el promedio de -0.636 por 4.6%, z-score: 0.71)
+  - orthogonal_proportion: -0.360 (mayor que el promedio de -0.523 por 31.3%, z-score: 0.71)
+  - node_density_km2: -0.551 (mayor que el promedio de -0.795 por 30.7%, z-score: 0.71)
+  - intersection_density_km2: -0.552 (mayor que el promedio de -0.817 por 32.5%, z-score: 0.71)
+  - segment_density_km2: -0.521 (mayor que el promedio de -0.817 por 36.2%, z-score: 0.71)
+
+--------------------------------------------------
+
+Cluster 4: organico_bajo_edge
+Patrón dominante: organico (46.7%)
+Comparación con otros clusters de tipo 'organico':
+  - angle_coefficient_variation: -0.092 (mayor que el promedio de -0.113 por 18.3%, z-score: 0.71)
+  - orthogonal_proportion: -0.246 (mayor que el promedio de -0.479 por 48.6%, z-score: 0.71)
+  - street_density_km2: 0.437 (mayor que el promedio de -0.098 por 545.9%, z-score: 0.71)
+  - node_density_km2: 0.412 (mayor que el promedio de -0.106 por 488.1%, z-score: 0.71)
+  - edge_density_km2: 0.444 (mayor que el promedio de -0.087 por 611.6%, z-score: 0.71)
+
+EXPLICACIÓN DEL NOMBRE 'organico_bajo_edge':
+  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 5: gridiron_bajo_edge
+Patrón dominante: gridiron (83.3%)
+Comparación con otros clusters de tipo 'gridiron':
+  - street_length_avg: -0.965 (menor que el promedio de -0.758 por 27.3%, z-score: -1.14)
+  - edge_length_avg: -0.971 (menor que el promedio de -0.780 por 24.5%, z-score: -1.13)
+  - edge_density_km2: 2.245 (mayor que el promedio de 0.665 por 237.4%, z-score: 1.08)
+  - node_density_km2: 2.262 (mayor que el promedio de 0.638 por 254.3%, z-score: 1.07)
+  - segment_density_km2: 2.234 (mayor que el promedio de 0.684 por 226.6%, z-score: 1.05)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_bajo_edge':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'bajo'.
+
+--------------------------------------------------
+
+Cluster 6: gridiron_alto_edge
+Patrón dominante: gridiron (66.7%)
+Comparación con otros clusters de tipo 'gridiron':
+  - mean_intersection_angle: 0.830 (menor que el promedio de 1.084 por 23.4%, z-score: -1.13)
+  - k_avg: 1.378 (mayor que el promedio de 0.392 por 251.5%, z-score: 1.12)
+  - cv_dead_end_distances: -0.586 (menor que el promedio de -0.391 por 50.0%, z-score: -1.10)
+  - angle_coefficient_variation: 1.073 (mayor que el promedio de 0.856 por 25.3%, z-score: 1.07)
+  - dead_end_ratio: -0.715 (menor que el promedio de 0.183 por 490.6%, z-score: -1.00)
+
+EXPLICACIÓN DEL NOMBRE 'gridiron_alto_edge':
+  Este cluster representa una variante del patrón base 'gridiron' con la característica distintiva 'alto'.
+
+--------------------------------------------------
+
+
+RESUMEN DE TODOS LOS CLUSTERS
+=========================
+
+Cluster | Nombre | Patrón Base | Característica Distintiva
+------------------------------------------------------------
+0 | organico | organico | N/A
+1 | gridiron | gridiron | N/A
+2 | cul_de_sac | cul_de_sac | N/A
+3 | cul_de_sac_bajo_edge | cul_de_sac | de
+4 | organico_bajo_edge | organico | bajo
+5 | gridiron_bajo_edge | gridiron | bajo
+6 | gridiron_alto_edge | gridiron | alto
+
+
+NOTA SOBRE NOMENCLATURA:
+- 'alto_[característica]': Indica que este cluster tiene valores significativamente mayores
+  que el promedio de otros clusters del mismo patrón base para esta característica.
+- 'bajo_[característica]': Indica que este cluster tiene valores significativamente menores
+  que el promedio de otros clusters del mismo patrón base para esta característica.

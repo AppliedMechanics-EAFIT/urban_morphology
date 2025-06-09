@@ -2,7 +2,7 @@ EXPLICACIÓN DETALLADA DE CLUSTERS
 ================================
 
 Cluster 0: cul_de_sac
-Patrón dominante: cul_de_sac (43.5%)
+Patrón dominante: cul_de_sac (30.4%)
   Este es el único cluster con este patrón base.
 
 Características principales:
@@ -26,7 +26,7 @@ Comparación con otros clusters de tipo 'gridiron':
 --------------------------------------------------
 
 Cluster 2: gridiron_bajo_intersection
-Patrón dominante: gridiron (38.9%)
+Patrón dominante: gridiron (44.4%)
 Comparación con otros clusters de tipo 'gridiron':
   - k_avg: 0.068 (menor que el promedio de 0.109 por 37.8%, z-score: -0.71)
   - edge_length_avg: -0.503 (menor que el promedio de -0.500 por 0.7%, z-score: -0.71)

@@ -37,7 +37,7 @@ Comparación con otros clusters de tipo 'cul_de_sac':
 --------------------------------------------------
 
 Cluster 3: cul_de_sac_bajo_mean
-Patrón dominante: cul_de_sac (100.0%)
+Patrón dominante: cul_de_sac (50.0%)
 Comparación con otros clusters de tipo 'cul_de_sac':
   - k_avg: 1.765 (mayor que el promedio de -0.103 por 1821.9%, z-score: 1.78)
   - std_intersection_angle: 1.774 (mayor que el promedio de 0.221 por 701.2%, z-score: 1.56)

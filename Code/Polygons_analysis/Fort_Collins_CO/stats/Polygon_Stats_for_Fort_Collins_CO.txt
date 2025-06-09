@@ -1,0 +1,991 @@
+# Estadísticas para Fort Collins, CO
+# Generado inicialmente: 2025-05-29 18:30:33
+
+
+=== Polígono 4 - SubPolígono 0 ===
+n: 83
+m: 212
+k_avg: 5.108433734939759
+edge_length_total: 26540.82523333028
+edge_length_avg: 125.19257185533151
+streets_per_node_avg: 2.7951807228915664
+streets_per_node_counts: {0: 0, 1: 17, 2: 0, 3: 49, 4: 17}
+streets_per_node_proportions: {0: 0.0, 1: 0.20481927710843373, 2: 0.0, 3: 0.5903614457831325, 4: 0.20481927710843373}
+intersection_count: 66
+street_length_total: 13314.998611212464
+street_segment_count: 107
+street_length_avg: 124.43923935712583
+circuity_avg: 1.0537951689658056
+self_loop_proportion: 0.0
+intersection_density_km2: 29.895507041341958
+street_density_km2: 6031.191435408495
+area_km2: 2.2076896006055287
+
+=== Polígono 0 - SubPolígono 0 ===
+n: 198
+m: 474
+k_avg: 4.787878787878788
+edge_length_total: 54928.04726809963
+edge_length_avg: 115.88195626181357
+streets_per_node_avg: 2.6717171717171717
+streets_per_node_counts: {0: 0, 1: 51, 2: 0, 3: 110, 4: 37}
+streets_per_node_proportions: {0: 0.0, 1: 0.25757575757575757, 2: 0.0, 3: 0.5555555555555556, 4: 0.18686868686868688}
+intersection_count: 147
+street_length_total: 28987.092313358302
+street_segment_count: 247
+street_length_avg: 117.35664904193645
+circuity_avg: 1.073719380300769
+self_loop_proportion: 0.004048582995951417
+intersection_density_km2: 32.61531671511696
+street_density_km2: 6431.450315989888
+area_km2: 4.507084854762933
+
+=== Polígono 6 - SubPolígono 0 ===
+n: 91
+m: 221
+k_avg: 4.857142857142857
+edge_length_total: 35100.76492975578
+edge_length_avg: 158.8269906323791
+streets_per_node_avg: 2.8131868131868134
+streets_per_node_counts: {0: 0, 1: 17, 2: 0, 3: 57, 4: 17}
+streets_per_node_proportions: {0: 0.0, 1: 0.18681318681318682, 2: 0.0, 3: 0.6263736263736264, 4: 0.18681318681318682}
+intersection_count: 74
+street_length_total: 18678.31612032791
+street_segment_count: 117
+street_length_avg: 159.64372752417017
+circuity_avg: 1.164392508730796
+self_loop_proportion: 0.008547008547008548
+intersection_density_km2: 6.3577850629162995
+street_density_km2: 1604.7664760844527
+area_km2: 11.639273625594445
+
+=== Polígono 2 - SubPolígono 0 ===
+n: 599
+m: 1449
+k_avg: 4.838063439065109
+edge_length_total: 223157.53682611525
+edge_length_avg: 154.00796192278486
+streets_per_node_avg: 2.7779632721202003
+streets_per_node_counts: {0: 0, 1: 122, 2: 2, 3: 366, 4: 105, 5: 4}
+streets_per_node_proportions: {0: 0.0, 1: 0.2036727879799666, 2: 0.00333889816360601, 3: 0.6110183639398998, 4: 0.17529215358931552, 5: 0.00667779632721202}
+intersection_count: 477
+street_length_total: 121679.4550891716
+street_segment_count: 816
+street_length_avg: 149.1169792759456
+circuity_avg: 1.074972651627618
+self_loop_proportion: 0.0024509803921568627
+intersection_density_km2: 11.573160133351113
+street_density_km2: 2952.234420725132
+area_km2: 41.216054604256165
+
+=== Polígono 8 - SubPolígono 0 ===
+n: 145
+m: 345
+k_avg: 4.758620689655173
+edge_length_total: 37605.76861955356
+edge_length_avg: 109.00222788276393
+streets_per_node_avg: 2.537931034482759
+streets_per_node_counts: {0: 0, 1: 43, 2: 0, 3: 83, 4: 19}
+streets_per_node_proportions: {0: 0.0, 1: 0.296551724137931, 2: 0.0, 3: 0.5724137931034483, 4: 0.1310344827586207}
+intersection_count: 102
+street_length_total: 19216.454424888456
+street_segment_count: 176
+street_length_avg: 109.18440014141169
+circuity_avg: 1.0659310734802185
+self_loop_proportion: 0.0
+intersection_density_km2: 17.953461905345534
+street_density_km2: 3382.3713967945446
+area_km2: 5.681355525623173
+
+=== Polígono 12 - SubPolígono 0 ===
+n: 224
+m: 580
+k_avg: 5.178571428571429
+edge_length_total: 75254.1624646478
+edge_length_avg: 129.7485559735307
+streets_per_node_avg: 2.8125
+streets_per_node_counts: {0: 0, 1: 46, 2: 0, 3: 130, 4: 46, 5: 2}
+streets_per_node_proportions: {0: 0.0, 1: 0.20535714285714285, 2: 0.0, 3: 0.5803571428571429, 4: 0.20535714285714285, 5: 0.008928571428571428}
+intersection_count: 178
+street_length_total: 38314.876676963904
+street_segment_count: 306
+street_length_avg: 125.21201528419577
+circuity_avg: 1.0988767507554844
+self_loop_proportion: 0.02287581699346405
+intersection_density_km2: 5.408554165245477
+street_density_km2: 1164.2027294497748
+area_km2: 32.91082876525489
+
+=== Polígono 7 - SubPolígono 0 ===
+n: 119
+m: 307
+k_avg: 5.159663865546219
+edge_length_total: 38408.81540966393
+edge_length_avg: 125.11014791421475
+streets_per_node_avg: 2.899159663865546
+streets_per_node_counts: {0: 0, 1: 21, 2: 0, 3: 72, 4: 23, 5: 2, 6: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.17647058823529413, 2: 0.0, 3: 0.6050420168067226, 4: 0.19327731092436976, 5: 0.01680672268907563, 6: 0.008403361344537815}
+intersection_count: 98
+street_length_total: 20323.62479776283
+street_segment_count: 166
+street_length_avg: 122.43147468531825
+circuity_avg: 1.0689962991540067
+self_loop_proportion: 0.018072289156626505
+intersection_density_km2: 13.685528265190152
+street_density_km2: 2838.158587968395
+area_km2: 7.160848898267819
+
+=== Polígono 10 - SubPolígono 0 ===
+n: 172
+m: 388
+k_avg: 4.511627906976744
+edge_length_total: 77589.77715771494
+edge_length_avg: 199.97365246833746
+streets_per_node_avg: 2.5697674418604652
+streets_per_node_counts: {0: 0, 1: 43, 2: 1, 3: 115, 4: 13}
+streets_per_node_proportions: {0: 0.0, 1: 0.25, 2: 0.005813953488372093, 3: 0.6686046511627907, 4: 0.0755813953488372}
+intersection_count: 129
+street_length_total: 40343.82509219965
+street_segment_count: 214
+street_length_avg: 188.52254715981147
+circuity_avg: 1.1556782693419443
+self_loop_proportion: 0.018691588785046728
+intersection_density_km2: 3.618479393945593
+street_density_km2: 1131.6534865819349
+area_km2: 35.650334285678575
+
+=== Polígono 13 - SubPolígono 0 ===
+n: 60
+m: 146
+k_avg: 4.866666666666666
+edge_length_total: 19757.64374708452
+edge_length_avg: 135.32632703482548
+streets_per_node_avg: 2.9833333333333334
+streets_per_node_counts: {0: 0, 1: 7, 2: 0, 3: 40, 4: 13}
+streets_per_node_proportions: {0: 0.0, 1: 0.11666666666666667, 2: 0.0, 3: 0.6666666666666666, 4: 0.21666666666666667}
+intersection_count: 53
+street_length_total: 9922.098072235412
+street_segment_count: 74
+street_length_avg: 134.08240638155962
+circuity_avg: 1.0804810301666072
+self_loop_proportion: 0.0
+intersection_density_km2: 23.57987921575157
+street_density_km2: 4414.374983210425
+area_km2: 2.247679028168877
+
+=== Polígono 11 - SubPolígono 0 ===
+n: 211
+m: 463
+k_avg: 4.388625592417061
+edge_length_total: 43410.206676901056
+edge_length_avg: 93.75854573844721
+streets_per_node_avg: 2.853080568720379
+streets_per_node_counts: {0: 0, 1: 36, 2: 0, 3: 136, 4: 38, 5: 0, 6: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.17061611374407584, 2: 0.0, 3: 0.6445497630331753, 4: 0.18009478672985782, 5: 0.0, 6: 0.004739336492890996}
+intersection_count: 175
+street_length_total: 24100.55931713661
+street_segment_count: 285
+street_length_avg: 84.56336602504074
+circuity_avg: 1.0655695600161328
+self_loop_proportion: 0.0035087719298245615
+intersection_density_km2: 40.015539649043454
+street_density_km2: 5510.8393538228775
+area_km2: 4.37330101092822
+
+=== Polígono 9 - SubPolígono 0 ===
+n: 66
+m: 161
+k_avg: 4.878787878787879
+edge_length_total: 14649.340900634785
+edge_length_avg: 90.98969503499866
+streets_per_node_avg: 2.8484848484848486
+streets_per_node_counts: {0: 0, 1: 9, 2: 0, 3: 49, 4: 8}
+streets_per_node_proportions: {0: 0.0, 1: 0.13636363636363635, 2: 0.0, 3: 0.7424242424242424, 4: 0.12121212121212122}
+intersection_count: 57
+street_length_total: 7576.543465501505
+street_segment_count: 90
+street_length_avg: 84.18381628335005
+circuity_avg: 1.1666850479816442
+self_loop_proportion: 0.08888888888888889
+intersection_density_km2: 0.4342185603708496
+street_density_km2: 57.717119231179495
+area_km2: 131.27029842141815
+
+=== Polígono 18 - SubPolígono 0 ===
+n: 53
+m: 147
+k_avg: 5.547169811320755
+edge_length_total: 18049.658105898965
+edge_length_avg: 122.78678983604738
+streets_per_node_avg: 3.547169811320755
+streets_per_node_counts: {0: 0, 1: 0, 2: 0, 3: 24, 4: 29}
+streets_per_node_proportions: {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.4528301886792453, 4: 0.5471698113207547}
+intersection_count: 53
+street_length_total: 9369.176024687087
+street_segment_count: 76
+street_length_avg: 123.27863190377747
+circuity_avg: 1.001925150988745
+self_loop_proportion: 0.0
+intersection_density_km2: 31.159894853732805
+street_density_km2: 5508.349807459697
+area_km2: 1.7009043274628013
+
+=== Polígono 14 - SubPolígono 0 ===
+n: 103
+m: 230
+k_avg: 4.466019417475728
+edge_length_total: 117076.9673588762
+edge_length_avg: 509.0302928646791
+streets_per_node_avg: 2.3300970873786406
+streets_per_node_counts: {0: 0, 1: 38, 2: 0, 3: 58, 4: 7}
+streets_per_node_proportions: {0: 0.0, 1: 0.36893203883495146, 2: 0.0, 3: 0.5631067961165048, 4: 0.06796116504854369}
+intersection_count: 65
+street_length_total: 58538.483679438046
+street_segment_count: 115
+street_length_avg: 509.03029286467864
+circuity_avg: 1.2916406968453378
+self_loop_proportion: 0.008695652173913044
+intersection_density_km2: 0.34365511934370563
+street_density_km2: 309.49307069318223
+area_km2: 189.14311570313157
+
+=== Polígono 16 - SubPolígono 0 ===
+n: 410
+m: 975
+k_avg: 4.7560975609756095
+edge_length_total: 197160.16612909432
+edge_length_avg: 202.2155550041993
+streets_per_node_avg: 2.792682926829268
+streets_per_node_counts: {0: 0, 1: 68, 2: 9, 3: 276, 4: 54, 5: 3}
+streets_per_node_proportions: {0: 0.0, 1: 0.16585365853658537, 2: 0.02195121951219512, 3: 0.6731707317073171, 4: 0.13170731707317074, 5: 0.007317073170731708}
+intersection_count: 342
+street_length_total: 111158.39200096666
+street_segment_count: 559
+street_length_avg: 198.8522218264162
+circuity_avg: 1.0811497971594504
+self_loop_proportion: 0.012522361359570662
+intersection_density_km2: 6.677566227483685
+street_density_km2: 2170.372878149262
+area_km2: 51.216264781079715
+
+=== Polígono 3 - SubPolígono 0 ===
+n: 221
+m: 512
+k_avg: 4.633484162895928
+edge_length_total: 58091.24046865621
+edge_length_avg: 113.45945404034416
+streets_per_node_avg: 2.4434389140271495
+streets_per_node_counts: {0: 0, 1: 75, 2: 3, 3: 113, 4: 30}
+streets_per_node_proportions: {0: 0.0, 1: 0.3393665158371041, 2: 0.013574660633484163, 3: 0.5113122171945701, 4: 0.13574660633484162}
+intersection_count: 146
+street_length_total: 29186.11837751686
+street_segment_count: 258
+street_length_avg: 113.12448983533668
+circuity_avg: 1.0870609097347996
+self_loop_proportion: 0.003875968992248062
+intersection_density_km2: 31.898359212066296
+street_density_km2: 6376.63895898577
+area_km2: 4.577037929423407
+
+=== Polígono 19 - SubPolígono 0 ===
+n: 68
+m: 203
+k_avg: 5.970588235294118
+edge_length_total: 27973.340636660956
+edge_length_avg: 137.7997075697584
+streets_per_node_avg: 3.6470588235294117
+streets_per_node_counts: {0: 0, 1: 1, 2: 0, 3: 22, 4: 44, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.014705882352941176, 2: 0.0, 3: 0.3235294117647059, 4: 0.6470588235294118, 5: 0.014705882352941176}
+intersection_count: 67
+street_length_total: 14018.09567453077
+street_segment_count: 104
+street_length_avg: 134.78938148587278
+circuity_avg: 1.014397149034909
+self_loop_proportion: 0.0
+intersection_density_km2: 29.82122273354645
+street_density_km2: 6239.354528512629
+area_km2: 2.246722094484424
+
+=== Polígono 15 - SubPolígono 0 ===
+n: 133
+m: 291
+k_avg: 4.37593984962406
+edge_length_total: 52711.283261856646
+edge_length_avg: 181.13843045311563
+streets_per_node_avg: 2.3684210526315788
+streets_per_node_counts: {0: 0, 1: 51, 2: 0, 3: 64, 4: 18}
+streets_per_node_proportions: {0: 0.0, 1: 0.38345864661654133, 2: 0.0, 3: 0.48120300751879697, 4: 0.13533834586466165}
+intersection_count: 82
+street_length_total: 26919.812321652087
+street_segment_count: 149
+street_length_avg: 180.6698813533697
+circuity_avg: 1.0666600382096625
+self_loop_proportion: 0.0
+intersection_density_km2: 5.5121458556495915
+street_density_km2: 1809.5845356543825
+area_km2: 14.876239153932278
+
+=== Polígono 17 - SubPolígono 0 ===
+n: 90
+m: 205
+k_avg: 4.555555555555555
+edge_length_total: 23862.303556691328
+edge_length_avg: 116.40148076434794
+streets_per_node_avg: 2.977777777777778
+streets_per_node_counts: {0: 0, 1: 11, 2: 0, 3: 60, 4: 18, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.12222222222222222, 2: 0.0, 3: 0.6666666666666666, 4: 0.2, 5: 0.011111111111111112}
+intersection_count: 79
+street_length_total: 13612.079714568888
+street_segment_count: 117
+street_length_avg: 116.34256166298195
+circuity_avg: 1.0156624536942387
+self_loop_proportion: 0.0
+intersection_density_km2: 17.498228312672314
+street_density_km2: 3015.0288437445793
+area_km2: 4.514742783575853
+
+=== Polígono 22 - SubPolígono 0 ===
+n: 165
+m: 390
+k_avg: 4.7272727272727275
+edge_length_total: 48688.39080366933
+edge_length_avg: 124.84202770171623
+streets_per_node_avg: 2.5090909090909093
+streets_per_node_counts: {0: 0, 1: 50, 2: 0, 3: 96, 4: 19}
+streets_per_node_proportions: {0: 0.0, 1: 0.30303030303030304, 2: 0.0, 3: 0.5818181818181818, 4: 0.11515151515151516}
+intersection_count: 115
+street_length_total: 24603.50739742358
+street_segment_count: 201
+street_length_avg: 122.4055094399183
+circuity_avg: 1.041311925149552
+self_loop_proportion: 0.0
+intersection_density_km2: 4.265783902050203
+street_density_km2: 912.6369199121965
+area_km2: 26.95870270051166
+
+=== Polígono 26 - SubPolígono 0 ===
+n: 117
+m: 246
+k_avg: 4.205128205128205
+edge_length_total: 43854.46666806195
+edge_length_avg: 178.2701897075689
+streets_per_node_avg: 2.3504273504273505
+streets_per_node_counts: {0: 0, 1: 43, 2: 0, 3: 64, 4: 10}
+streets_per_node_proportions: {0: 0.0, 1: 0.36752136752136755, 2: 0.0, 3: 0.5470085470085471, 4: 0.08547008547008547}
+intersection_count: 74
+street_length_total: 22535.87933223649
+street_segment_count: 130
+street_length_avg: 173.3529179402807
+circuity_avg: 1.0834425534730787
+self_loop_proportion: 0.007692307692307693
+intersection_density_km2: 5.71761138995504
+street_density_km2: 1741.2351399006452
+area_km2: 12.94246757133697
+
+=== Polígono 23 - SubPolígono 0 ===
+n: 125
+m: 296
+k_avg: 4.736
+edge_length_total: 39387.72462017903
+edge_length_avg: 133.06663723033458
+streets_per_node_avg: 3.016
+streets_per_node_counts: {0: 0, 1: 13, 2: 0, 3: 86, 4: 24, 5: 2}
+streets_per_node_proportions: {0: 0.0, 1: 0.104, 2: 0.0, 3: 0.688, 4: 0.192, 5: 0.016}
+intersection_count: 112
+street_length_total: 23208.076389130383
+street_segment_count: 174
+street_length_avg: 133.3797493628183
+circuity_avg: 1.084837762732653
+self_loop_proportion: 0.06321839080459771
+intersection_density_km2: 18.902407295695813
+street_density_km2: 3916.861718365749
+area_km2: 5.925171236020454
+
+=== Polígono 28 - SubPolígono 0 ===
+n: 222
+m: 498
+k_avg: 4.486486486486487
+edge_length_total: 156865.09233635478
+edge_length_avg: 314.99014525372445
+streets_per_node_avg: 2.454954954954955
+streets_per_node_counts: {0: 0, 1: 71, 2: 0, 3: 130, 4: 21}
+streets_per_node_proportions: {0: 0.0, 1: 0.31981981981981983, 2: 0.0, 3: 0.5855855855855856, 4: 0.0945945945945946}
+intersection_count: 151
+street_length_total: 80290.5465026213
+street_segment_count: 262
+street_length_avg: 306.4524675672569
+circuity_avg: 1.0904069684595104
+self_loop_proportion: 0.003816793893129771
+intersection_density_km2: 1.5776462206943949
+street_density_km2: 838.8746837572719
+area_km2: 95.71220595548851
+
+=== Polígono 27 - SubPolígono 0 ===
+n: 55
+m: 130
+k_avg: 4.7272727272727275
+edge_length_total: 18496.149106428544
+edge_length_avg: 142.27807004945035
+streets_per_node_avg: 2.8
+streets_per_node_counts: {0: 0, 1: 9, 2: 1, 3: 37, 4: 8}
+streets_per_node_proportions: {0: 0.0, 1: 0.16363636363636364, 2: 0.01818181818181818, 3: 0.6727272727272727, 4: 0.14545454545454545}
+intersection_count: 46
+street_length_total: 9803.555388783367
+street_segment_count: 68
+street_length_avg: 144.1699321879907
+circuity_avg: 1.1758909109882312
+self_loop_proportion: 0.1323529411764706
+intersection_density_km2: 11.811424213079404
+street_density_km2: 2517.2598150726285
+area_km2: 3.8945345768770046
+
+=== Polígono 30 - SubPolígono 0 ===
+n: 82
+m: 208
+k_avg: 5.073170731707317
+edge_length_total: 24909.593560888403
+edge_length_avg: 119.75766135042501
+streets_per_node_avg: 2.5609756097560976
+streets_per_node_counts: {0: 0, 1: 24, 2: 0, 3: 46, 4: 12}
+streets_per_node_proportions: {0: 0.0, 1: 0.2926829268292683, 2: 0.0, 3: 0.5609756097560976, 4: 0.14634146341463414}
+intersection_count: 58
+street_length_total: 12454.796780444198
+street_segment_count: 104
+street_length_avg: 119.75766135042498
+circuity_avg: 1.0760710606543207
+self_loop_proportion: 0.0
+intersection_density_km2: 3.494367919165386
+street_density_km2: 750.3731432639404
+area_km2: 16.598137729541953
+
+=== Polígono 29 - SubPolígono 0 ===
+n: 147
+m: 380
+k_avg: 5.170068027210885
+edge_length_total: 39909.59789281442
+edge_length_avg: 105.02525761266952
+streets_per_node_avg: 3.5306122448979593
+streets_per_node_counts: {0: 0, 1: 2, 2: 3, 3: 60, 4: 79, 5: 3}
+streets_per_node_proportions: {0: 0.0, 1: 0.013605442176870748, 2: 0.02040816326530612, 3: 0.40816326530612246, 4: 0.5374149659863946, 5: 0.02040816326530612}
+intersection_count: 145
+street_length_total: 24295.6836141355
+street_segment_count: 238
+street_length_avg: 102.08270426107353
+circuity_avg: 1.0026017182070104
+self_loop_proportion: 0.0
+intersection_density_km2: 45.12746065657125
+street_density_km2: 7561.396596009674
+area_km2: 3.213121188082755
+
+=== Polígono 32 - SubPolígono 0 ===
+n: 159
+m: 376
+k_avg: 4.729559748427673
+edge_length_total: 61778.488211418226
+edge_length_avg: 164.30448992398465
+streets_per_node_avg: 3.0125786163522013
+streets_per_node_counts: {0: 0, 1: 16, 2: 2, 3: 106, 4: 34, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.10062893081761007, 2: 0.012578616352201259, 3: 0.6666666666666666, 4: 0.2138364779874214, 5: 0.006289308176100629}
+intersection_count: 143
+street_length_total: 35385.77560486264
+street_segment_count: 221
+street_length_avg: 160.11663169621104
+circuity_avg: 1.1246968179638754
+self_loop_proportion: 0.013574660633484163
+intersection_density_km2: 5.049560231368566
+street_density_km2: 1249.5287080450794
+area_km2: 28.319297809671472
+
+=== Polígono 34 - SubPolígono 0 ===
+n: 64
+m: 151
+k_avg: 4.71875
+edge_length_total: 20256.821045101926
+edge_length_avg: 134.15113274901938
+streets_per_node_avg: 2.78125
+streets_per_node_counts: {0: 0, 1: 11, 2: 3, 3: 40, 4: 9, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.171875, 2: 0.046875, 3: 0.625, 4: 0.140625, 5: 0.015625}
+intersection_count: 53
+street_length_total: 10651.171497077446
+street_segment_count: 78
+street_length_avg: 136.55348073176214
+circuity_avg: 1.0526395508711588
+self_loop_proportion: 0.0
+intersection_density_km2: 23.723096959466748
+street_density_km2: 4767.524040699564
+area_km2: 2.2341096565324388
+
+=== Polígono 33 - SubPolígono 0 ===
+n: 145
+m: 336
+k_avg: 4.63448275862069
+edge_length_total: 41208.593027804855
+edge_length_avg: 122.64462210656207
+streets_per_node_avg: 2.6620689655172414
+streets_per_node_counts: {0: 0, 1: 34, 2: 0, 3: 93, 4: 17, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.23448275862068965, 2: 0.0, 3: 0.6413793103448275, 4: 0.11724137931034483, 5: 0.006896551724137931}
+intersection_count: 111
+street_length_total: 21303.758384181627
+street_segment_count: 173
+street_length_avg: 123.14311204729265
+circuity_avg: 1.194150571882825
+self_loop_proportion: 0.011560693641618497
+intersection_density_km2: 24.561013313989726
+street_density_km2: 4713.890930737884
+area_km2: 4.51935751106716
+
+=== Polígono 35 - SubPolígono 0 ===
+n: 77
+m: 211
+k_avg: 5.48051948051948
+edge_length_total: 29515.88898294122
+edge_length_avg: 139.8857297769726
+streets_per_node_avg: 3.2467532467532467
+streets_per_node_counts: {0: 0, 1: 8, 2: 2, 3: 30, 4: 37}
+streets_per_node_proportions: {0: 0.0, 1: 0.1038961038961039, 2: 0.025974025974025976, 3: 0.38961038961038963, 4: 0.4805194805194805}
+intersection_count: 69
+street_length_total: 15331.609154246169
+street_segment_count: 112
+street_length_avg: 136.8893674486265
+circuity_avg: 1.0523842593779498
+self_loop_proportion: 0.008928571428571428
+intersection_density_km2: 20.00254081404432
+street_density_km2: 4444.509244243254
+area_km2: 3.449561765251005
+
+=== Polígono 36 - SubPolígono 0 ===
+n: 167
+m: 408
+k_avg: 4.88622754491018
+edge_length_total: 47036.570962248574
+edge_length_avg: 115.28571314276611
+streets_per_node_avg: 2.7365269461077846
+streets_per_node_counts: {0: 0, 1: 40, 2: 0, 3: 91, 4: 36}
+streets_per_node_proportions: {0: 0.0, 1: 0.23952095808383234, 2: 0.0, 3: 0.5449101796407185, 4: 0.2155688622754491}
+intersection_count: 127
+street_length_total: 25502.138234811
+street_segment_count: 219
+street_length_avg: 116.44811979365753
+circuity_avg: 1.0664693503332894
+self_loop_proportion: 0.0091324200913242
+intersection_density_km2: 25.60182838219859
+street_density_km2: 5140.955641470363
+area_km2: 4.960583209295527
+
+=== Polígono 38 - SubPolígono 0 ===
+n: 137
+m: 287
+k_avg: 4.189781021897811
+edge_length_total: 32662.206108818773
+edge_length_avg: 113.80559619797482
+streets_per_node_avg: 2.4014598540145986
+streets_per_node_counts: {0: 0, 1: 52, 2: 0, 3: 65, 4: 18, 5: 2}
+streets_per_node_proportions: {0: 0.0, 1: 0.3795620437956204, 2: 0.0, 3: 0.4744525547445255, 4: 0.13138686131386862, 5: 0.014598540145985401}
+intersection_count: 85
+street_length_total: 17844.098403322383
+street_segment_count: 153
+street_length_avg: 116.62809413936198
+circuity_avg: 1.0438258904777906
+self_loop_proportion: 0.006535947712418301
+intersection_density_km2: 18.879375758610866
+street_density_km2: 3963.358103881782
+area_km2: 4.502267505387808
+
+=== Polígono 37 - SubPolígono 0 ===
+n: 123
+m: 277
+k_avg: 4.504065040650406
+edge_length_total: 111060.71038714384
+edge_length_avg: 400.9411927333713
+streets_per_node_avg: 2.5609756097560976
+streets_per_node_counts: {0: 0, 1: 31, 2: 3, 3: 78, 4: 11}
+streets_per_node_proportions: {0: 0.0, 1: 0.25203252032520324, 2: 0.024390243902439025, 3: 0.6341463414634146, 4: 0.08943089430894309}
+intersection_count: 92
+street_length_total: 58674.36082919317
+street_segment_count: 147
+street_length_avg: 399.14531176321884
+circuity_avg: 1.0491328480609585
+self_loop_proportion: 0.006802721088435374
+intersection_density_km2: 1.3630256405981205
+street_density_km2: 869.2897636510465
+area_km2: 67.49689606692118
+
+=== Polígono 39 - SubPolígono 0 ===
+n: 203
+m: 483
+k_avg: 4.758620689655173
+edge_length_total: 61874.92919379424
+edge_length_avg: 128.1054434654125
+streets_per_node_avg: 3.0788177339901477
+streets_per_node_counts: {0: 0, 1: 26, 2: 0, 3: 112, 4: 62, 5: 3}
+streets_per_node_proportions: {0: 0.0, 1: 0.12807881773399016, 2: 0.0, 3: 0.5517241379310345, 4: 0.3054187192118227, 5: 0.014778325123152709}
+intersection_count: 177
+street_length_total: 35645.79439261354
+street_segment_count: 292
+street_length_avg: 122.0746383308683
+circuity_avg: 1.0605938294036057
+self_loop_proportion: 0.00684931506849315
+intersection_density_km2: 33.77396152133236
+street_density_km2: 6801.693153748331
+area_km2: 5.240723682597998
+
+=== Polígono 42 - SubPolígono 0 ===
+n: 57
+m: 125
+k_avg: 4.385964912280702
+edge_length_total: 18487.273876039828
+edge_length_avg: 147.89819100831863
+streets_per_node_avg: 2.6491228070175437
+streets_per_node_counts: {0: 0, 1: 15, 2: 0, 3: 33, 4: 8, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.2631578947368421, 2: 0.0, 3: 0.5789473684210527, 4: 0.14035087719298245, 5: 0.017543859649122806}
+intersection_count: 42
+street_length_total: 9882.615277453664
+street_segment_count: 67
+street_length_avg: 147.5017205590099
+circuity_avg: 1.0727599735204107
+self_loop_proportion: 0.0
+intersection_density_km2: 6.029731641148726
+street_density_km2: 1418.7980484705274
+area_km2: 6.965484120948137
+
+=== Polígono 40 - SubPolígono 0 ===
+n: 261
+m: 651
+k_avg: 4.988505747126437
+edge_length_total: 90850.02972008951
+edge_length_avg: 139.55457714299465
+streets_per_node_avg: 2.7241379310344827
+streets_per_node_counts: {0: 0, 1: 57, 2: 2, 3: 160, 4: 40, 5: 2}
+streets_per_node_proportions: {0: 0.0, 1: 0.21839080459770116, 2: 0.007662835249042145, 3: 0.6130268199233716, 4: 0.1532567049808429, 5: 0.007662835249042145}
+intersection_count: 204
+street_length_total: 47611.602305780456
+street_segment_count: 342
+street_length_avg: 139.2152114204107
+circuity_avg: 1.085376795278591
+self_loop_proportion: 0.038011695906432746
+intersection_density_km2: 16.916022046470015
+street_density_km2: 3948.0338934918864
+area_km2: 12.05957283808164
+
+=== Polígono 43 - SubPolígono 0 ===
+n: 224
+m: 563
+k_avg: 5.026785714285714
+edge_length_total: 62977.433295962444
+edge_length_avg: 111.86044990401855
+streets_per_node_avg: 2.9375
+streets_per_node_counts: {0: 0, 1: 33, 2: 2, 3: 135, 4: 54}
+streets_per_node_proportions: {0: 0.0, 1: 0.14732142857142858, 2: 0.008928571428571428, 3: 0.6026785714285714, 4: 0.24107142857142858}
+intersection_count: 191
+street_length_total: 34286.8639786102
+street_segment_count: 308
+street_length_avg: 111.32098694353961
+circuity_avg: 1.0485884417750582
+self_loop_proportion: 0.012987012987012988
+intersection_density_km2: 37.486881010086194
+street_density_km2: 6729.359110864769
+area_km2: 5.095115807276943
+
+=== Polígono 41 - SubPolígono 0 ===
+n: 72
+m: 144
+k_avg: 4.0
+edge_length_total: 20391.212374325074
+edge_length_avg: 141.60564148836858
+streets_per_node_avg: 3.138888888888889
+streets_per_node_counts: {0: 0, 1: 6, 2: 0, 3: 45, 4: 20, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.08333333333333333, 2: 0.0, 3: 0.625, 4: 0.2777777777777778, 5: 0.013888888888888888}
+intersection_count: 66
+street_length_total: 12832.310145695445
+street_segment_count: 94
+street_length_avg: 136.5139377201643
+circuity_avg: 1.0128685703337534
+self_loop_proportion: 0.0
+intersection_density_km2: 19.396908459270293
+street_density_km2: 3771.3203820760605
+area_km2: 3.4026040870681564
+
+=== Polígono 44 - SubPolígono 0 ===
+n: 44
+m: 120
+k_avg: 5.454545454545454
+edge_length_total: 15337.50249137718
+edge_length_avg: 127.81252076147649
+streets_per_node_avg: 3.1818181818181817
+streets_per_node_counts: {0: 0, 1: 1, 2: 0, 3: 33, 4: 10}
+streets_per_node_proportions: {0: 0.0, 1: 0.022727272727272728, 2: 0.0, 3: 0.75, 4: 0.22727272727272727}
+intersection_count: 43
+street_length_total: 7763.645070063107
+street_segment_count: 62
+street_length_avg: 125.2200817752114
+circuity_avg: 1.0242844935412192
+self_loop_proportion: 0.0
+intersection_density_km2: 22.611170812900806
+street_density_km2: 4082.4442979053983
+area_km2: 1.9017148804813924
+
+=== Polígono 46 - SubPolígono 0 ===
+n: 368
+m: 905
+k_avg: 4.918478260869565
+edge_length_total: 124579.5569166437
+edge_length_avg: 137.6569689686671
+streets_per_node_avg: 2.8206521739130435
+streets_per_node_counts: {0: 0, 1: 70, 2: 4, 3: 220, 4: 70, 5: 4}
+streets_per_node_proportions: {0: 0.0, 1: 0.19021739130434784, 2: 0.010869565217391304, 3: 0.5978260869565217, 4: 0.19021739130434784, 5: 0.010869565217391304}
+intersection_count: 298
+street_length_total: 68333.89173754447
+street_segment_count: 502
+street_length_avg: 136.12329031383362
+circuity_avg: 1.0518520428968081
+self_loop_proportion: 0.01195219123505976
+intersection_density_km2: 18.03246676997338
+street_density_km2: 4134.995409463856
+area_km2: 16.525747908001826
+
+=== Polígono 45 - SubPolígono 0 ===
+n: 56
+m: 141
+k_avg: 5.035714285714286
+edge_length_total: 19726.646798662827
+edge_length_avg: 139.90529644441722
+streets_per_node_avg: 2.9642857142857144
+streets_per_node_counts: {0: 0, 1: 5, 2: 0, 3: 44, 4: 6, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.08928571428571429, 2: 0.0, 3: 0.7857142857142857, 4: 0.10714285714285714, 5: 0.017857142857142856}
+intersection_count: 51
+street_length_total: 10086.305878098134
+street_segment_count: 74
+street_length_avg: 136.30143078510991
+circuity_avg: 1.0388912904430017
+self_loop_proportion: 0.0
+intersection_density_km2: 28.32425277963809
+street_density_km2: 5601.707398117668
+area_km2: 1.8005770671790922
+
+=== Polígono 47 - SubPolígono 0 ===
+n: 182
+m: 437
+k_avg: 4.802197802197802
+edge_length_total: 48188.641484609536
+edge_length_avg: 110.27149081146347
+streets_per_node_avg: 2.587912087912088
+streets_per_node_counts: {0: 0, 1: 52, 2: 1, 3: 99, 4: 30}
+streets_per_node_proportions: {0: 0.0, 1: 0.2857142857142857, 2: 0.005494505494505495, 3: 0.5439560439560439, 4: 0.16483516483516483}
+intersection_count: 130
+street_length_total: 25313.5781696447
+street_segment_count: 227
+street_length_avg: 111.51356021869913
+circuity_avg: 1.0669448259176908
+self_loop_proportion: 0.0
+intersection_density_km2: 35.595901635500184
+street_density_km2: 6931.227988993981
+area_km2: 3.652105833171243
+
+=== Polígono 48 - SubPolígono 0 ===
+n: 92
+m: 227
+k_avg: 4.934782608695652
+edge_length_total: 23253.868847572878
+edge_length_avg: 102.4399508703651
+streets_per_node_avg: 2.739130434782609
+streets_per_node_counts: {0: 0, 1: 20, 2: 0, 3: 56, 4: 16}
+streets_per_node_proportions: {0: 0.0, 1: 0.21739130434782608, 2: 0.0, 3: 0.6086956521739131, 4: 0.17391304347826086}
+intersection_count: 72
+street_length_total: 12154.718795592244
+street_segment_count: 122
+street_length_avg: 99.62884258682166
+circuity_avg: 1.1416987346541592
+self_loop_proportion: 0.08196721311475409
+intersection_density_km2: 14.392480343528703
+street_density_km2: 2429.6743242594475
+area_km2: 5.0026123559983455
+
+=== Polígono 50 - SubPolígono 0 ===
+n: 57
+m: 141
+k_avg: 4.947368421052632
+edge_length_total: 16738.015242150548
+edge_length_avg: 118.70932795851452
+streets_per_node_avg: 2.9298245614035086
+streets_per_node_counts: {0: 0, 1: 5, 2: 0, 3: 46, 4: 6}
+streets_per_node_proportions: {0: 0.0, 1: 0.08771929824561403, 2: 0.0, 3: 0.8070175438596491, 4: 0.10526315789473684}
+intersection_count: 52
+street_length_total: 8426.615628764303
+street_segment_count: 72
+street_length_avg: 117.03632817728197
+circuity_avg: 1.0448707631201977
+self_loop_proportion: 0.0
+intersection_density_km2: 22.915883060025017
+street_density_km2: 3713.525737318114
+area_km2: 2.2691685004585302
+
+=== Polígono 49 - SubPolígono 0 ===
+n: 54
+m: 129
+k_avg: 4.777777777777778
+edge_length_total: 12694.4846927053
+edge_length_avg: 98.40685808298683
+streets_per_node_avg: 2.5555555555555554
+streets_per_node_counts: {0: 0, 1: 19, 2: 0, 3: 21, 4: 14}
+streets_per_node_proportions: {0: 0.0, 1: 0.35185185185185186, 2: 0.0, 3: 0.3888888888888889, 4: 0.25925925925925924}
+intersection_count: 35
+street_length_total: 6380.132300238316
+street_segment_count: 65
+street_length_avg: 98.15588154212794
+circuity_avg: 1.0427585347417012
+self_loop_proportion: 0.015384615384615385
+intersection_density_km2: 15.923357341056601
+street_density_km2: 2902.6607571403465
+area_km2: 2.198028923822265
+
+=== Polígono 51 - SubPolígono 0 ===
+n: 315
+m: 812
+k_avg: 5.155555555555556
+edge_length_total: 142142.3727526528
+edge_length_avg: 175.05218319292217
+streets_per_node_avg: 2.850793650793651
+streets_per_node_counts: {0: 0, 1: 46, 2: 9, 3: 206, 4: 54}
+streets_per_node_proportions: {0: 0.0, 1: 0.14603174603174604, 2: 0.02857142857142857, 3: 0.653968253968254, 4: 0.17142857142857143}
+intersection_count: 269
+street_length_total: 73720.80360176117
+street_segment_count: 439
+street_length_avg: 167.9289375894332
+circuity_avg: 1.0686994940035308
+self_loop_proportion: 0.01366742596810934
+intersection_density_km2: 4.981420435433528
+street_density_km2: 1365.183336722657
+area_km2: 54.00066175634685
+
+=== Polígono 5 - SubPolígono 0 ===
+n: 99
+m: 248
+k_avg: 5.01010101010101
+edge_length_total: 28179.718843965686
+edge_length_avg: 113.62789856437776
+streets_per_node_avg: 2.686868686868687
+streets_per_node_counts: {0: 0, 1: 22, 2: 2, 3: 60, 4: 15}
+streets_per_node_proportions: {0: 0.0, 1: 0.2222222222222222, 2: 0.020202020202020204, 3: 0.6060606060606061, 4: 0.15151515151515152}
+intersection_count: 77
+street_length_total: 14832.272238203333
+street_segment_count: 129
+street_length_avg: 114.97885455971576
+circuity_avg: 1.1016010112915506
+self_loop_proportion: 0.046511627906976744
+intersection_density_km2: 21.92856736940442
+street_density_km2: 4224.0322209972555
+area_km2: 3.5114013014563534
+
+=== Polígono 31 - SubPolígono 0 ===
+n: 138
+m: 335
+k_avg: 4.855072463768116
+edge_length_total: 39649.71813664301
+edge_length_avg: 118.35736757206868
+streets_per_node_avg: 2.608695652173913
+streets_per_node_counts: {0: 0, 1: 35, 2: 0, 3: 87, 4: 16}
+streets_per_node_proportions: {0: 0.0, 1: 0.2536231884057971, 2: 0.0, 3: 0.6304347826086957, 4: 0.11594202898550725}
+intersection_count: 103
+street_length_total: 20244.973529480078
+street_segment_count: 171
+street_length_avg: 118.39165806713495
+circuity_avg: 1.1359205530526426
+self_loop_proportion: 0.05847953216374269
+intersection_density_km2: 30.00420570510574
+street_density_km2: 5897.420876436318
+area_km2: 3.432852081215826
+
+=== Polígono 1 - SubPolígono 0 ===
+n: 218
+m: 483
+k_avg: 4.431192660550459
+edge_length_total: 55522.55164472039
+edge_length_avg: 114.95352307395527
+streets_per_node_avg: 2.743119266055046
+streets_per_node_counts: {0: 0, 1: 52, 2: 2, 3: 117, 4: 44, 5: 3}
+streets_per_node_proportions: {0: 0.0, 1: 0.23853211009174313, 2: 0.009174311926605505, 3: 0.536697247706422, 4: 0.2018348623853211, 5: 0.013761467889908258}
+intersection_count: 166
+street_length_total: 32929.15746308412
+street_segment_count: 282
+street_length_avg: 116.77006192583022
+circuity_avg: 1.0355689789967752
+self_loop_proportion: 0.0
+intersection_density_km2: 30.007966281556655
+street_density_km2: 5952.6328122427585
+area_km2: 5.531864387025324
+
+=== Polígono 25 - SubPolígono 0 ===
+n: 206
+m: 501
+k_avg: 4.864077669902913
+edge_length_total: 59530.672962330485
+edge_length_avg: 118.82369852760576
+streets_per_node_avg: 2.854368932038835
+streets_per_node_counts: {0: 0, 1: 41, 2: 0, 3: 115, 4: 48, 5: 2}
+streets_per_node_proportions: {0: 0.0, 1: 0.19902912621359223, 2: 0.0, 3: 0.558252427184466, 4: 0.23300970873786409, 5: 0.009708737864077669}
+intersection_count: 165
+street_length_total: 32960.476873439715
+street_segment_count: 279
+street_length_avg: 118.13790994064414
+circuity_avg: 1.060253250223941
+self_loop_proportion: 0.0035842293906810036
+intersection_density_km2: 31.34526141857438
+street_density_km2: 6261.5440247202605
+area_km2: 5.263953546172224
+
+=== Polígono 24 - SubPolígono 0 ===
+n: 80
+m: 174
+k_avg: 4.35
+edge_length_total: 17159.960496704123
+edge_length_avg: 98.62046262473633
+streets_per_node_avg: 2.425
+streets_per_node_counts: {0: 0, 1: 26, 2: 0, 3: 48, 4: 6}
+streets_per_node_proportions: {0: 0.0, 1: 0.325, 2: 0.0, 3: 0.6, 4: 0.075}
+intersection_count: 54
+street_length_total: 9014.881984209673
+street_segment_count: 91
+street_length_avg: 99.06463718911728
+circuity_avg: 1.0909667841051285
+self_loop_proportion: 0.0
+intersection_density_km2: 18.803292608567656
+street_density_km2: 3139.064144088879
+area_km2: 2.8718374554994206
+
+=== Polígono 21 - SubPolígono 0 ===
+n: 183
+m: 422
+k_avg: 4.612021857923497
+edge_length_total: 48131.73866195986
+edge_length_avg: 114.05625275345939
+streets_per_node_avg: 2.579234972677596
+streets_per_node_counts: {0: 0, 1: 60, 2: 0, 3: 81, 4: 41, 5: 1}
+streets_per_node_proportions: {0: 0.0, 1: 0.32786885245901637, 2: 0.0, 3: 0.4426229508196721, 4: 0.22404371584699453, 5: 0.00546448087431694}
+intersection_count: 123
+street_length_total: 25357.07361400067
+street_segment_count: 220
+street_length_avg: 115.25942551818487
+circuity_avg: 1.0432755478954032
+self_loop_proportion: 0.00909090909090909
+intersection_density_km2: 32.889430532319984
+street_density_km2: 6780.322854720318
+area_km2: 3.7398032744631933
+
+=== Polígono 20 - SubPolígono 0 ===
+n: 150
+m: 334
+k_avg: 4.453333333333333
+edge_length_total: 58336.96116602302
+edge_length_avg: 174.66156037731443
+streets_per_node_avg: 2.8466666666666667
+streets_per_node_counts: {0: 0, 1: 26, 2: 0, 3: 95, 4: 29}
+streets_per_node_proportions: {0: 0.0, 1: 0.17333333333333334, 2: 0.0, 3: 0.6333333333333333, 4: 0.19333333333333333}
+intersection_count: 124
+street_length_total: 33944.52646430371
+street_segment_count: 195
+street_length_avg: 174.07449468873696
+circuity_avg: 1.0449555809792215
+self_loop_proportion: 0.0
+intersection_density_km2: 10.903716754716271
+street_density_km2: 2984.850822094663
+area_km2: 11.372268996841402

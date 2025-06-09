@@ -2,15 +2,13 @@ EXPLICACIÓN DETALLADA DE CLUSTERS
 ================================
 
 Cluster 0: organico
-Patrón dominante: organico (32.7%)
-  Este es el único cluster con este patrón base.
-
-Características principales:
-  - std_intersection_angle: 0.307
-  - angle_coefficient_variation: 0.298
-  - mean_intersection_angle: 0.202
-  - orthogonal_proportion: 0.128
-  - cv_dead_end_distances: 0.098
+Patrón dominante: organico (36.4%)
+Comparación con otros clusters de tipo 'organico':
+  - k_avg: -0.446 (menor que el promedio de -0.225 por 97.9%, z-score: -0.93)
+  - orthogonal_proportion: 0.128 (mayor que el promedio de -0.577 por 122.1%, z-score: 0.72)
+  - cv_dead_end_distances: 0.098 (mayor que el promedio de -0.020 por 587.0%, z-score: 0.70)
+  - std_intersection_angle: 0.307 (mayor que el promedio de -0.741 por 141.4%, z-score: 0.69)
+  - streets_per_node_avg: -0.105 (mayor que el promedio de -0.574 por 81.8%, z-score: 0.68)
 
 --------------------------------------------------
 
@@ -27,25 +25,31 @@ Características principales:
 
 --------------------------------------------------
 
-Cluster 2: cul_de_sac
-Patrón dominante: cul_de_sac (33.3%)
-Comparación con otros clusters de tipo 'cul_de_sac':
-  - edge_length_density: -0.221 (mayor que el promedio de -0.659 por 66.4%, z-score: 0.71)
-  - edge_density_km2: -0.232 (mayor que el promedio de -0.669 por 65.3%, z-score: 0.71)
-  - street_density_km2: -0.269 (mayor que el promedio de -0.748 por 64.1%, z-score: 0.71)
-  - node_density_km2: -0.269 (mayor que el promedio de -0.762 por 64.7%, z-score: 0.71)
-  - k_avg: 0.024 (mayor que el promedio de -0.115 por 121.2%, z-score: 0.71)
+Cluster 2: organico_bajo_std
+Patrón dominante: organico (41.7%)
+Comparación con otros clusters de tipo 'organico':
+  - mean_intersection_angle: -2.031 (menor que el promedio de -0.620 por 227.7%, z-score: -1.15)
+  - angle_coefficient_variation: -2.257 (menor que el promedio de -0.654 por 244.9%, z-score: -1.15)
+  - std_intersection_angle: -2.481 (menor que el promedio de -0.741 por 234.7%, z-score: -1.15)
+  - cv_dead_end_distances: -0.213 (menor que el promedio de -0.020 por 962.0%, z-score: -1.15)
+  - orthogonal_proportion: -1.695 (menor que el promedio de -0.577 por 193.6%, z-score: -1.14)
+
+EXPLICACIÓN DEL NOMBRE 'organico_bajo_std':
+  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'bajo'.
 
 --------------------------------------------------
 
-Cluster 3: cul_de_sac_alto_std
-Patrón dominante: cul_de_sac (55.7%)
-Comparación con otros clusters de tipo 'cul_de_sac':
-  - edge_length_avg: 2.018 (mayor que el promedio de 1.002 por 101.4%, z-score: 0.71)
-  - street_density_km2: -1.227 (menor que el promedio de -0.748 por 64.1%, z-score: -0.71)
-  - k_avg: -0.254 (menor que el promedio de -0.115 por 121.2%, z-score: -0.71)
-  - streets_per_node_avg: -1.361 (menor que el promedio de -0.809 por 68.3%, z-score: -0.71)
-  - segment_density_km2: -1.232 (menor que el promedio de -0.751 por 64.0%, z-score: -0.71)
+Cluster 3: organico_alto_std
+Patrón dominante: organico (55.7%)
+Comparación con otros clusters de tipo 'organico':
+  - circuity_avg: 1.738 (mayor que el promedio de 0.506 por 243.5%, z-score: 1.15)
+  - edge_length_avg: 2.018 (mayor que el promedio de 0.608 por 232.2%, z-score: 1.15)
+  - street_length_avg: 2.016 (mayor que el promedio de 0.606 por 232.4%, z-score: 1.15)
+  - intersection_density_km2: -1.248 (menor que el promedio de -0.661 por 88.8%, z-score: -1.15)
+  - network_connectivity_index: -1.355 (menor que el promedio de -0.570 por 138.0%, z-score: -1.15)
+
+EXPLICACIÓN DEL NOMBRE 'organico_alto_std':
+  Este cluster representa una variante del patrón base 'organico' con la característica distintiva 'alto'.
 
 --------------------------------------------------
 
@@ -57,8 +61,8 @@ Cluster | Nombre | Patrón Base | Característica Distintiva
 ------------------------------------------------------------
 0 | organico | organico | N/A
 1 | gridiron | gridiron | N/A
-2 | cul_de_sac | cul_de_sac | N/A
-3 | cul_de_sac_alto_std | cul_de_sac | de
+2 | organico_bajo_std | organico | bajo
+3 | organico_alto_std | organico | alto
 
 
 NOTA SOBRE NOMENCLATURA:

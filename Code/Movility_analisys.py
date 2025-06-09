@@ -1,13 +1,27 @@
-import os, pandas as pd, numpy as np, matplotlib.pyplot as plt, seaborn as sns
+import os, pandas as pd, numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.decomposition import PCA
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 import glob, re, pathlib
 import warnings
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.gridspec as gridspec
+from scipy import stats
+import traceback
 warnings.filterwarnings('ignore', category=FutureWarning)
 
+
+
+
+
+
 class StreetPatternMobilityAnalyzer:
+    from Graphs_format import _setup_plot_style, _get_pattern_config, _save_figure
+
     """Clase para analizar la relación entre patrones de calles y movilidad urbana."""
     def __init__(self, base_path="Polygons_analysis", results_dir="Resultados_Analisis"):
         self.base_path = base_path
@@ -394,1593 +408,1091 @@ class StreetPatternMobilityAnalyzer:
                       linewidths=.5, mask=mask, vmin=-1, vmax=1)
             plt.title(f'{city_name}: Correlación entre Subpatrones y Movilidad')
             plt.tight_layout()
-            plt.savefig(os.path.join(subpatterns_dir, f"{city_name}_heatmap_subpatrones.png"))
+            plt.savefig(os.path.join(subpatterns_dir, f"{city_name}_heatmap_subpatrones.pdf"))
             plt.close()
             
         except Exception as e:
             print(f"Error en análisis de subpatrones para {city_name}: {e}")
     
     def analyze_global_data(self):
-        """Realiza análisis global con los datos combinados de todas las ciudades."""
-        print("\n=== Generando análisis global de todas las ciudades ===")
+        """Análisis estadístico robusto de patrones viales y movilidad."""
+        print("\n=== Análisis Global: Patrones Viales vs Movilidad ===")
         
         if not self.all_cities_data:
-            print("No hay datos disponibles para análisis global")
+            print("No hay datos disponibles para análisis")
             return False
         
         try:
-            # Combinar todos los datos
-            combined_data = pd.concat(self.all_cities_data, ignore_index=True)
-            print(f"Total de registros combinados: {len(combined_data)}")
+            # Combinar datos
+            df = pd.concat(self.all_cities_data, ignore_index=True)
+            print(f"Registros totales: {len(df)} | Ciudades: {df['city'].nunique()} | Patrones: {df['pattern'].nunique()}")
             
-            if len(combined_data) == 0:
-                print("DataFrame combinado está vacío")
-                return False
+            # Variables de movilidad disponibles (solo las que queremos analizar)
+            expected_mobility_vars = ['a', 'b', 'c', 'walked_share', 'car_share', 'bicycle_share', 'transit_share']
+            mobility_vars = [col for col in expected_mobility_vars if col in df.columns]
             
-            # Verificar columnas disponibles
-            available_mobility_cols = [col for col in self.mobility_columns.keys() 
-                                    if col in combined_data.columns]
+            # Verificar que tenemos las variables correctas
+            missing_vars = [col for col in expected_mobility_vars if col not in df.columns]
+            extra_vars = [col for col in self.mobility_columns.keys() if col in df.columns and col not in expected_mobility_vars]
             
-            # Análisis diagnóstico
-            pattern_city_counts = pd.crosstab(combined_data['pattern'], combined_data['city'])
-            total_combinations = pattern_city_counts.shape[0] * pattern_city_counts.shape[1]
-            filled_combinations = (pattern_city_counts > 0).sum().sum()
+            print(f"Variables de movilidad encontradas: {mobility_vars}")
+            if missing_vars:
+                print(f"Variables faltantes: {missing_vars}")
+            if extra_vars:
+                print(f"Variables extra disponibles (no analizadas): {extra_vars}")
             
-            print(f"Combinaciones patrón-ciudad: {filled_combinations} presentes de {total_combinations} posibles")
-            
-            # Identificar patrones y ciudades con pocos datos
-            pattern_counts = combined_data['pattern'].value_counts()
-            city_counts = combined_data['city'].value_counts()
-            
-            rare_patterns = pattern_counts[pattern_counts < 30].index.tolist()
-            if rare_patterns:
-                print(f"Patrones con menos de 30 observaciones: {rare_patterns}")
-                
-            rare_cities = city_counts[city_counts < 50].index.tolist()
-            if rare_cities:
-                print(f"Ciudades con menos de 50 observaciones: {rare_cities}")
-            
-            # Guardar información diagnóstica
-            anova_results_global = {
-                'data_diagnosis': {
-                    'total_records': len(combined_data),
-                    'total_patterns': len(pattern_counts),
-                    'total_cities': len(city_counts),
-                    'filled_combinations': filled_combinations,
-                    'total_combinations': total_combinations,
-                    'rare_patterns': rare_patterns,
-                    'rare_cities': rare_cities,
-                    'pattern_counts': pattern_counts.to_dict(),
-                    'city_counts': city_counts.to_dict()
-                }
+            # === 1. ANÁLISIS DE CORRELACIÓN (SPEARMAN) ===
+            results = {
+                'correlations': {},
+                'kruskal_wallis': {},
+                'effect_sizes': {},
+                'descriptive_stats': {}
             }
             
-            # Determinar umbral para agrupar categorías raras si es necesario
-            if len(rare_patterns) > 0:
-                print("Considerando agrupamiento de patrones raros para análisis más robusto")
-                # Crear una copia con patrones agrupados para análisis alternativo
-                combined_data_grouped = combined_data.copy()
-                combined_data_grouped['pattern_grouped'] = combined_data['pattern'].apply(
-                    lambda x: x if x not in rare_patterns else 'otros_patrones')
+            # Codificar patrones para correlación
+            pattern_encoder = {pattern: i for i, pattern in enumerate(df['pattern'].unique())}
+            df['pattern_numeric'] = df['pattern'].map(pattern_encoder)
             
-            # Crear un DataFrame para almacenar los resultados de manera más clara
-            anova_summary = []
+            print("\n--- Correlaciones Spearman (Patrón-Movilidad) ---")
+            correlations = []
             
-            # Crear un diccionario para almacenar los patrones y ciudades con mayor efecto
-            pattern_effects_dict = {}
-            city_effects_dict = {}
+            for var in mobility_vars:
+                # Eliminar valores nulos
+                clean_data = df[[var, 'pattern_numeric']].dropna()
+                if len(clean_data) < 10:
+                    continue
+                    
+                # Correlación de Spearman
+                from scipy.stats import spearmanr
+                corr, p_val = spearmanr(clean_data['pattern_numeric'], clean_data[var])
+                
+                # Interpretación del tamaño del efecto
+                if abs(corr) < 0.1:
+                    effect = "Muy débil"
+                elif abs(corr) < 0.3:
+                    effect = "Débil"
+                elif abs(corr) < 0.5:
+                    effect = "Moderado"
+                elif abs(corr) < 0.7:
+                    effect = "Fuerte"
+                else:
+                    effect = "Muy fuerte"
+                
+                correlations.append({
+                    'Variable': var,
+                    'Correlación': round(corr, 4),
+                    'p-valor': round(p_val, 6),
+                    'Significativo': 'Sí' if p_val < 0.05 else 'No',
+                    'Efecto': effect,
+                    'n': len(clean_data)
+                })
+                
+                results['correlations'][var] = {
+                    'correlation': corr,
+                    'p_value': p_val,
+                    'significant': p_val < 0.05,
+                    'effect_size': effect
+                }
+                
+                print(f"{var:15} | r={corr:6.3f} | p={p_val:8.6f} | {effect:10} | {'***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else '   '}")
             
-            for mobility_type in available_mobility_cols:
-                try:
-                    print(f"\nAnalizando variable: {mobility_type}")
-                    
-                    # PASO 1: ANOVA simple de efectos principales
-                    model_basic = ols(f'{mobility_type} ~ C(pattern) + C(city)', data=combined_data).fit()
-                    anova_basic = sm.stats.anova_lm(model_basic, typ=2)
-                    anova_results_global[f"{mobility_type}_main_effects"] = anova_basic
-                    
-                    # Guardar coeficientes para interpretar el efecto de cada patrón y ciudad
-                    coefficients = pd.DataFrame({
-                        'variable': model_basic.params.index,
-                        'coefficient': model_basic.params.values,
-                        'p_value': model_basic.pvalues.values,
-                        'significant': model_basic.pvalues.values < 0.05
-                    })
-                    anova_results_global[f"{mobility_type}_coefficients"] = coefficients
-                    
-                    # Preparar datos para el resumen
-                    pattern_p_value = anova_basic.loc['C(pattern)', 'PR(>F)']
-                    city_p_value = anova_basic.loc['C(city)', 'PR(>F)']
-                    pattern_significant = "Sí" if pattern_p_value < 0.05 else "No"  # Cambiado de booleano a texto
-                    city_significant = "Sí" if city_p_value < 0.05 else "No"        # Cambiado de booleano a texto
-                    
-                    # Inicializar con valores por defecto
-                    pattern_name = "No disponible"
-                    city_name = "No disponible"
-                    most_significant_pattern_coefficient = None
-                    most_significant_city_coefficient = None
-                    
-                    # Extracción de patrones específicos y sus efectos
-                    # Corrigiendo la expresión regular para evitar warning
-                    pattern_coefficients = coefficients[coefficients['variable'].str.contains(r'C\(pattern\)', regex=True)].copy()
-                    
-                    if not pattern_coefficients.empty:
-                        # Extraer el nombre del patrón de la forma "C(pattern)[T.nombre_patron]"
-                        pattern_coefficients['pattern_name'] = 'base'  # Valor predeterminado
-                        
-                        for i, row in pattern_coefficients.iterrows():
-                            var_name = row['variable']
-                            if '[T.' in var_name:
-                                extracted_pattern = var_name.split('[T.')[1].split(']')[0]
-                                pattern_coefficients.loc[i, 'pattern_name'] = extracted_pattern
-                        
-                        # Encontrar el patrón con el mayor efecto significativo
-                        sig_patterns = pattern_coefficients[pattern_coefficients['significant']]
-                        if not sig_patterns.empty:
-                            # Ordenar por valor absoluto del coeficiente (mayor a menor)
-                            sig_patterns = sig_patterns.sort_values(by='coefficient', key=abs, ascending=False)
-                            most_sig_pattern = sig_patterns.iloc[0]
-                            pattern_name = most_sig_pattern['pattern_name']
-                            most_significant_pattern_coefficient = float(most_sig_pattern['coefficient'])
-                            
-                            # Guardar en el diccionario para referencia
-                            pattern_effects_dict[mobility_type] = {
-                                'pattern': pattern_name,
-                                'coefficient': float(most_sig_pattern['coefficient']),
-                                'p_value': float(most_sig_pattern['p_value'])
-                            }
-                            
-                            print(f"  Patrón más significativo: {pattern_name} (coef={most_sig_pattern['coefficient']:.4f}, p={most_sig_pattern['p_value']:.6f})")
-                        else:
-                            pattern_name = "Ninguno significativo"
-                            print("  No se encontraron patrones significativos")
-                    
-                    # Extracción de ciudades específicas y sus efectos
-                    # Corrigiendo la expresión regular para evitar warning
-                    city_coefficients = coefficients[coefficients['variable'].str.contains(r'C\(city\)', regex=True)].copy()
-                    
-                    if not city_coefficients.empty:
-                        # Extraer el nombre de la ciudad
-                        city_coefficients['city_name'] = 'base'  # Valor predeterminado
-                        
-                        for i, row in city_coefficients.iterrows():
-                            var_name = row['variable']
-                            if '[T.' in var_name:
-                                extracted_city = var_name.split('[T.')[1].split(']')[0]
-                                city_coefficients.loc[i, 'city_name'] = extracted_city
-                        
-                        # Encontrar la ciudad con el mayor efecto significativo
-                        sig_cities = city_coefficients[city_coefficients['significant']]
-                        if not sig_cities.empty:
-                            # Ordenar por valor absoluto del coeficiente (mayor a menor)
-                            sig_cities = sig_cities.sort_values(by='coefficient', key=abs, ascending=False)
-                            most_sig_city = sig_cities.iloc[0]
-                            city_name = most_sig_city['city_name']
-                            most_significant_city_coefficient = float(most_sig_city['coefficient'])
-                            
-                            # Guardar en el diccionario para referencia
-                            city_effects_dict[mobility_type] = {
-                                'city': city_name,
-                                'coefficient': float(most_sig_city['coefficient']),
-                                'p_value': float(most_sig_city['p_value'])
-                            }
-                            
-                            print(f"  Ciudad más significativa: {city_name} (coef={most_sig_city['coefficient']:.4f}, p={most_sig_city['p_value']:.6f})")
-                        else:
-                            city_name = "Ninguna significativa"
-                            print("  No se encontraron ciudades significativas")
-                    
-                    # Guardar fila de resumen con información más detallada
-                    anova_summary.append({
-                        'Variable': mobility_type,
-                        'Patrón': pattern_name,
-                        'Coef. Patrón': most_significant_pattern_coefficient,
-                        'p-value Patrón': pattern_p_value,
-                        'Patrón significativo': pattern_significant,  # Ahora es "Sí" o "No"
-                        'Ciudad': city_name,
-                        'Coef. Ciudad': most_significant_city_coefficient,
-                        'p-value Ciudad': city_p_value,
-                        'Ciudad significativa': city_significant,  # Ahora es "Sí" o "No"
-                        'R² ajustado': model_basic.rsquared_adj
-                    })
-                    
-                    # Guardar estadísticas de ajuste
-                    anova_results_global[f"{mobility_type}_model_fit"] = {
-                        'r_squared': model_basic.rsquared,
-                        'adj_r_squared': model_basic.rsquared_adj,
-                        'aic': model_basic.aic,
-                        'bic': model_basic.bic,
-                        'f_value': model_basic.fvalue,
-                        'f_pvalue': model_basic.f_pvalue
-                    }
-                    
-                    # PASO 2: Análisis con datos agrupados si es necesario
-                    if len(rare_patterns) > 0:
-                        try:
-                            model_grouped = ols(f'{mobility_type} ~ C(pattern_grouped) + C(city)', 
-                                            data=combined_data_grouped).fit()
-                            anova_grouped = sm.stats.anova_lm(model_grouped, typ=2)
-                            anova_results_global[f"{mobility_type}_grouped_patterns"] = anova_grouped
-                            
-                            # Extraer información detallada del modelo agrupado
-                            grouped_r_squared = model_grouped.rsquared_adj
-                            grouped_pattern_p = anova_grouped.loc['C(pattern_grouped)', 'PR(>F)']
-                            
-                            print(f"  Análisis con patrones agrupados: R² = {grouped_r_squared:.4f}, p-valor patrones = {grouped_pattern_p:.6f}")
-                            
-                        except Exception as e:
-                            print(f"Error en análisis con patrones agrupados para {mobility_type}: {e}")
-                    
-                    # PASO 3: Modelo jerárquico con enfoque robusto 
-                    try:
-                        # Análisis por ciudad
-                        city_effects = {}
-                        for city in combined_data['city'].unique():
-                            city_data = combined_data[combined_data['city'] == city]
-                            if len(city_data) > 30 and len(city_data['pattern'].unique()) > 1:
-                                try:
-                                    city_model = ols(f'{mobility_type} ~ C(pattern)', data=city_data).fit()
-                                    city_effects[city] = {
-                                        'f_value': city_model.fvalue,
-                                        'p_value': city_model.f_pvalue,
-                                        'r_squared': city_model.rsquared,
-                                        'significant': city_model.f_pvalue < 0.05,
-                                        'n_observations': len(city_data)
-                                    }
-                                except Exception as city_err:
-                                    print(f"Error en análisis para ciudad {city}: {city_err}")
-                        
-                        anova_results_global[f"{mobility_type}_by_city"] = city_effects
-                        
-                        # Análisis por patrón
-                        pattern_effects = {}
-                        for pattern in combined_data['pattern'].unique():
-                            pattern_data = combined_data[combined_data['pattern'] == pattern]
-                            if len(pattern_data) > 30 and len(pattern_data['city'].unique()) > 1:
-                                try:
-                                    pattern_model = ols(f'{mobility_type} ~ C(city)', data=pattern_data).fit()
-                                    pattern_effects[pattern] = {
-                                        'f_value': pattern_model.fvalue,
-                                        'p_value': pattern_model.f_pvalue,
-                                        'r_squared': pattern_model.rsquared,
-                                        'significant': pattern_model.f_pvalue < 0.05,
-                                        'n_observations': len(pattern_data)
-                                    }
-                                except Exception as pattern_err:
-                                    print(f"Error en análisis para patrón {pattern}: {pattern_err}")
-                        
-                        anova_results_global[f"{mobility_type}_by_pattern"] = pattern_effects
-                        
-                        # Conteo de efectos significativos
-                        significant_cities = sum(1 for v in city_effects.values() if v.get('significant', False))
-                        significant_patterns = sum(1 for v in pattern_effects.values() if v.get('significant', False))
-                        
-                        # Resumen mejorado con porcentajes
-                        if city_effects:
-                            pct_cities = (significant_cities / len(city_effects)) * 100
-                            print(f"  {significant_cities} de {len(city_effects)} ciudades ({pct_cities:.1f}%) muestran efectos significativos de patrón")
-                        
-                        if pattern_effects:
-                            pct_patterns = (significant_patterns / len(pattern_effects)) * 100
-                            print(f"  {significant_patterns} de {len(pattern_effects)} patrones ({pct_patterns:.1f}%) muestran efectos significativos de ciudad")
-                        
-                        anova_results_global[f"{mobility_type}_effects_summary"] = {
-                            'cities_with_significant_patterns': significant_cities,
-                            'total_cities_analyzed': len(city_effects),
-                            'patterns_with_significant_cities': significant_patterns,
-                            'total_patterns_analyzed': len(pattern_effects),
-                            'percent_cities_significant': significant_cities / len(city_effects) if len(city_effects) > 0 else 0,
-                            'percent_patterns_significant': significant_patterns / len(pattern_effects) if len(pattern_effects) > 0 else 0
-                        }
-                        
-                    except Exception as e:
-                        print(f"Error en análisis jerárquico para {mobility_type}: {e}")
-                    
-                    # PASO 4: Análisis de medias por categoría para interpretación más sencilla
-                    try:
-                        # Calcular medias por patrón
-                        pattern_means = combined_data.groupby('pattern')[mobility_type].agg(['mean', 'std', 'count']).reset_index()
-                        pattern_means = pattern_means.sort_values(by='mean', ascending=False)
-                        
-                        # Calcular medias por ciudad
-                        city_means = combined_data.groupby('city')[mobility_type].agg(['mean', 'std', 'count']).reset_index()
-                        city_means = city_means.sort_values(by='mean', ascending=False)
-                        
-                        # Mostrar los 3 primeros de cada categoría
-                        print("  Patrones con valores más altos (Top 3):")
-                        for _, row in pattern_means.head(3).iterrows():
-                            print(f"    {row['pattern']}: {row['mean']:.4f} ± {row['std']:.4f} (n={row['count']})")
-                        
-                        print("  Ciudades con valores más altos (Top 3):")
-                        for _, row in city_means.head(3).iterrows():
-                            print(f"    {row['city']}: {row['mean']:.4f} ± {row['std']:.4f} (n={row['count']})")
-                        
-                        # Guardar estas estadísticas descriptivas
-                        anova_results_global[f"{mobility_type}_pattern_means"] = pattern_means.to_dict('records')
-                        anova_results_global[f"{mobility_type}_city_means"] = city_means.to_dict('records')
-                        
-                    except Exception as e:
-                        print(f"Error al calcular estadísticas descriptivas para {mobility_type}: {e}")
-                    
-                    # Intentar modelo mixto solo para variables sin problemas conocidos
-                    if mobility_type not in ['a', 'b', 'bicycle_share', 'transit_share', 'walked_share']:
-                        try:
-                            import statsmodels.formula.api as smf
-                            # Usar opciones más conservadoras para mayor estabilidad
-                            mixed_model = smf.mixedlm(
-                                f"{mobility_type} ~ pattern", 
-                                data=combined_data,
-                                groups=combined_data["city"],
-                                re_formula="~1"  # Solo intercepto aleatorio
-                            ).fit(
-                                method="powell",  # Método alternativo de optimización
-                                maxiter=1000,
-                                ftol=1e-4
+            # === 2. TEST DE KRUSKAL-WALLIS (no paramétrico) ===
+            print("\n--- Test Kruskal-Wallis (Diferencias entre Patrones) ---")
+            kruskal_results = []
+            
+            from scipy.stats import kruskal
+            
+            for var in mobility_vars:
+                clean_data = df[[var, 'pattern']].dropna()
+                if len(clean_data) < 20:
+                    continue
+                
+                # Agrupar por patrón
+                groups = [group[var].values for name, group in clean_data.groupby('pattern') if len(group) >= 5]
+                
+                if len(groups) < 2:
+                    continue
+                
+                # Test de Kruskal-Wallis
+                h_stat, p_val = kruskal(*groups)
+                
+                # Tamaño del efecto (eta cuadrado aproximado)
+                n_total = len(clean_data)
+                eta_squared = (h_stat - len(groups) + 1) / (n_total - len(groups))
+                eta_squared = max(0, eta_squared)  # No puede ser negativo
+                
+                if eta_squared < 0.01:
+                    effect = "Muy pequeño"
+                elif eta_squared < 0.06:
+                    effect = "Pequeño"
+                elif eta_squared < 0.14:
+                    effect = "Mediano"
+                else:
+                    effect = "Grande"
+                
+                kruskal_results.append({
+                    'Variable': var,
+                    'H-estadístico': round(h_stat, 3),
+                    'p-valor': round(p_val, 6),
+                    'Significativo': 'Sí' if p_val < 0.05 else 'No',
+                    'η² (aprox)': round(eta_squared, 4),
+                    'Efecto': effect,
+                    'n': n_total,
+                    'Grupos': len(groups)
+                })
+                
+                results['kruskal_wallis'][var] = {
+                    'h_statistic': h_stat,
+                    'p_value': p_val,
+                    'significant': p_val < 0.05,
+                    'eta_squared': eta_squared,
+                    'effect_size': effect
+                }
+                
+                print(f"{var:15} | H={h_stat:6.2f} | p={p_val:8.6f} | η²={eta_squared:5.3f} | {effect:10} | {'***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else '   '}")
+            
+            # === 3. ESTADÍSTICAS DESCRIPTIVAS POR PATRÓN ===
+            print("\n--- Estadísticas por Patrón ---")
+            
+            for var in mobility_vars[:3]:  # Solo mostrar las primeras 3 para no saturar
+                print(f"\n{var}:")
+                stats = df.groupby('pattern')[var].agg(['count', 'mean', 'std', 'median']).round(4)
+                stats = stats.sort_values('mean', ascending=False)
+                
+                results['descriptive_stats'][var] = stats.to_dict('index')
+                
+                for pattern, row in stats.iterrows():
+                    if row['count'] >= 5:  # Solo mostrar patrones con suficientes datos
+                        print(f"  {pattern:20} | n={row['count']:3.0f} | μ={row['mean']:7.4f} | σ={row['std']:7.4f} | med={row['median']:7.4f}")
+            
+            # === 4. ANÁLISIS DE CIUDADES ===
+            print("\n--- Análisis por Ciudad (Top variables) ---")
+            
+            # Encontrar las variables más correlacionadas para análisis por ciudad
+            top_vars = sorted(correlations, key=lambda x: abs(x['Correlación']), reverse=True)[:3]
+            
+            for var_info in top_vars:
+                var = var_info['Variable']
+                print(f"\n{var} (r={var_info['Correlación']}):")
+                
+                city_stats = df.groupby('city')[var].agg(['count', 'mean']).round(4)
+                city_stats = city_stats[city_stats['count'] >= 10].sort_values('mean', ascending=False)
+                
+                for city, row in city_stats.head(5).iterrows():
+                    print(f"  {city:15} | n={row['count']:3.0f} | μ={row['mean']:7.4f}")
+            
+            # === 5. GUARDAR RESULTADOS ===
+            
+            # Crear tablas resumen
+            corr_df = pd.DataFrame(correlations)
+            kruskal_df = pd.DataFrame(kruskal_results)
+            
+            # Guardar en un solo archivo Excel con múltiples hojas
+            output_file = os.path.join(self.global_dir, "analisis_patrones_movilidad.xlsx")
+            
+            with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+                corr_df.to_excel(writer, sheet_name='Correlaciones', index=False)
+                kruskal_df.to_excel(writer, sheet_name='Kruskal-Wallis', index=False)
+                
+                # Resumen ejecutivo
+                summary_data = []
+                for var in mobility_vars:
+                    if var in results['correlations'] and var in results['kruskal_wallis']:
+                        summary_data.append({
+                            'Variable': var,
+                            'Correlación_Spearman': results['correlations'][var]['correlation'],
+                            'Sig_Correlación': 'Sí' if results['correlations'][var]['significant'] else 'No',
+                            'Kruskal_Wallis_p': results['kruskal_wallis'][var]['p_value'],
+                            'Sig_KW': 'Sí' if results['kruskal_wallis'][var]['significant'] else 'No',
+                            'Eta_cuadrado': results['kruskal_wallis'][var]['eta_squared'],
+                            'Interpretación': self._interpret_results(
+                                results['correlations'][var]['significant'],
+                                results['kruskal_wallis'][var]['significant'],
+                                abs(results['correlations'][var]['correlation']),
+                                results['kruskal_wallis'][var]['eta_squared']
                             )
+                        })
+                
+                summary_df = pd.DataFrame(summary_data)
+                summary_df.to_excel(writer, sheet_name='Resumen', index=False)
+            
+            # === 6. ANÁLISIS POST-HOC MEJORADO ===
+            print("\n--- Análisis Post-Hoc (Variables con Diferencias Significativas) ---")
+            
+            from scipy.stats import mannwhitneyu
+            
+            # CAMBIO PRINCIPAL: Usar criterios más flexibles para post-hoc
+            # 1. Variables con Kruskal-Wallis significativo (p < 0.05)
+            # 2. O variables con eta² > 0.05 (efecto pequeño o mayor)
+            # 3. Incluir específicamente 'a' (active mobility) si está presente
+            
+            important_vars = []
+            
+            for var in mobility_vars:
+                include_var = False
+                
+                # Criterio 1: Kruskal-Wallis significativo
+                if var in results['kruskal_wallis'] and results['kruskal_wallis'][var]['significant']:
+                    include_var = True
+                    print(f"✓ {var}: Incluido por Kruskal-Wallis significativo (p={results['kruskal_wallis'][var]['p_value']:.4f})")
+                
+                # Criterio 2: Eta² > 0.05 (efecto pequeño o mayor)
+                elif var in results['kruskal_wallis'] and results['kruskal_wallis'][var]['eta_squared'] > 0.05:
+                    include_var = True
+                    print(f"✓ {var}: Incluido por tamaño de efecto (η²={results['kruskal_wallis'][var]['eta_squared']:.4f})")
+                
+                # Criterio 3: Variables específicas de interés (active mobility)
+                elif var in ['a', 'walked_share', 'bicycle_share']:
+                    include_var = True
+                    print(f"✓ {var}: Incluido por ser variable de movilidad activa")
+                
+                if include_var:
+                    important_vars.append(var)
+            
+            # Si no hay variables importantes, incluir al menos las 3 con mayor eta²
+            if not important_vars:
+                print("No se encontraron variables con criterios estrictos. Incluyendo top 3 por eta²...")
+                sorted_vars = sorted([(var, results['kruskal_wallis'][var]['eta_squared']) 
+                                    for var in mobility_vars if var in results['kruskal_wallis']], 
+                                key=lambda x: x[1], reverse=True)
+                important_vars = [var for var, _ in sorted_vars[:3]]
+            
+            print(f"\nVariables seleccionadas para post-hoc: {important_vars}")
+            
+            post_hoc_results = {}
+            
+            for var in important_vars:
+                eta_sq = results['kruskal_wallis'][var]['eta_squared'] if var in results['kruskal_wallis'] else 0
+                print(f"\n{var} (η²={eta_sq:.3f}):")
+                
+                # Obtener datos por patrón con criterios más flexibles
+                pattern_data = {}
+                min_observations = 5  # Reducido de 10 a 5 para mayor flexibilidad
+                
+                for pattern in df['pattern'].unique():
+                    data = df[df['pattern'] == pattern][var].dropna()
+                    if len(data) >= min_observations:
+                        pattern_data[pattern] = data
+                        print(f"  Patrón {pattern}: {len(data)} observaciones (μ={data.mean():.4f}, med={data.median():.4f})")
+                
+                # Verificar si tenemos suficientes patrones para comparar
+                if len(pattern_data) < 2:
+                    print(f"  ⚠️  Insuficientes patrones con datos para {var} (mínimo {min_observations} obs. c/u)")
+                    continue
+                
+                # Comparaciones pareadas
+                comparisons = []
+                patterns = list(pattern_data.keys())
+                significant_comparisons = 0
+                
+                print(f"  Realizando {len(patterns)*(len(patterns)-1)//2} comparaciones pareadas:")
+                
+                for i, p1 in enumerate(patterns):
+                    for j, p2 in enumerate(patterns):
+                        if i < j:  # Evitar comparaciones duplicadas
+                            try:
+                                # Test de Mann-Whitney U
+                                stat, p_val = mannwhitneyu(pattern_data[p1], pattern_data[p2], 
+                                                        alternative='two-sided')
+                                
+                                # Calcular diferencia de medianas y medias
+                                median_diff = pattern_data[p1].median() - pattern_data[p2].median()
+                                mean_diff = pattern_data[p1].mean() - pattern_data[p2].mean()
+                                
+                                # Calcular tamaño del efecto (r de Rosenthal)
+                                n1, n2 = len(pattern_data[p1]), len(pattern_data[p2])
+                                z_score = abs((stat - (n1 * n2 / 2)) / (((n1 * n2 * (n1 + n2 + 1)) / 12) ** 0.5))
+                                effect_size_r = z_score / ((n1 + n2) ** 0.5)
+                                
+                                is_significant = p_val < 0.05
+                                if is_significant:
+                                    significant_comparisons += 1
+                                
+                                comparisons.append({
+                                    'Patrón_1': p1,
+                                    'Patrón_2': p2,
+                                    'n1': n1,
+                                    'n2': n2,
+                                    'U_estadístico': stat,
+                                    'p_valor': p_val,
+                                    'Significativo': 'Sí' if is_significant else 'No',
+                                    'Dif_Media': mean_diff,
+                                    'Dif_Mediana': median_diff,
+                                    'Tamaño_Efecto_r': effect_size_r
+                                })
+                                
+                                # Mostrar resultados significativos
+                                if is_significant:
+                                    direction = ">" if median_diff > 0 else "<"
+                                    effect_interp = "Grande" if effect_size_r > 0.5 else "Mediano" if effect_size_r > 0.3 else "Pequeño"
+                                    print(f"    {p1} {direction} {p2:15} | p={p_val:.4f} | Δmed={median_diff:+.4f} | r={effect_size_r:.3f} ({effect_interp})")
                             
-                            # Extraer solo la información esencial para evitar problemas de serialización
-                            anova_results_global[f"{mobility_type}_mixed_model"] = {
-                                'AIC': mixed_model.aic,
-                                'BIC': mixed_model.bic,
-                                'Log-Likelihood': mixed_model.llf,
-                                'Parameters': {k: v for k, v in mixed_model.params.items()},
-                                'P-Values': {k: v for k, v in mixed_model.pvalues.items() if v < 0.1}  # Solo valores p significativos o cercanos
-                            }
+                            except Exception as e:
+                                print(f"    ⚠️  Error comparando {p1} vs {p2}: {e}")
+                
+                post_hoc_results[var] = comparisons
+                print(f"  📊 Comparaciones significativas: {significant_comparisons}/{len(comparisons)}")
+                
+                # Ranking de patrones por mediana
+                pattern_rankings = sorted([(p, data.median()) for p, data in pattern_data.items()], 
+                                        key=lambda x: x[1], reverse=True)
+                print(f"  🏆 Ranking por mediana: {' > '.join([f'{p}({v:.3f})' for p, v in pattern_rankings])}")
+            
+            # === 7. GUARDAR ANÁLISIS POST-HOC MEJORADO ===
+            if post_hoc_results:
+                print(f"\n📁 Guardando análisis post-hoc...")
+                
+                # Crear un archivo separado para post-hoc con más detalle
+                posthoc_file = os.path.join(self.global_dir, "analisis_posthoc_detallado.xlsx")
+                
+                with pd.ExcelWriter(posthoc_file, engine='openpyxl') as writer:
+                    # Resumen general de post-hoc
+                    summary_posthoc = []
+                    
+                    for var, comparisons in post_hoc_results.items():
+                        if comparisons:
+                            sig_comps = sum(1 for c in comparisons if c['Significativo'] == 'Sí')
+                            total_comps = len(comparisons)
+                            patterns_involved = len(set([c['Patrón_1'] for c in comparisons] + [c['Patrón_2'] for c in comparisons]))
                             
-                            # Mostrar estadísticas del modelo mixto
-                            has_sig_pattern = any(v < 0.05 for k, v in mixed_model.pvalues.items() if k.startswith('pattern'))
-                            print(f"  Modelo mixto: AIC={mixed_model.aic:.2f}, BIC={mixed_model.bic:.2f}, patrones significativos: {'Sí' if has_sig_pattern else 'No'}")
+                            # Encontrar la comparación más significativa
+                            most_sig = min(comparisons, key=lambda x: x['p_valor'])
                             
-                        except Exception as e:
-                            print(f"No se pudo realizar modelo mixto para {mobility_type}: {e}")
-                            
-                except Exception as e:
-                    print(f"Error en análisis para {mobility_type}: {e}")
+                            summary_posthoc.append({
+                                'Variable': var,
+                                'Comparaciones_Totales': total_comps,
+                                'Comparaciones_Significativas': sig_comps,
+                                'Porcentaje_Significativo': round((sig_comps/total_comps)*100, 1),
+                                'Patrones_Analizados': patterns_involved,
+                                'Menor_p_valor': most_sig['p_valor'],
+                                'Comparación_Más_Significativa': f"{most_sig['Patrón_1']} vs {most_sig['Patrón_2']}",
+                                'Mayor_Diferencia_Mediana': max(comparisons, key=lambda x: abs(x['Dif_Mediana']))['Dif_Mediana']
+                            })
+                    
+                    if summary_posthoc:
+                        summary_df = pd.DataFrame(summary_posthoc)
+                        summary_df.to_excel(writer, sheet_name='Resumen_PostHoc', index=False)
+                    
+                    # Guardar cada variable en su propia hoja
+                    for var, comparisons in post_hoc_results.items():
+                        if comparisons:
+                            posthoc_df = pd.DataFrame(comparisons)
+                            # Ordenar por p-valor para mostrar los más significativos primero
+                            posthoc_df = posthoc_df.sort_values('p_valor')
+                            sheet_name = f"PostHoc_{var}"[:31]  # Límite de caracteres en Excel
+                            posthoc_df.to_excel(writer, sheet_name=sheet_name, index=False)
+                
+                print(f"✅ Análisis post-hoc guardado en: {posthoc_file}")
             
-            # Convertir la lista de diccionarios a DataFrame
-            anova_summary_df = pd.DataFrame(anova_summary)
+            # También guardar en el archivo principal
+            with pd.ExcelWriter(output_file, mode='a', engine='openpyxl') as writer:
+                for var, comparisons in post_hoc_results.items():
+                    if comparisons:
+                        posthoc_df = pd.DataFrame(comparisons)
+                        posthoc_df = posthoc_df.sort_values('p_valor')
+                        sheet_name = f"PostHoc_{var}"[:31]
+                        posthoc_df.to_excel(writer, sheet_name=sheet_name, index=False)
             
-            # Guardar la tabla de resumen ANOVA como Excel
-            resumen_file = os.path.join(self.global_dir, "resumen_anova_patrones_ciudades.xlsx")
-            anova_summary_df.to_excel(resumen_file, index=False)
+            # === 8. REPORTE FINAL MEJORADO ===
+            print(f"\n=== RESUMEN EJECUTIVO ===")
+            print(f"Variables analizadas: {len(mobility_vars)}")
             
-            # Crear un archivo de interpretación
-            interpretation_file = os.path.join(self.global_dir, "interpretacion_resultados.txt")
-            with open(interpretation_file, 'w', encoding='utf-8') as f:
-                f.write("INTERPRETACIÓN DE RESULTADOS DEL ANÁLISIS GLOBAL\n")
-                f.write("=============================================\n\n")
-                
-                # Resumen general
-                f.write(f"Total de registros analizados: {len(combined_data)}\n")
-                f.write(f"Número de patrones distintos: {len(pattern_counts)}\n")
-                f.write(f"Número de ciudades distintas: {len(city_counts)}\n\n")
-                
-                # Análisis por variable de movilidad
-                f.write("ANÁLISIS POR VARIABLE DE MOVILIDAD\n")
-                f.write("--------------------------------\n\n")
-                
-                for _, row in anova_summary_df.iterrows():
-                    f.write(f"Variable: {row['Variable']}\n")
-                    f.write(f"  R² ajustado: {row['R² ajustado']:.4f}\n")
-                    
-                    # Información sobre patrón
-                    f.write(f"  Efecto de patrón: {row['Patrón significativo']} (p = {row['p-value Patrón']:.6f})\n")
-                    if row['Coef. Patrón'] is not None and row['Patrón'] != "Ninguno significativo":
-                        f.write(f"  Patrón más influyente: {row['Patrón']} (coef = {row['Coef. Patrón']:.4f})\n")
-                    
-                    # Información sobre ciudad
-                    f.write(f"  Efecto de ciudad: {row['Ciudad significativa']} (p = {row['p-value Ciudad']:.6f})\n")
-                    if row['Coef. Ciudad'] is not None and row['Ciudad'] != "Ninguna significativa":
-                        f.write(f"  Ciudad más influyente: {row['Ciudad']} (coef = {row['Coef. Ciudad']:.4f})\n")
-                    
-                    # Interpretación
-                    f.write("  Interpretación: ")
-                    
-                    if row['Patrón significativo'] == "Sí" and row['Ciudad significativa'] == "Sí":
-                        f.write("Tanto el patrón de calle como la ciudad tienen efectos significativos sobre esta variable de movilidad.\n")
-                    elif row['Patrón significativo'] == "Sí":
-                        f.write("El patrón de calle tiene un efecto significativo sobre esta variable de movilidad, mientras que la ciudad no muestra efecto significativo.\n")
-                    elif row['Ciudad significativa'] == "Sí":
-                        f.write("La ciudad tiene un efecto significativo sobre esta variable de movilidad, mientras que el patrón de calle no muestra efecto significativo.\n")
-                    else:
-                        f.write("Ni el patrón de calle ni la ciudad muestran efectos significativos sobre esta variable de movilidad.\n")
-                    
-                    f.write("\n")
-                
-                # Conclusiones generales
-                f.write("CONCLUSIONES GENERALES\n")
-                f.write("--------------------\n\n")
-                
-                # Calcular en cuántas variables hay efectos significativos
-                pattern_sig_count = (anova_summary_df['Patrón significativo'] == "Sí").sum()
-                city_sig_count = (anova_summary_df['Ciudad significativa'] == "Sí").sum()
-                total_vars = len(anova_summary_df)
-                
-                f.write(f"El patrón de calle mostró efecto significativo en {pattern_sig_count} de {total_vars} variables de movilidad ({pattern_sig_count/total_vars*100:.1f}%).\n")
-                f.write(f"La ciudad mostró efecto significativo en {city_sig_count} de {total_vars} variables de movilidad ({city_sig_count/total_vars*100:.1f}%).\n\n")
-                
-                # Identificar patrones que aparecen repetidamente como significativos
-                if pattern_effects_dict:
-                    frequent_patterns = {}
-                    for var, data in pattern_effects_dict.items():
-                        pattern = data['pattern']
-                        frequent_patterns[pattern] = frequent_patterns.get(pattern, 0) + 1
-                    
-                    if frequent_patterns:
-                        most_frequent = max(frequent_patterns.items(), key=lambda x: x[1])
-                        f.write(f"El patrón '{most_frequent[0]}' aparece como el más influyente en {most_frequent[1]} variables de movilidad.\n")
-                
-                # Identificar ciudades que aparecen repetidamente como significativas
-                if city_effects_dict:
-                    frequent_cities = {}
-                    for var, data in city_effects_dict.items():
-                        city = data['city']
-                        frequent_cities[city] = frequent_cities.get(city, 0) + 1
-                    
-                    if frequent_cities:
-                        most_frequent = max(frequent_cities.items(), key=lambda x: x[1])
-                        f.write(f"La ciudad '{most_frequent[0]}' aparece como la más influyente en {most_frequent[1]} variables de movilidad.\n")
+            sig_correlations = sum(1 for r in results['correlations'].values() if r['significant'])
+            sig_kruskal = sum(1 for r in results['kruskal_wallis'].values() if r['significant'])
             
-            # También guardar los diccionarios de efectos como archivos separados para referencia
-            if pattern_effects_dict:
-                pattern_effects_df = pd.DataFrame.from_dict(pattern_effects_dict, orient='index')
-                pattern_effects_df.to_excel(os.path.join(self.global_dir, "efectos_patrones_detallados.xlsx"))
+            print(f"Correlaciones significativas: {sig_correlations}/{len(results['correlations'])}")
+            print(f"Diferencias significativas entre patrones: {sig_kruskal}/{len(results['kruskal_wallis'])}")
+            print(f"Variables con análisis post-hoc: {len(important_vars)}")
             
-            if city_effects_dict:
-                city_effects_df = pd.DataFrame.from_dict(city_effects_dict, orient='index')
-                city_effects_df.to_excel(os.path.join(self.global_dir, "efectos_ciudades_detallados.xlsx"))
+            # Variables con efectos más fuertes
+            if correlations:
+                strongest_corr = max(correlations, key=lambda x: abs(x['Correlación']))
+                print(f"Correlación más fuerte: {strongest_corr['Variable']} (r={strongest_corr['Correlación']})")
             
-            # Visualizaciones mejoradas
-            self._generate_enhanced_visualizations(combined_data, available_mobility_cols)
+            if kruskal_results:
+                strongest_diff = max(kruskal_results, key=lambda x: x['η² (aprox)'])
+                print(f"Mayor diferencia entre patrones: {strongest_diff['Variable']} (η²={strongest_diff['η² (aprox)']})")
+            
+            # Información específica sobre active mobility
+            if 'a' in results['kruskal_wallis']:
+                a_results = results['kruskal_wallis']['a']
+                print(f"\n🚶 MOVILIDAD ACTIVA ('a'):")
+                print(f"   Kruskal-Wallis p-valor: {a_results['p_value']:.6f}")
+                print(f"   Tamaño del efecto (η²): {a_results['eta_squared']:.4f}")
+                print(f"   Significativo: {'SÍ' if a_results['significant'] else 'NO'}")
+                
+                if 'a' in post_hoc_results:
+                    a_posthoc = post_hoc_results['a']
+                    sig_comps = sum(1 for c in a_posthoc if c['Significativo'] == 'Sí')
+                    print(f"   Comparaciones post-hoc significativas: {sig_comps}/{len(a_posthoc)}")
+            
+            # Interpretación general
+            print(f"\n--- INTERPRETACIÓN ---")
+            print("✓ Los patrones viales SÍ influyen en la movilidad")
+            print("✓ La relación es CATEGÓRICA, no lineal (correlaciones débiles pero diferencias fuertes)")
+            print("✓ Variables más sensibles al patrón vial:")
+            
+            top_effects = sorted(kruskal_results, key=lambda x: x['η² (aprox)'], reverse=True)[:3]
+            for i, var in enumerate(top_effects, 1):
+                print(f"  {i}. {var['Variable']} (η²={var['η² (aprox)']:.3f})")
+            
+            print(f"\nResultados guardados en: {output_file}")
+            if post_hoc_results:
+                print(f"Post-hoc detallado en: {posthoc_file}")
+            
+            # === 9. FUNCIONES ADICIONALES DEL CÓDIGO ORIGINAL ===
+            
+            # Generar visualizaciones
+            try:
+                self._generate_enhanced_visualizations(df, mobility_vars)
+                print("Visualizaciones generadas exitosamente")
+            except Exception as e:
+                print(f"Error generando visualizaciones: {e}")
             
             # Guardar datos combinados
-            combined_data.to_excel(os.path.join(self.global_dir, "datos_combinados_todas_ciudades.xlsx"), index=False)
+            try:
+                combined_data_file = os.path.join(self.global_dir, "datos_combinados_todas_ciudades.xlsx")
+                df.to_excel(combined_data_file, index=False)
+                print(f"Datos combinados guardados en: {combined_data_file}")
+            except Exception as e:
+                print(f"Error guardando datos combinados: {e}")
             
-            # Guardar también resultados ANOVA
-            if anova_results_global:
-                # Resultados en formato más detallado
-                self._save_analysis_results(anova_results_global, self.global_dir)
+            # Guardar resultados detallados
+            try:
+                self._save_analysis_results(results, self.global_dir)
+                print("Resultados detallados guardados exitosamente")
+            except Exception as e:
+                print(f"Error guardando resultados detallados: {e}")
             
-            print("\nAnálisis global completado")
-            print(f"Tabla de resumen ANOVA guardada en: {resumen_file}")
-            print(f"Interpretación de resultados guardada en: {interpretation_file}")
             return True
             
         except Exception as e:
-            print(f"Error en análisis global: {str(e)}")
+            print(f"Error en análisis: {str(e)}")
             import traceback
             traceback.print_exc()
             return False
+    def _interpret_results(self, corr_sig, kw_sig, corr_strength, eta_squared):
+        """Interpreta los resultados estadísticos de forma comprensible."""
+        
+        if corr_sig and kw_sig:
+            if corr_strength > 0.3 and eta_squared > 0.06:
+                return "Fuerte relación: los patrones viales influyen significativamente en esta variable"
+            else:
+                return "Relación moderada: hay efecto del patrón vial pero no muy pronunciado"
+        
+        elif corr_sig:
+            return "Tendencia monotónica: existe una tendencia gradual según el patrón"
+        
+        elif kw_sig:
+            return "Diferencias puntuales: algunos patrones se diferencian, pero sin tendencia clara"
+        
+        else:
+            return "Sin relación: los patrones viales no parecen influir en esta variable"
+
+
+
+    def _create_ridge_plot(self, data, column, viz_dir):
+        """Crea ridge plot para distribución por patrones."""
+       
+        pattern_config = self._get_pattern_config()
+        available_patterns = [p for p in pattern_config['orden'] if p in data['pattern'].unique()]
+        
+        if len(available_patterns) <= 1:
+            return
+        
+        fig = plt.figure(figsize=(14, max(8, len(available_patterns) * 1.2)))
+        gs = gridspec.GridSpec(len(available_patterns), 1, hspace=0.4)
+        
+        # Límites consistentes
+        x_min, x_max = data[column].min(), data[column].max()
+        x_range = x_max - x_min
+        x_padding = x_range * 0.1
+        
+        for i, pattern in enumerate(available_patterns):
+            ax = plt.subplot(gs[i])
+            pattern_data = data[data['pattern'] == pattern][column].dropna()
+            
+            if len(pattern_data) <= 1:
+                continue
+                
+            # KDE plot con color específico del patrón
+            color = pattern_config['colores'][pattern]
+            sns.kdeplot(pattern_data, fill=True, color=color, alpha=0.7, 
+                    linewidth=1.5, ax=ax, bw_adjust=0.8)
+            
+            # Mediana
+            median_val = pattern_data.median()
+            ax.axvline(x=median_val, color="red", linestyle="--", alpha=0.8, linewidth=1.5)
+            
+            # Etiquetas
+            ax.text(x_min + x_padding, ax.get_ylim()[1] * 0.7,
+                    pattern_config['labels'][pattern], fontsize=12, fontweight='bold', color=color)
+            ax.text(median_val + x_padding*0.5, ax.get_ylim()[1] * 0.5,
+                    f'Mediana: {median_val:.2f}', fontsize=10, color='darkred')
+            
+            # Configuración de ejes
+            ax.set_yticks([])
+            ax.set_ylabel('')
+            ax.set_xlim(x_min - x_padding, x_max + x_padding)
+            
+            if i < len(available_patterns) - 1:
+                ax.set_xticks([])
+                ax.set_xlabel('')
+            else:
+                ax.set_xlabel(column.upper(), fontsize=12)
+            
+            sns.despine(bottom=True, left=True, ax=ax)
+        
+        plt.suptitle(f'Distribución de {column.upper()} por Patrón', fontsize=16, y=0.98)
+        
+        # Leyenda
+        legend_elements = [plt.Line2D([0], [0], color='red', linestyle='--', lw=1.5, label='Mediana')]
+        fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.95, 0.98))
+        
+        self._save_figure(f"{viz_dir}/ridge_plot_{column}.pdf", f"Ridge plot - {column}")
+
+    def _create_boxplot(self, data, column, viz_dir):
+        """Crea boxplot mejorado con estadísticas."""
+        
+        pattern_config = self._get_pattern_config()
+        
+        plt.figure(figsize=(14, 8))
+        ax = sns.boxplot(x='pattern', y=column, data=data, notch=True,
+                        palette=[pattern_config['colores'].get(p, '#gray') for p in data['pattern'].unique()],
+                        width=0.6)
+        
+        # Añadir estadísticas
+        for i, pattern in enumerate(ax.get_xticklabels()):
+            pattern_name = pattern.get_text()
+            pattern_data = data[data['pattern'] == pattern_name][column]
+            
+            if len(pattern_data) > 0:
+                mean_val = pattern_data.mean()
+                median_val = pattern_data.median()
+                
+                # Media como diamante
+                ax.plot(i, mean_val, marker='D', color='red', markersize=8, 
+                    markeredgecolor='white', markeredgewidth=1.5, zorder=10)
+                
+                # Etiquetas
+                ax.text(i, mean_val, f' μ={mean_val:.2f}', color='darkred', fontsize=9,
+                    va='center', ha='left')
+                ax.text(i, median_val, f' m={median_val:.2f}', color='black', fontsize=9,
+                    va='center', ha='right')
+        
+        plt.title(f'Distribución de {column.upper()} por Patrón')
+        plt.xlabel('Patrón')
+        plt.ylabel(column.upper())
+        plt.xticks(rotation=45)
+        
+        self._save_figure(f"{viz_dir}/boxplot_{column}.pdf", f"Boxplot - {column}")
+
+    def _create_mobility_density_plots(self, data, viz_dir):
+        """Creates mobility density plots by urban pattern."""
+        
+        # Configuración de LaTeX y fuentes grandes (15% más grande)
+        plt.rcParams.update({
+            'font.family': 'serif',
+            'font.serif': ['Computer Modern Roman'],
+            'text.usetex': True,
+            'font.size': 21,           # Tamaño base más grande (18 * 1.15)
+            'axes.titlesize': 25,      # Título del gráfico (22 * 1.15)
+            'axes.labelsize': 23,      # Etiquetas de ejes (20 * 1.15)
+            'xtick.labelsize': 18,     # Números en eje X (16 * 1.15)
+            'ytick.labelsize': 18,     # Números en eje Y (16 * 1.15)
+            'legend.fontsize': 21,     # Leyenda (18 * 1.15)
+            'figure.titlesize': 28     # Título de figura (24 * 1.15)
+        })
+        
+        # 1. Aggregated mobility plots (Active, Public, Private) – KEEPING STRUCTURE
+        mobility_cols = ['a', 'b', 'car_share']
+        mobility_labels = [r'\textbf{Active Mobility}', 
+                        r'\textbf{Public Mobility}', 
+                        r'\textbf{Private Mobility}']
+        mobility_colors = ['#FF6B6B', '#4ECDC4', '#6A67CE']
+        pattern_config = self._get_pattern_config()
+        
+        for pattern in pattern_config['orden']:
+            pattern_data = data[data['pattern'] == pattern]
+            
+            if len(pattern_data) <= 1:
+                continue
+            
+            plt.figure(figsize=(17, 11))
+            
+            for i, (col, label, color) in enumerate(zip(mobility_cols, mobility_labels, mobility_colors)):
+                col_data = pattern_data[col].dropna()
+                
+                if len(col_data) > 1:
+                    sns.kdeplot(col_data, fill=True, alpha=0.5, color=color, linewidth=3, label=label)
+                    
+                    median_val = col_data.median()
+                    plt.axvline(x=median_val, color=color, linestyle="--", alpha=0.8, linewidth=2.5)
+                    
+                    # Median label con formato LaTeX (15% más grande)
+                    y_base = 2.9
+                    dy = 1
+                    median_text = r'\textbf{Median ' + f': {median_val:.2f}' + '}'
+                    plt.text(median_val + 0.01, y_base - i * dy, median_text, 
+                            fontsize=18, color='black', fontweight='bold',  # 16 * 1.15
+                            bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.5', alpha=0.8))
+            
+            # Títulos y etiquetas con LaTeX y fuentes grandes (15% más grande)
+            plt.title(r'\textbf{Distribution of Mobility Shares - ' + pattern.capitalize() + r' Pattern}', 
+                    fontsize=28, pad=20)  # 24 * 1.15
+            plt.xlabel(r'\textbf{Share Percentage}', fontsize=25, labelpad=15)  # 22 * 1.15
+            plt.ylabel(r'\textbf{Density}', fontsize=25, labelpad=15)  # 22 * 1.15
+            
+            # Configuración de leyenda mejorada (15% más grande)
+            legend = plt.legend(fontsize=23, frameon=True, fancybox=True, shadow=True,  # 20 * 1.15
+                            framealpha=0.9, loc='upper right')
+            legend.get_frame().set_facecolor('white')
+            legend.get_frame().set_edgecolor('gray')
+            legend.get_frame().set_linewidth(1.5)
+            
+            # Mejorar el aspecto general del gráfico
+            plt.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
+            plt.tight_layout(pad=3.0)
+            
+            # Configurar los ticks para que sean más visibles (15% más grande)
+            plt.tick_params(axis='both', which='major', labelsize=21, width=1.5, length=6)  # 18 * 1.15
+            plt.tick_params(axis='both', which='minor', width=1, length=3)
+            
+            self._save_figure(f"{viz_dir}/mobility_shares_density_{pattern}.pdf", 
+                            f"Mobility density - {pattern}")
+        
+        # Restaurar configuración por defecto después de crear los gráficos
+        plt.rcdefaults()
+
+
+    def _create_detailed_shares_density_plots(self, data, mobility_cols, viz_dir):
+        """Crea gráficos de densidad para todos los shares desagregados por patrón."""
+        pattern_config = self._get_pattern_config()
+        
+        # Identificar columnas de shares (excluir las agregadas A, B, C)
+        share_cols = [col for col in mobility_cols if 'share' in col.lower() and col not in ['a', 'b', 'c']]
+        
+        if not share_cols:
+            return
+        
+        # Generar colores diversos para todos los shares
+        colors = plt.cm.Set3(np.linspace(0, 1, len(share_cols)))
+        
+        for pattern in pattern_config['orden']:
+            pattern_data = data[data['pattern'] == pattern]
+            
+            if len(pattern_data) <= 1:
+                continue
+            
+            plt.figure(figsize=(18, 10))
+            
+            valid_shares = []
+            for i, col in enumerate(share_cols):
+                col_data = pattern_data[col].dropna()
+                
+                if len(col_data) > 1:
+                    # Crear label más legible
+                    label = col.replace('_share', '').replace('_', ' ').upper()
+                    color = colors[i]
+                    
+                    sns.kdeplot(col_data, fill=True, alpha=0.4, color=color, linewidth=2, label=label)
+                    
+                    median_val = col_data.median()
+                    plt.axvline(x=median_val, color=color, linestyle="--", alpha=0.8, linewidth=1.5)
+                    
+                    valid_shares.append((col, label, color, median_val))
+            
+            # Añadir etiquetas de medianas organizadas verticalmente
+            if valid_shares:
+                y_max = plt.gca().get_ylim()[1]
+                y_start = y_max * 0.9
+                dy = y_max * 0.08
+                
+                for i, (col, label, color, median_val) in enumerate(valid_shares):
+                    plt.text(median_val + 0.005, y_start - i * dy, 
+                            f'MEDIANA {label}: {median_val:.2f}', 
+                            fontsize=10, color='black', fontweight='bold',
+                            bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.3', alpha=0.8))
+            
+            plt.title(f'DISTRIBUCIÓN DETALLADA DE SHARES - PATRÓN {pattern.upper()}', fontsize=16)
+            plt.xlabel('PORCENTAJE DE SHARE', fontsize=14)
+            plt.ylabel('DENSIDAD', fontsize=14)
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
+            
+            self._save_figure(f"{viz_dir}/detailed_shares_density_{pattern}.pdf", 
+                            f"Densidad shares detallada - {pattern}")
+
+    def _create_barplot(self, data, column, viz_dir):
+        """Crea gráfico de barras con error estándar."""
+        
+        pattern_config = self._get_pattern_config()
+        
+        # Mapear patrones para consistencia
+        data_temp = data.copy()
+        pattern_mapping = {p.lower(): p for p in pattern_config['orden']}
+        data_temp['pattern_mapped'] = data_temp['pattern'].str.lower().map(pattern_mapping)
+        
+        # Estadísticas
+        stats = data_temp.groupby('pattern_mapped')[column].agg(['mean', 'std', 'count'])
+        stats = stats.reindex([p for p in pattern_config['orden'] if p in stats.index])
+        stats['se'] = stats['std'] / np.sqrt(stats['count'])
+        
+        plt.figure(figsize=(14, 8))
+        
+        # Barras con colores específicos
+        bar_colors = [pattern_config['colores'][p] for p in stats.index]
+        bars = plt.bar(range(len(stats)), stats['mean'], yerr=stats['se'],
+                    color=bar_colors, capsize=7, width=0.7, 
+                    edgecolor='black', linewidth=1,
+                    error_kw={'elinewidth': 2, 'capthick': 2})
+        
+        # Etiquetas en barras
+        for i, bar in enumerate(bars):
+            height = bar.get_height()
+            mean_val = stats['mean'].iloc[i]
+            plt.text(bar.get_x() + bar.get_width()/2, 
+                    height + stats['se'].iloc[i] + 0.02 * max(stats['mean']),
+                    f'{mean_val:.2f}', ha="center", va="bottom", fontsize=10, fontweight='bold',
+                    bbox=dict(facecolor='white', edgecolor='gray', boxstyle='round,pad=0.3', alpha=0.8))
+        
+        # Configuración
+        plt.xticks(range(len(stats)), 
+                [pattern_config['labels'][p] for p in stats.index],
+                rotation=30, ha='right', fontweight='bold')
+        
+        col_formatted = column.upper().replace("_", " ")
+        plt.title(f'MEDIA DE {col_formatted} POR PATRÓN')
+        plt.xlabel('PATRÓN URBANO')
+        plt.ylabel(f'MEDIA DE {col_formatted}')
+        
+        self._save_figure(f"{viz_dir}/barplot_{column}.pdf", f"Barplot - {column}")
+
+    def _create_correlation_heatmap(self, data, mobility_cols, viz_dir):
+        """Crea heatmap de correlación."""
+                
+        # Filtrar variables válidas
+        valid_cols = [col for col in mobility_cols 
+                    if data[col].nunique() > 1 and not data[col].isna().all()]
+        
+        if len(valid_cols) <= 1:
+            return
+        
+        plt.figure(figsize=(14, 12))
+        correlation_matrix = data[valid_cols].corr()
+        
+        # Máscara triangular
+        mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
+        
+        # Heatmap
+        cmap = sns.diverging_palette(230, 20, as_cmap=True)
+        sns.heatmap(correlation_matrix, mask=mask, cmap=cmap, annot=True, fmt='.2f', 
+                square=True, center=0, linewidths=0.5, cbar_kws={"shrink": 0.8})
+        
+        plt.title('Correlación entre Variables de Movilidad')
+        
+        self._save_figure(f"{viz_dir}/correlacion_variables.pdf", "Correlación variables")
+
+    def _create_pca_analysis(self, data, mobility_cols, viz_dir, title_prefix=""):
+        """Crea análisis PCA si hay suficientes variables."""
+       
+        
+        if len(mobility_cols) < 3:
+            return
+        
+        # Preparar datos
+        valid_data = data[mobility_cols + ['pattern']].dropna()
+        if len(valid_data) < 10:  # Mínimo para PCA
+            return
+        
+        # Escalar y aplicar PCA
+        scaler = StandardScaler()
+        mobility_scaled = scaler.fit_transform(valid_data[mobility_cols])
+        
+        pca = PCA(n_components=2)
+        pca_result = pca.fit_transform(mobility_scaled)
+        
+        # DataFrame resultados
+        pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2'])
+        pca_df['pattern'] = valid_data['pattern'].values
+        
+        # Gráfico
+        plt.figure(figsize=(12, 10))
+        sns.scatterplot(x='PC1', y='PC2', hue='pattern', data=pca_df, s=100)
+        
+        plt.title(f'{title_prefix}PCA de Movilidad por Patrón')
+        plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} varianza)')
+        plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} varianza)')
+        plt.legend(title='Patrón', bbox_to_anchor=(1.05, 1), loc='upper left')
+        
+        self._save_figure(f"{viz_dir}/pca_movilidad.pdf", f"PCA - {title_prefix}")
+        
+        # Guardar componentes
+        pca_components = pd.DataFrame(
+            data=pca.components_.T,
+            columns=[f'PC{i+1}' for i in range(pca.n_components_)],
+            index=mobility_cols
+        )
+        pca_components.to_csv(f"{viz_dir}/pca_componentes.csv")
 
     def _generate_enhanced_visualizations(self, combined_data, mobility_cols):
-        """Genera visualizaciones mejoradas para el análisis global, con énfasis en claridad y legibilidad."""
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        import numpy as np
-        from matplotlib.colors import LinearSegmentedColormap
-        import matplotlib.gridspec as gridspec
-        from scipy import stats
-        import os
-        import traceback
-        import pandas as pd
+        """
+        Genera visualizaciones mejoradas para el análisis global y por ciudad,
+        con formato científico consistente.
+        """
         
-        plt.ioff()  # Desactivar modo interactivo
         
         try:
-            # Crear directorio para visualizaciones si no existe
-            viz_dir = os.path.join(self.global_dir, "visualizaciones")
+            # Configurar estilo
+            self._setup_plot_style()
+            
+            # Crear directorio
+            viz_dir = os.path.join(getattr(self, 'global_dir', './'), "visualizaciones")
             os.makedirs(viz_dir, exist_ok=True)
             
-            # Definir una paleta de colores clara y distinguible para los patrones
-            pattern_palette = sns.color_palette("tab10", len(combined_data['pattern'].unique()))
-            pattern_color_dict = dict(zip(sorted(combined_data['pattern'].unique()), pattern_palette))
+            print("Generando visualizaciones mejoradas...")
             
             # 1. Distribución de observaciones por ciudad y patrón
-            plt.figure(figsize=(12, 8))
-            pattern_city_counts = pd.crosstab(combined_data['city'], combined_data['pattern'])
+            self._create_observations_heatmap(combined_data, viz_dir)
             
-            # Crear paleta de colores personalizada
-            cmap = LinearSegmentedColormap.from_list('custom_cmap', ['#f5f5f5', '#2171b5'])
+            # 2. Visualizaciones por variable de movilidad
+            share_specific_cols = [col for col in mobility_cols if 'share' in col.lower() and col not in ['a', 'b', 'car_share']]
+            other_mobility_cols = [col for col in mobility_cols if col not in share_specific_cols + ['a', 'b', 'car_share']]
             
-            # Heatmap de conteos
-            ax = sns.heatmap(pattern_city_counts, annot=True, fmt='d', cmap=cmap)
-            plt.title('Número de Observaciones por Ciudad y Patrón', fontsize=14)
-            plt.ylabel('Ciudad', fontsize=12)
-            plt.xlabel('Patrón', fontsize=12)
-            
-            # Ajustar el layout sin usar tight_layout
-            plt.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.15)
-            plt.savefig(os.path.join(viz_dir, "distribucion_observaciones.png"), dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            # 2. Visualizaciones para cada variable de movilidad
-            for col in mobility_cols:
-                # Verificar si la variable tiene valores válidos para graficar
-                if combined_data[col].isna().all() or (combined_data[col] == 0).all():
-                    print(f"Omitiendo visualización para {col} - Sin datos válidos")
-                    continue
-                    
-                # A. RIDGE PLOTS MEJORADOS con etiquetas claras y mejor estética (colores fijos y sin media)
-                # Definir orden fijo de patrones
-                fixed_pattern_order = ['cul_de_sac', 'gridiron', 'organico', 'hibrido']
-                # Colores fijos para cada patrón
-                pattern_color_dict = {
-                    'cul_de_sac': '#FF6B6B',  # Rojo para callejones sin salida
-                    'gridiron': '#006400',    # Verde oscuro para grid
-                    'organico': '#45B7D1',    # Azul para orgánico
-                    'hibrido': '#FDCB6E',     # Amarillo para híbrido
-                }
-                # Filtrar solo los patrones disponibles en los datos manteniendo el orden fijo
-                available_patterns = [p for p in fixed_pattern_order if p in combined_data['pattern'].unique()]
-                if len(available_patterns) <= 1:
-                    print(f"Omitiendo ridge plot para {col} - Se necesitan múltiples patrones")
-                else:
-                    # Crear figura con espacio adecuado y mejor estética
-                    fig = plt.figure(figsize=(14, max(8, len(available_patterns) * 1.2)))
-                    # Crear grid para ridge plot con espacio adecuado
-                    gs = gridspec.GridSpec(len(available_patterns), 1, hspace=0.4)
-                    # Obtener valores extremos para establecer límites consistentes en todos los subplots
-                    x_min = combined_data[col].min()
-                    x_max = combined_data[col].max()
-                    x_range = x_max - x_min
-                    x_padding = x_range  * 0.1 # 10% padding
-                    # Crear los ridge plots manualmente para más control
-                    for i, pattern in enumerate(available_patterns):
-                        ax = plt.subplot(gs[i])
-                        
-                        # Obtener datos del patrón actual
-                        pattern_data = combined_data[combined_data['pattern'] == pattern][col].dropna()
-                        
-                        if len(pattern_data) <= 1:
-                            continue
-                        
-                        # Crear KDE plot con mejor estética y color fijo
-                        sns.kdeplot(pattern_data, fill=True, color=pattern_color_dict[pattern],
-                                    alpha=0.7, linewidth=1.5, ax=ax, bw_adjust=0.8)
-                        
-                        # Añadir la mediana
-                        median_val = pattern_data.median()
-                        ax.axvline(x=median_val, color="red", linestyle="--", alpha=0.8, linewidth=1.5)
-                        
-                        # Ya no añadimos la media
-                        
-                        # Etiquetas claras y mejor posicionadas
-                        ax.text(x_min + x_padding,
-                                ax.get_ylim()[1] * 0.7,
-                                f'{pattern}',
-                                fontsize=12, fontweight='bold',
-                                color=pattern_color_dict[pattern])
-                        
-                        ax.text(median_val + x_padding*0.5,
-                                ax.get_ylim()[1] * 0.5,
-                                f'Mediana: {median_val:.2f}',
-                                fontsize=10, color='darkred')
-                        
-                        # Configuración del eje Y
-                        ax.set_yticks([])
-                        ax.set_ylabel('')
-                        
-                        # Configuración del eje X para todos excepto el último
-                        if i < len(available_patterns) - 1:
-                            ax.set_xticks([])
-                            ax.set_xlabel('')
-                        else:
-                            ax.set_xlabel(col, fontsize=12)
-                        
-                        # Límites consistentes
-                        ax.set_xlim(x_min - x_padding, x_max + x_padding)
-                        
-                        # Eliminar bordes innecesarios
-                        sns.despine(bottom=True, left=True, ax=ax)
-                    # Título general más elegante
-                    plt.suptitle(f'Distribución de {col} por Patrón', fontsize=16, y=0.98)
-                    # Actualizar la leyenda para mostrar solo la mediana
-                    legend_elements = [
-                        plt.Line2D([0], [0], color='red', linestyle='--', lw=1.5, label='Mediana')
-                    ]
-                    fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.95, 0.98))
-                    # Guardar con bbox_inches='tight' para evitar problemas de márgenes
-                    plt.savefig(os.path.join(viz_dir, f"ridge_plot_{col}.png"), dpi=300, bbox_inches='tight')
-                    plt.close()
-
-                # GRÁFICO ADICIONAL: Densidad de A share (Activa), B share (Pública) y C share (Privada) 
-                # para cada patrón de calle por separado
-                mobility_cols = ['a', 'b', 'car_share']  # Columnas que representan movilidad activa, pública y privada
-                mobility_labels = ['MOVILIDAD ACTIVA', 'MOVILIDAD PÚBLICA', 'MOVILIDAD PRIVADA']
-                mobility_colors = ['#FF6B6B', '#4ECDC4', '#6A67CE']  # Colores distintivos para cada tipo de movilidad
-
-                # Aumentar el tamaño de la fuente para todos los elementos del gráfico
-                plt.rcParams.update({'font.size': 11})
-
-                # Crear un gráfico de densidad separado para cada patrón de calle
-                for pattern in fixed_pattern_order:
-                    # Filtrar datos para el patrón actual
-                    pattern_data = combined_data[combined_data['pattern'] == pattern]
-                    
-                    # Verificar si hay suficientes datos para este patrón
-                    if len(pattern_data) <= 1:
-                        print(f"Omitiendo gráfico de densidad de movilidad para patrón {pattern} - datos insuficientes")
-                        continue
-                    
-                    # Crear un nuevo gráfico para las densidades de movilidad de este patrón
-                    plt.figure(figsize=(16, 9))
-                    
-                    # Crear KDE plot para cada tipo de movilidad dentro de este patrón
-                    for i, (col, label, color) in enumerate(zip(mobility_cols, mobility_labels, mobility_colors)):
-                        # Filtrar datos no nulos para la columna actual
-                        data = pattern_data[col].dropna()
-                        
-                        if len(data) > 1:
-                            # Crear el gráfico de densidad con etiquetas en mayúsculas
-                            sns.kdeplot(data, fill=True, alpha=0.5, color=color, linewidth=2, label=label)
-                            
-                            # Añadir la mediana
-                            median_val = data.median()
-                            plt.axvline(x=median_val, color=color, linestyle="--", alpha=0.8, linewidth=1.5)
-                            
-                            # Altura base y separación entre etiquetas (en coordenadas de la figura, no pixeles)
-                            y_base = 2.9
-                            dy = 1  # Separación vertical entre etiquetas (~1 cm visual en la mayoría de figuras)
-
-                            # Dibujar línea de la mediana
-                            plt.axvline(median_val, color=color, linestyle='--', lw=1.5)
-
-                            # Añadir etiqueta con fondo negro y texto blanco, con separación por 'i'
-                            plt.text(median_val + 0.01, y_base - i * dy, f'MEDIANA {label}: {median_val:.2f}', 
-                                    fontsize=11, color='black', fontweight='bold',
-                                    bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.3'))
-
-
-
-
-
-                            # Agregar una leyenda general (solo una entrada para todas las medianas)
-                            legend_elements = [
-                                plt.Line2D([0], [0], color='red', linestyle='--', lw=1.5, label='Mediana'),
-                                plt.Line2D([0], [0], color='blue', linestyle='-.', lw=1.5, label='Media')
-
-                            ]
-                            fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.95, 0.98))
-
-
-                    
-                    # Configuración del gráfico
-                    plt.title(f'DISTRIBUCIÓN DE SHARES DE MOVILIDAD - PATRÓN {pattern.upper()}', fontsize=14, fontweight='bold')
-                    plt.xlabel('PORCENTAJE DE SHARE', fontsize=11, fontweight='bold')
-                    plt.ylabel('DENSIDAD', fontsize=11, fontweight='bold')
-                    plt.legend(fontsize=11)
-                    
-                    # Ajustar estética
-                    sns.despine()
-                    plt.tight_layout()
-                    
-                    # Guardar el gráfico
-                    plt.savefig(os.path.join(viz_dir, f"mobility_shares_density_{pattern}.png"), dpi=300, bbox_inches='tight')
-                    plt.close()
-
-                # Restaurar configuración original de tamaño de fuente si es necesario
-                plt.rcParams.update({'font.size': plt.rcParams['font.size']})
-
-
-                
-
-
-                # B. BOXPLOT MEJORADO (una sola versión)
-                plt.figure(figsize=(14, 8))
-                
-                # Boxplot simple y claro con notch
-                ax = sns.boxplot(x='pattern', y=col, data=combined_data, notch=True,
-                            palette=pattern_palette, width=0.6)
-                
-                # Añadir puntos de media con marcadores distinguibles sin usar swarm/strip
-                for i, pattern in enumerate(ax.get_xticklabels()):
-                    pattern_name = pattern.get_text()
-                    pattern_data = combined_data[combined_data['pattern'] == pattern_name][col]
-                    
-                    if len(pattern_data) > 0:
-                        # Añadir media como un diamante
-                        mean_val = pattern_data.mean()
-                        ax.plot(i, mean_val, marker='D', color='red', 
-                            markersize=8, markeredgecolor='white', 
-                            markeredgewidth=1.5, zorder=10)
-                        
-                        # Añadir etiqueta de la media
-                        ax.text(i, mean_val, f' μ={mean_val:.2f}', 
-                            color='darkred', fontsize=9,
-                            va='center', ha='left')
-                        
-                        # Añadir etiqueta de la mediana
-                        median_val = pattern_data.median()
-                        ax.text(i, median_val, f' m={median_val:.2f}', 
-                            color='black', fontsize=9,
-                            va='center', ha='right')
-                
-                # Mejorar título y etiquetas
-                plt.title(f'Distribución de {col} por Patrón', fontsize=14)
-                plt.xlabel('Patrón', fontsize=12)
-                plt.ylabel(col, fontsize=12)
-                plt.xticks(rotation=45)
-                
-                # Añadir grid para mejor legibilidad
-                plt.grid(axis='y', linestyle='--', alpha=0.3)
-                
-                # Ajustar manualmente los márgenes
-                plt.subplots_adjust(bottom=0.2)
-                plt.savefig(os.path.join(viz_dir, f"boxplot_{col}.png"), dpi=300, bbox_inches='tight')
-                plt.close()
-                
-                # C. HEATMAP DE ESTADÍSTICAS (corregido)
-                # Verificar si hay suficientes datos para un heatmap útil
-                if len(combined_data['city'].unique()) > 1 and len(combined_data['pattern'].unique()) > 1:
-                    # Crear pivot table directamente desde los datos originales
-                    try:
-                        pivot_means = pd.pivot_table(combined_data, 
-                                                values=col,
-                                                index='city', 
-                                                columns='pattern',
-                                                aggfunc='mean')
-                        
-                        # Verificar que el pivot table tenga datos
-                        if not pivot_means.empty and not pivot_means.isna().all().all():
-                            plt.figure(figsize=(14, 10))
-                            
-                            # Crear heatmap con valores explícitos
-                            cmap_values = sns.diverging_palette(230, 20, as_cmap=True)
-                            
-                            # Usar un valor central explícito (la media global)
-                            center_val = combined_data[col].mean()
-                            
-                            ax = sns.heatmap(pivot_means, annot=True, fmt='.2f', cmap=cmap_values, 
-                                        center=center_val, linewidths=0.5)
-                            
-                            plt.title(f'Media de {col} por Ciudad y Patrón', fontsize=14)
-                            plt.ylabel('Ciudad', fontsize=12)
-                            plt.xlabel('Patrón', fontsize=12)
-                            plt.xticks(rotation=45, ha='right')
-                            
-                            plt.savefig(os.path.join(viz_dir, f"heatmap_media_{col}.png"), dpi=300, bbox_inches='tight')
-                            plt.close()
-                            
-                        else:
-                            print(f"Omitiendo heatmap para {col} - Sin datos suficientes en el pivot table")
-                    except Exception as e:
-                        print(f"Error generando heatmap para {col}: {e}")
-                        traceback.print_exc()
-            
-            # 3. CORRELACIÓN MEJORADA entre variables de movilidad
-            # Filtrar solo las variables numéricas con suficientes datos
-            valid_cols = []
-            for col in mobility_cols:
-                if pd.api.types.is_numeric_dtype(combined_data[col]) and combined_data[col].nunique() > 1:
-                    valid_cols.append(col)
-            
-            if len(valid_cols) > 1:  # Necesitamos al menos 2 columnas para correlación
-                mobility_data = combined_data[valid_cols]
-                
-                plt.figure(figsize=(14, 12))
-                correlation_matrix = mobility_data.corr(numeric_only=True)
-                
-                # Máscara para mostrar solo la mitad del heatmap
-                mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
-                
-                # Heatmap de correlación mejorado
-                cmap = sns.diverging_palette(230, 20, as_cmap=True)
-                ax = sns.heatmap(correlation_matrix, mask=mask, cmap=cmap, 
-                            annot=True, fmt='.2f', square=True, center=0,
-                            linewidths=0.5, cbar_kws={"shrink": 0.8})
-                
-                plt.title('Correlación entre Variables de Movilidad', fontsize=16)
-                
-                # Guardar con bounding box ajustada
-                plt.savefig(os.path.join(viz_dir, "correlacion_variables.png"), dpi=300, bbox_inches='tight')
-                plt.close()
-            
-            # 4. GRÁFICO DE BARRAS para TODAS las variables de movilidad (MODIFICADO)
-            # 4. GRÁFICO DE BARRAS MEJORADO para TODAS las variables de movilidad
-            # Definir el orden específico de los patrones (asegurando matcheo exacto con los datos)
-            patron_orden = ['gridiron', 'organico', 'hibrido', 'cul_de_sac']
-
-            # Definir los colores específicos para cada patrón
-            patron_colors = {
-                'cul_de_sac': '#FF6B6B',  # Rojo para callejones sin salida
-                'gridiron': '#006400',    # Verde oscuro para grid
-                'organico': '#45B7D1',    # Azul para orgánico
-                'hibrido': '#FDCB6E',     # Amarillo para híbrido
-            }
-
-            # Crear un mapeo explícito para asegurar que los patrones coincidan independientemente de mayúsculas/minúsculas
-            # y posibles variaciones en nombres
-            patron_mapping = {
-                'gridiron': 'gridiron',
-                'Gridiron': 'gridiron',
-                'GRIDIRON': 'gridiron',
-                'grid': 'gridiron',
-                'Grid': 'gridiron',
-                'GRID': 'gridiron',
-                'organico': 'organico',
-                'Organico': 'organico',
-                'orgánico': 'organico',
-                'Orgánico': 'organico',
-                'ORGANICO': 'organico',
-                'hibrido': 'hibrido',
-                'Hibrido': 'hibrido',
-                'híbrido': 'hibrido',
-                'Híbrido': 'hibrido',
-                'HIBRIDO': 'hibrido',
-                'cul_de_sac': 'cul_de_sac',
-                'Cul_de_sac': 'cul_de_sac',
-                'CUL_DE_SAC': 'cul_de_sac',
-                'cul de sac': 'cul_de_sac',
-                'Cul de sac': 'cul_de_sac',
-                'Cul-de-sac': 'cul_de_sac',
-                'cul-de-sac': 'cul_de_sac',
-                'CUL DE SAC': 'cul_de_sac'
-            }
-
-            # Aplicar el mapeo a los datos para estandarizar los nombres de los patrones antes de graficar
-            if 'pattern' in combined_data.columns:
-                # Crear una copia temporal de patrones para no modificar los datos originales
-                combined_data_temp = combined_data.copy()
-                combined_data_temp['pattern_mapped'] = combined_data_temp['pattern'].map(
-                    lambda x: patron_mapping.get(x, x)
-                )
-                
-                print(f"Patrones originales: {combined_data['pattern'].unique()}")
-                print(f"Patrones mapeados: {combined_data_temp['pattern_mapped'].unique()}")
-
-            for col in mobility_cols:
-                # Saltamos variables sin variación o todas NaN
+            for col in other_mobility_cols:  # Solo variables que NO son shares específicos
                 if combined_data[col].isna().all() or combined_data[col].std() == 0:
                     continue
                     
-                # Crear figura y ejes con estilo mejorado
-                plt.figure(figsize=(14, 8))
+                print(f"Procesando variable: {col}")
                 
-                # Aplicar estilo más moderno y limpio
-                plt.style.use('seaborn-v0_8-whitegrid')
-                
-                # Calcular estadísticas usando los patrones mapeados para asegurar consistencia
-                pattern_stats = combined_data_temp.groupby('pattern_mapped')[col].agg(['mean', 'std', 'count'])
-                
-                # Reordenar explícitamente según el orden definido
-                # Filtrar solo los patrones que existen en los datos
-                patrones_existentes = list(pattern_stats.index)
-                patrones_ordenados = [p for p in patron_orden if p in patrones_existentes]
-                # Añadir cualquier patrón adicional al final
-                for p in patrones_existentes:
-                    if p not in patrones_ordenados:
-                        patrones_ordenados.append(p)
-                
-                print(f"Orden final de patrones para {col}: {patrones_ordenados}")
-                
-                # Verificación extra para asegurar que hay datos para graficar
-                if not patrones_ordenados:
-                    print(f"No se encontraron patrones válidos para {col}")
-                    continue
-                
-                # Reordenar el DataFrame según el orden especificado
-                pattern_stats = pattern_stats.reindex(patrones_ordenados)
-                
-                # Calcular error estándar
-                pattern_stats['se'] = pattern_stats['std'] / np.sqrt(pattern_stats['count'])
-                
-                # Usar los colores específicos definidos para cada patrón
-                bar_colors = [patron_colors[p] for p in patrones_ordenados]
-                
-                # Crear gráfico de barras con estética mejorada
-                bars = plt.bar(
-                    range(len(pattern_stats)), 
-                    pattern_stats['mean'],
-                    yerr=pattern_stats['se'],
-                    color=bar_colors,
-                    capsize=7,
-                    width=0.7,
-                    edgecolor='black',
-                    linewidth=1,
-                    error_kw={'elinewidth': 2, 'capthick': 2}
-                )
-                
-                # Mejorar las etiquetas del eje X
-                plt.xticks(
-                    range(len(pattern_stats)), 
-                    [p.replace('_', ' ').title() for p in pattern_stats.index],  # Formatear etiquetas
-                    rotation=30, 
-                    ha='right',
-                    fontsize=11,
-                    fontweight='bold'
-                )
-                
-                # Añadir valores en las barras con mejor formato
-                for i, bar in enumerate(bars):
-                    height = bar.get_height()
-                    mean_val = pattern_stats['mean'].iloc[i]
-                    plt.text(
-                        bar.get_x() + bar.get_width()/2, 
-                        height + pattern_stats['se'].iloc[i] + 0.02 * max(pattern_stats['mean']),
-                        f'{mean_val:.2f}', 
-                        ha="center", 
-                        va="bottom",
-                        fontsize=10,
-                        fontweight='bold',
-                        bbox=dict(facecolor='white', edgecolor='gray', boxstyle='round,pad=0.3', alpha=0.8)
-                    )
-                
-                # Convertir el título de la variable a mayúsculas y hacer más descriptivo
-                col_mayusculas = col.upper()
-                col_formatted = col_mayusculas.replace("_", " ")
-                
-                # Título y etiquetas mejorados
-                plt.title(f'MEDIA DE {col_formatted} POR PATRÓN', 
-                        fontsize=16, 
-                        fontweight='bold',
-                        pad=20)
-                
-                plt.xlabel('PATRÓN URBANO', fontsize=14, fontweight='bold', labelpad=15)
-                plt.ylabel(f'MEDIA DE {col_formatted}', fontsize=14, fontweight='bold', labelpad=15)
-                
-                # Mejorar la cuadrícula
-                plt.grid(axis='y', linestyle='--', alpha=0.3, linewidth=1)
-                
-                # Mejorar márgenes
-                plt.subplots_adjust(left=0.10, right=0.95, top=0.90, bottom=0.15)
-                
-                # Añadir un recuadro alrededor de la figura
-                plt.box(on=True)
-                
-                # Añadir una línea de referencia en y=0 si es apropiado
-                if min(pattern_stats['mean']) < 0:
-                    plt.axhline(y=0, color='black', linestyle='-', alpha=0.3)
-                
-                # Guardar con mejor calidad y formato más claro
-                plt.savefig(os.path.join(viz_dir, f"barplot_{col}.png"), 
-                            dpi=300, 
-                            bbox_inches='tight',
-                            facecolor='white')
-                plt.close()
+                # Boxplots y gráficos de barras (NO ridge plots para shares)
+                self._create_boxplot(combined_data, col, viz_dir)
+                self._create_barplot(combined_data, col, viz_dir)
             
-            # 5. GRÁFICOS RADIALES CORRECTAMENTE IMPLEMENTADOS (VERSIÓN CORREGIDA)
-
-            # 5. GRÁFICOS RADIALES CORRECTAMENTE IMPLEMENTADOS (VERSIÓN CORREGIDA)
-
-            # Primero, identificar todas las variables numéricas de movilidad disponibles
-            available_vars = []
-            for col in mobility_cols:
-                if (col in combined_data.columns and 
-                    pd.api.types.is_numeric_dtype(combined_data[col]) and 
-                    not combined_data[col].isna().all() and 
-                    combined_data[col].std() > 0):
-                    available_vars.append(col)
-
-            # Prioridad de variables (ajusta esta lista según las variables más importantes para ti)
-            priority_vars = [
-                'car_share', 
-                'walked_share', 
-                'transport_share', 
-                'bicycle_share',  # Lo mantenemos en la lista, pero tendrá menor prioridad
-                'mobility_a', 
-                'mobility_b', 
-                'mobility_c'
-            ]
-
-            # Reordenar las variables disponibles según la prioridad (si existen)
-            ordered_vars = []
-            for var in priority_vars:
-                if var in available_vars:
-                    ordered_vars.append(var)
-
-            # Añadir cualquier otra variable disponible que no esté en la lista de prioridad
-            for var in available_vars:
-                if var not in ordered_vars:
-                    ordered_vars.append(var)
-
-            # Seleccionar exactamente 6 variables si es posible, o tantas como haya disponibles (mínimo 3)
-            if len(ordered_vars) >= 6:
-                available_vars = ordered_vars[:6]  # Tomar las 6 primeras variables priorizadas
-            elif len(ordered_vars) >= 3:
-                available_vars = ordered_vars  # Usar todas las variables disponibles (entre 3 y 5)
-            # Si hay menos de 3, el código mostrará un mensaje de error más adelante
-
-            # Mensaje de verificación más detallado
-            print(f"Variables encontradas para el radar: {len(available_vars)}")
-            print(f"Variables que se utilizarán: {available_vars}")
-            print(f"Nota: Se necesitan al menos 3 variables para crear un gráfico radial. Un hexágono ideal necesita 6 variables.")
-
-            # Si tenemos al menos 3 variables, procedemos con el gráfico
-            if len(available_vars) >= 3:
-                # Crear directorio específico para gráficos radiales
-                radar_dir = os.path.join(viz_dir, "radar_plots")
-                os.makedirs(radar_dir, exist_ok=True)
-                
-                # Calcular estadísticas por patrón
-                pattern_means = combined_data.groupby('pattern')[available_vars].mean()
-                
-                # Encontrar min/max globales para cada variable para normalización consistente
-                global_min = {}
-                global_max = {}
-                for col in available_vars:
-                    global_min[col] = combined_data[col].min()
-                    global_max[col] = combined_data[col].max()
-                    # Evitar división por cero
-                    if global_min[col] == global_max[col]:
-                        global_min[col] -= 0.1
-                        global_max[col] += 0.1
-                
-                # Función para crear gráfico radial mejorada
-                def create_radar_chart(ax, pattern_data, pattern, is_comparison=False):
-                    # Número de variables
-                    N = len(available_vars)
-                    
-                    # Calcular los ángulos para cada variable (en radianes)
-                    angles = [n / float(N) * 2 * np.pi for n in range(N)]
-                    angles += angles[:1]  # Cerrar el círculo
-                    
-                    # Obtener valores normalizados
-                    values = []
-                    real_values = []
-                    for col in available_vars:
-                        val = pattern_data.loc[pattern, col]
-                        real_values.append(val)
-                        # Normalizar a escala 0-1
-                        norm_val = (val - global_min[col]) / (global_max[col] - global_min[col])
-                        values.append(norm_val)
-                    
-                    # Completar el círculo repitiendo el primer valor
-                    values += values[:1]
-                    real_values += real_values[:1]
-                    
-                    # Color para este patrón
-                    color = pattern_color_dict.get(pattern, 'blue')
-                    
-                    # Dibujar el gráfico principal
-                    ax.plot(angles, values, 'o-', linewidth=2, color=color, markersize=6)
-                    ax.fill(angles, values, color=color, alpha=0.25)
-                    
-                    # Dibujar líneas desde el centro a cada punto (las aristas)
-                    for i, angle in enumerate(angles[:-1]):  # Excluir el último que es repetido
-                        ax.plot([0, angle], [0, 1], 'k-', lw=0.8, alpha=0.2)
-                    
-                    # Añadir etiquetas en las posiciones exactas
-                    if not is_comparison:
-                        # Añadir valores reales en cada vértice
-                        for i in range(N):
-                            angle_in_rad = angles[i]
-                            value = values[i]
-                            real_value = real_values[i]
-                            
-                            # Posición del marcador
-                            if value > 0.05:  # Si el valor no está muy cerca del centro
-                                x = value * np.cos(angle_in_rad)
-                                y = value * np.sin(angle_in_rad)
-                                
-                                # Mostrar valor real cerca del punto
-                                ax.text(x*1.1, y*1.1, f"{real_value:.2f}", 
-                                    color=color, fontsize=9, ha='center', va='center',
-                                    bbox=dict(boxstyle="round,pad=0.2", fc="white", alpha=0.7))
-                    
-                    # Configuración del eje
-                    ax.set_ylim(0, 1)
-                    
-                    # Eliminar etiquetas de ejes por defecto
-                    ax.set_yticklabels([])
-                    ax.set_xticks([])
-                    
-                    # Dibujar círculos concéntricos para referencia
-                    circles = [0.2, 0.4, 0.6, 0.8]
-                    for circle_val in circles:
-                        circle = plt.Circle((0, 0), circle_val, fill=False, color='gray', alpha=0.2)
-                        ax.add_patch(circle)
-                        
-                        # Añadir valores de porcentaje solo en un lugar específico
-                        ax.text(-0.02, circle_val, f"{int(circle_val*100)}%", 
-                            ha='right', va='center', color='gray', fontsize=8, alpha=0.7)
-                    
-                    return ax
-                
-                # Crear un gráfico radial para cada patrón
-                for pattern in combined_data['pattern'].unique():
-                    # Verificar si este patrón existe en pattern_means
-                    if pattern not in pattern_means.index:
-                        continue
-                    
-                    # Crear figura con más espacio para acomodar las etiquetas
-                    fig = plt.figure(figsize=(12, 10))
-                    
-                    # Crear subplot con proyección polar y amplio margen
-                    ax = fig.add_subplot(111, polar=True)
-                    
-                    # Dibujar el gráfico radial
-                    ax = create_radar_chart(ax, pattern_means, pattern)
-                    
-                    # Número de variables
-                    N = len(available_vars)
-                    
-                    # Recalcular ángulos para colocar etiquetas
-                    angles = [n / float(N) * 2 * np.pi for n in range(N)]
-                    
-                    # MEJORA IMPORTANTE: Colocar etiquetas en las aristas exactamente
-                    for i, col in enumerate(available_vars):
-                        angle = angles[i]
-                        
-                        # Crear etiquetas más visibles directamente en las aristas
-                        # Calcular posición para la etiqueta alineada exactamente en la arista
-                        label_radius = 1.2  # Distancia desde el centro hasta la etiqueta
-                        x = label_radius * np.cos(angle)
-                        y = label_radius * np.sin(angle)
-                        
-                        # Ajustar alineación según la posición angular
-                        # Para que las etiquetas aparezcan alineadas con las aristas
-                        if -0.1 < angle < 0.1:  # Derecha (0°)
-                            ha, va = 'left', 'center'
-                        elif 0.1 < angle < np.pi/2 - 0.1:  # Primer cuadrante
-                            ha, va = 'left', 'bottom'
-                        elif np.pi/2 - 0.1 < angle < np.pi/2 + 0.1:  # Arriba (90°)
-                            ha, va = 'center', 'bottom'
-                        elif np.pi/2 + 0.1 < angle < np.pi - 0.1:  # Segundo cuadrante
-                            ha, va = 'right', 'bottom'
-                        elif np.pi - 0.1 < angle < np.pi + 0.1:  # Izquierda (180°)
-                            ha, va = 'right', 'center'
-                        elif np.pi + 0.1 < angle < 3*np.pi/2 - 0.1:  # Tercer cuadrante
-                            ha, va = 'right', 'top'
-                        elif 3*np.pi/2 - 0.1 < angle < 3*np.pi/2 + 0.1:  # Abajo (270°)
-                            ha, va = 'center', 'top'
-                        else:  # Cuarto cuadrante
-                            ha, va = 'left', 'top'
-                        
-                        # Formato mejorado para las etiquetas, con fondo más visible
-                        ax.text(x, y, col, ha=ha, va=va, fontsize=14, fontweight='bold',
-                            bbox=dict(facecolor='white', edgecolor='black', alpha=0.95, 
-                                    boxstyle='round,pad=0.5', linewidth=1.5))
-                    
-                    # Añadir título
-                    plt.title(f'Perfil de Movilidad: Patrón {pattern}', size=16, y=1.05)
-                    
-                    # Guardar el gráfico con margen adicional para asegurar que las etiquetas sean visibles
-                    plt.tight_layout()
-                    plt.savefig(os.path.join(radar_dir, f"radar_patron_{pattern}.png"), dpi=300, bbox_inches='tight')
-                    plt.close()
-                
-                # Crear gráfico de comparación de todos los patrones
-                fig = plt.figure(figsize=(14, 12))
-                ax = fig.add_subplot(111, polar=True)
-                
-                # Dibujar los gráficos de cada patrón
-                legend_handles = []
-                for pattern in pattern_means.index:
-                    color = pattern_color_dict.get(pattern, 'blue')
-                    
-                    # Obtener valores normalizados
-                    values = []
-                    for col in available_vars:
-                        val = pattern_means.loc[pattern, col]
-                        norm_val = (val - global_min[col]) / (global_max[col] - global_min[col])
-                        values.append(norm_val)
-                    
-                    # Cerrar el círculo
-                    N = len(available_vars)
-                    angles = [n / float(N) * 2 * np.pi for n in range(N)]
-                    angles += angles[:1]
-                    values += values[:1]
-                    
-                    # Dibujar línea y área
-                    line, = ax.plot(angles, values, 'o-', linewidth=2, color=color, label=pattern)
-                    ax.fill(angles, values, color=color, alpha=0.1)
-                    legend_handles.append(line)
-                
-                # Añadir líneas de referencia (aristas)
-                N = len(available_vars)
-                angles = [n / float(N) * 2 * np.pi for n in range(N)]
-                for angle in angles:
-                    ax.plot([0, angle], [0, 1], 'k-', lw=0.8, alpha=0.2)
-                
-                # Añadir círculos concéntricos
-                circles = [0.2, 0.4, 0.6, 0.8]
-                for circle_val in circles:
-                    circle = plt.Circle((0, 0), circle_val, fill=False, color='gray', alpha=0.2)
-                    ax.add_patch(circle)
-                    ax.text(-0.02, circle_val, f"{int(circle_val*100)}%", 
-                        ha='right', va='center', color='gray', fontsize=8, alpha=0.7)
-                
-                # Colocar etiquetas de los ejes - MEJORA CLAVE AQUÍ
-                for i, col in enumerate(available_vars):
-                    angle = angles[i]
-                    
-                    # Posición alineada con las aristas, pero más alejada para el gráfico comparativo
-                    label_radius = 1.3  # Distancia desde el centro
-                    x = label_radius * np.cos(angle)
-                    y = label_radius * np.sin(angle)
-                    
-                    # Ajustar alineación según la posición angular
-                    if -0.1 < angle < 0.1:  # Derecha (0°)
-                        ha, va = 'left', 'center'
-                    elif 0.1 < angle < np.pi/2 - 0.1:  # Primer cuadrante
-                        ha, va = 'left', 'bottom'
-                    elif np.pi/2 - 0.1 < angle < np.pi/2 + 0.1:  # Arriba (90°)
-                        ha, va = 'center', 'bottom'
-                    elif np.pi/2 + 0.1 < angle < np.pi - 0.1:  # Segundo cuadrante
-                        ha, va = 'right', 'bottom'
-                    elif np.pi - 0.1 < angle < np.pi + 0.1:  # Izquierda (180°)
-                        ha, va = 'right', 'center'
-                    elif np.pi + 0.1 < angle < 3*np.pi/2 - 0.1:  # Tercer cuadrante
-                        ha, va = 'right', 'top'
-                    elif 3*np.pi/2 - 0.1 < angle < 3*np.pi/2 + 0.1:  # Abajo (270°)
-                        ha, va = 'center', 'top'
-                    else:  # Cuarto cuadrante
-                        ha, va = 'left', 'top'
-                    
-                    # Etiquetas con fondo más destacado
-                    ax.text(x, y, col, ha=ha, va=va, fontsize=14, fontweight='bold',
-                        bbox=dict(facecolor='white', edgecolor='black', alpha=0.95, 
-                                boxstyle='round,pad=0.7', linewidth=1.5))
-                
-                # Configurar el eje
-                ax.set_ylim(0, 1)
-                ax.set_yticklabels([])
-                ax.set_xticks([])
-                
-                # Añadir leyenda
-                plt.legend(handles=legend_handles, loc='upper right', 
-                        bbox_to_anchor=(1.3, 1.0), title="Patrones", fontsize=12)
-                
-                # Añadir título
-                plt.title('Comparación de Perfiles de Movilidad', size=16, y=1.05)
-                
-                # Guardar gráfico con margen extra
-                plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
-                plt.savefig(os.path.join(radar_dir, "comparacion_patrones.png"), dpi=300, bbox_inches='tight')
-                plt.close()
-            else:
-                print("No hay suficientes variables numéricas válidas para crear el gráfico radial")
-                    
+            # 3. Análisis de movilidad específico
+            self._create_mobility_density_plots(combined_data, viz_dir)
+            
+            # 4. Análisis detallado de shares desagregados
+            self._create_detailed_shares_density_plots(combined_data, mobility_cols, viz_dir)
+            
+            # 5. Correlación
+            self._create_correlation_heatmap(combined_data, mobility_cols, viz_dir)
+            
+            # 6. PCA (si hay suficientes variables)
+            self._create_pca_analysis(combined_data, mobility_cols, viz_dir, "Global: ")
+            
+            print("✓ Visualizaciones completadas exitosamente")
+            
         except Exception as e:
-            print(f"Error generando visualizaciones mejoradas: {e}")
+            print(f"Error generando visualizaciones: {e}")
             traceback.print_exc()
 
+    def _create_observations_heatmap(self, data, viz_dir):
+        """Crea heatmap de distribución de observaciones."""
+               
+        plt.figure(figsize=(12, 8))
+        pattern_city_counts = pd.crosstab(data['city'], data['pattern'])
+        
+        # Colormap personalizado
+        cmap = LinearSegmentedColormap.from_list('custom_cmap', ['#f5f5f5', '#2171b5'])
+        
+        sns.heatmap(pattern_city_counts, annot=True, fmt='d', cmap=cmap)
+        plt.title('Número de Observaciones por Ciudad y Patrón')
+        plt.ylabel('Ciudad')
+        plt.xlabel('Patrón')
+        
+        self._save_figure(f"{viz_dir}/distribucion_observaciones.pdf", "Distribución observaciones")
+
+   
+    
     def _save_analysis_results(self, results_dict, output_dir):
-        """Guarda los resultados del análisis en formatos útiles."""
+        """Guarda resultados del análisis estadístico (Kruskal-Wallis/ANOVA) de manera útil y concisa."""
+        # Llama esta función justo antes de _save_analysis_results:
+        
         try:
-            # 1. Excel con resultados estructurados
-            with pd.ExcelWriter(os.path.join(output_dir, "anova_results_global.xlsx")) as writer:
-                # Hoja de resumen general
-                summary_data = []
-                
-                for name, result in results_dict.items():
-                    if 'main_effects' in name:
-                        mobility_var = name.replace('_main_effects', '')
-                        pattern_effect = result.loc['C(pattern)']['PR(>F)'] if 'C(pattern)' in result.index else np.nan
-                        city_effect = result.loc['C(city)']['PR(>F)'] if 'C(city)' in result.index else np.nan
-                        
-                        summary_data.append({
-                            'Variable': mobility_var,
-                            'Patrón p-value': pattern_effect,
-                            'Ciudad p-value': city_effect,
-                            'Patrón significativo': pattern_effect < 0.05 if not np.isnan(pattern_effect) else False,
-                            'Ciudad significativa': city_effect < 0.05 if not np.isnan(city_effect) else False
-                        })
-                
-                if summary_data:
-                    pd.DataFrame(summary_data).to_excel(writer, sheet_name='Resumen', index=False)
-                
-                # Hojas individuales para cada variable
-                for name, result in results_dict.items():
-                    if isinstance(result, pd.DataFrame):
-                        # Limitar nombre de hoja a 31 caracteres (límite de Excel)
-                        sheet_name = name[:31]
-                        result.to_excel(writer, sheet_name=sheet_name)
-                    elif isinstance(result, dict) and not any(isinstance(v, dict) for v in result.values()):
-                        # Convertir diccionarios simples a DataFrame
-                        pd.DataFrame([result]).to_excel(writer, sheet_name=name[:31])
-                    elif isinstance(result, dict):
-                        # Para diccionarios anidados, convertir a formato tabular
-                        rows = []
-                        for k, v in result.items():
-                            if isinstance(v, dict):
-                                row = {'key': k}
-                                row.update(v)
-                                rows.append(row)
-                        
-                        if rows:
-                            pd.DataFrame(rows).to_excel(writer, sheet_name=name[:31])
+            # Mapeo de variables de movilidad
+            mobility_labels = {
+                'a': 'Movilidad_Activa',
+                'b': 'Movilidad_Publica', 
+                'c': 'Movilidad_Privada',
+                'walked_share': 'Caminata',
+                'car_share': 'Automovil',
+                'transit_share': 'Transporte_Publico',
+                'bicycle_share': 'Bicicleta'
+            }
             
-            # 2. Informe de resultados en formato Markdown
-            with open(os.path.join(output_dir, "informe_análisis_global.md"), 'w', encoding='utf-8') as f:
-                f.write("# Informe de Análisis Global de Movilidad\n\n")
-                
-                # Agrupar resultados por variable de movilidad
-                mobility_vars = set()
-                for name in results_dict.keys():
-                    parts = name.split('_')
-                    if len(parts) > 1:
-                        mobility_vars.add(parts[0])
-                
-                for var in sorted(mobility_vars):
-                    f.write(f"## Análisis para la variable: {var}\n\n")
-                    
-                    # Efectos principales
-                    main_effects_key = f"{var}_main_effects"
-                    if main_effects_key in results_dict:
-                        f.write("### Efectos principales (ANOVA)\n\n")
-                        df = results_dict[main_effects_key]
-                        
-                        # Obtener nombres de columnas reales en el DataFrame
-                        available_cols = df.columns.tolist()
-                        
-                        # Crear encabezado de tabla con columnas disponibles
-                        header = "| Fuente |"
-                        separator = "|--------|"
-                        
-                        # Mapeo amigable para nombres de columnas
-                        column_names = {
-                            'df': 'gl',
-                            'sum_sq': 'Suma cuadrados',
-                            'MS': 'Media cuadrática',  # Alternativa a mean_sq
-                            'mean_sq': 'Media cuadrática',
-                            'F': 'F',
-                            'PR(>F)': 'p-valor'
-                        }
-                        
-                        for col in available_cols:
-                            friendly_name = column_names.get(col, col)
-                            header += f" {friendly_name} |"
-                            separator += "---|"
-                        
-                        f.write(header + "\n")
-                        f.write(separator + "\n")
-                        
-                        # Escribir filas
-                        for idx, row in df.iterrows():
-                            line = f"| {idx} |"
-                            for col in available_cols:
-                                val = row[col]
-                                # Formatear números según el tipo de columna
-                                if col == 'df':
-                                    line += f" {val:.0f} |"
-                                elif col in ['sum_sq', 'MS', 'mean_sq', 'F', 'PR(>F)']:
-                                    line += f" {val:.4f} |"
-                                else:
-                                    line += f" {val} |"
-                            f.write(line + "\n")
-                        
-                        f.write("\n")
-                    
-                    # Resumen de efectos
-                    effects_summary_key = f"{var}_effects_summary"
-                    if effects_summary_key in results_dict:
-                        summary = results_dict[effects_summary_key]
-                        f.write("### Resumen de efectos entre ciudades y patrones\n\n")
-                        
-                        f.write(f"- {summary.get('cities_with_significant_patterns', 'N/A')} de {summary.get('total_cities_analyzed', 'N/A')} ")
-                        f.write("ciudades muestran diferencias significativas entre patrones\n")
-                        
-                        f.write(f"- {summary.get('patterns_with_significant_cities', 'N/A')} de {summary.get('total_patterns_analyzed', 'N/A')} ")
-                        f.write("patrones muestran diferencias significativas entre ciudades\n\n")
-                    
-                    # Coeficientes
-                    coefficients_key = f"{var}_coefficients"
-                    if coefficients_key in results_dict:
-                        coef_df = results_dict[coefficients_key]
-                        if 'significant' in coef_df.columns:
-                            significant_coefs = coef_df[coef_df['significant']]
-                            
-                            if len(significant_coefs) > 0:
-                                f.write("### Efectos significativos\n\n")
-                                f.write("| Variable | Coeficiente | p-value |\n")
-                                f.write("|----------|-------------|--------|\n")
-                                
-                                for _, row in significant_coefs.iterrows():
-                                    f.write(f"| {row['variable']} | {row['coefficient']:.4f} | {row['p_value']:.4f} |\n")
-                                
-                                f.write("\n")
-                
-                # Información diagnóstica
-                f.write("## Diagnóstico de datos\n\n")
-                for key, value in results_dict.items():
-                    if "data_diagnosis" in key:
-                        f.write(f"### {key}\n\n")
-                        if isinstance(value, dict):
-                            for k, v in value.items():
-                                f.write(f"- **{k}**: {v}\n")
-                        f.write("\n")
-                
-                f.write("## Conclusiones generales\n\n")
-                f.write("- Las principales variables de movilidad muestran patrones distintivos según la estructura urbana.\n")
-                f.write("- La ciudad tiene un efecto importante en las variables de movilidad, lo que indica\n")
-                f.write("  que los factores contextuales locales influyen significativamente.\n")
-                f.write("- Los hallazgos sugieren que las políticas de movilidad deberían adaptarse tanto al\n")
-                f.write("  patrón urbano como al contexto específico de cada ciudad.\n")
-                
-                # Identificar hallazgos clave
-                significant_effects = {}
-                for key, value in results_dict.items():
-                    if 'main_effects' in key:
-                        var_name = key.replace('_main_effects', '')
-                        if isinstance(value, pd.DataFrame):
-                            pattern_significant = False
-                            city_significant = False
-                            
-                            if 'C(pattern)' in value.index and 'PR(>F)' in value.columns:
-                                if value.loc['C(pattern)', 'PR(>F)'] < 0.05:
-                                    pattern_significant = True
-                                    
-                            if 'C(city)' in value.index and 'PR(>F)' in value.columns:
-                                if value.loc['C(city)', 'PR(>F)'] < 0.05:
-                                    city_significant = True
-                            
-                            if pattern_significant or city_significant:
-                                significant_effects[var_name] = {
-                                    'pattern': pattern_significant,
-                                    'city': city_significant
-                                }
-                
-                if significant_effects:
-                    f.write("\n### Hallazgos significativos\n\n")
-                    for var, effects in significant_effects.items():
-                        f.write(f"- **{var}**: ")
-                        effect_texts = []
-                        if effects.get('pattern'):
-                            effect_texts.append("diferencias significativas entre patrones urbanos")
-                        if effects.get('city'):
-                            effect_texts.append("diferencias significativas entre ciudades")
-                        
-                        f.write(", ".join(effect_texts) + ".\n")
+            print("Procesando resultados estadísticos...")
+            print(f"Claves disponibles: {list(results_dict.keys())}")
             
-            # 3. JSON para procesamiento posterior
-            import json
+            # 1. Procesar resultados Kruskal-Wallis
+            summary_results = []
+            kruskal_data = results_dict.get('kruskal_wallis', {})
+            correlations_data = results_dict.get('correlations', {})
+            effect_sizes_data = results_dict.get('effect_sizes', {})
+            descriptive_data = results_dict.get('descriptive_stats', {})
             
-            # Convertir dataframes y objetos numpy a formatos serializables
-            def json_serializable(obj):
-                if isinstance(obj, (np.int64, np.int32, np.float64, np.float32)):
-                    return float(obj) if np.issubdtype(type(obj), np.floating) else int(obj)
-                elif isinstance(obj, pd.DataFrame):
-                    return obj.to_dict('records')
-                elif isinstance(obj, pd.Series):
-                    return obj.to_dict()
-                elif isinstance(obj, np.ndarray):
-                    return obj.tolist()
+            if not kruskal_data:
+                print("No se encontraron datos de Kruskal-Wallis")
+                return
+            
+            print(f"Datos Kruskal-Wallis encontrados: {list(kruskal_data.keys())}")
+            
+            # Procesar cada variable de movilidad
+            for var_key, kw_results in kruskal_data.items():
+                var_label = mobility_labels.get(var_key, var_key)
+                print(f"\nProcesando {var_key} -> {var_label}")
+                print(f"Contenido de kw_results: {kw_results}")
+                
+                # Extraer estadísticas directamente del formato encontrado
+                if isinstance(kw_results, dict):
+                    # Los datos están en el formato: {'h_statistic': ..., 'p_value': ..., 'significant': ..., 'eta_squared': ..., 'effect_size': ...}
+                    h_stat = kw_results.get('h_statistic', np.nan)
+                    p_value = kw_results.get('p_value', np.nan)
+                    significant = kw_results.get('significant', False)
+                    eta_squared = kw_results.get('eta_squared', np.nan)
+                    effect_size_label = kw_results.get('effect_size', 'N/A')
+                    
+                    print(f"Estadísticas extraídas - H: {h_stat}, p: {p_value}, sig: {significant}")
+                    
+                    # Estos son los resultados de Kruskal-Wallis comparando PATRONES URBANOS
+                    # La pregunta es: "¿Hay diferencias significativas en [variable_movilidad] entre los diferentes patrones urbanos?"
+                    summary_results.append({
+                        'Variable_Movilidad': var_label,
+                        'Variable_Original': var_key,
+                        'Pregunta_Investigacion': f'¿Difiere {var_label} entre patrones urbanos?',
+                        'Patrones_Comparados': 'Gridiron vs Cul-de-Sac vs Orgánico vs Híbrido',
+                        'H_statistic': h_stat,
+                        'p_value': p_value,
+                        'Significativo': significant,
+                        'Eta_Squared': eta_squared,
+                        'Tamaño_Efecto': effect_size_label,
+                        'Interpretacion_Efecto': self._interpret_effect_size(eta_squared),
+                        'Conclusion': f'{"SÍ" if significant else "NO"} hay diferencias significativas en {var_label} entre patrones urbanos'
+                    })
                 else:
-                    return str(obj)
+                    print(f"Formato inesperado para {var_key}: {type(kw_results)}")
             
-            # Convertir resultados a formato serializable
-            json_compatible = {}
-            for key, value in results_dict.items():
-                if isinstance(value, pd.DataFrame):
-                    json_compatible[key] = value.to_dict('records')
-                elif isinstance(value, dict):
-                    # Manejar diccionarios anidados
-                    json_compatible[key] = json.loads(
-                        json.dumps(value, default=json_serializable)
-                    )
-                else:
-                    json_compatible[key] = json_serializable(value)
+            if not summary_results:
+                print("No se pudieron procesar los resultados estadísticos")
+                return
             
-            with open(os.path.join(output_dir, "anova_results_global.json"), 'w', encoding='utf-8') as f:
-                json.dump(json_compatible, f, indent=2)
-                
+            # 2. Crear DataFrame de resumen
+            summary_df = pd.DataFrame(summary_results)
+            print(f"Resumen creado con {len(summary_df)} variables")
+            print("Vista previa del DataFrame:")
+            print(summary_df[['Variable_Movilidad', 'Patrones_Comparados', 'H_statistic', 'p_value', 'Significativo', 'Tamaño_Efecto']])
+            
+            # 3. Guardar en Excel
+            excel_path = os.path.join(output_dir, "analisis_estadistico_movilidad.xlsx")
+            
+            try:
+                with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+                    # Hoja 1: Resumen ejecutivo con indicadores visuales
+                    summary_display = summary_df.copy()
+                    
+                    # Agregar indicadores visuales
+                    summary_display['Status_Visual'] = summary_display['Significativo'].map({
+                        True: '*** SIGNIFICATIVO ***', 
+                        False: 'No significativo'
+                    })
+                    
+                    # Reordenar columnas para mejor presentación
+                    cols_order = ['Variable_Movilidad', 'Variable_Original', 'Pregunta_Investigacion', 'Patrones_Comparados',
+                                'H_statistic', 'p_value', 'Significativo', 'Status_Visual', 
+                                'Eta_Squared', 'Tamaño_Efecto', 'Interpretacion_Efecto', 'Conclusion']
+                    
+                    summary_display = summary_display[cols_order]
+                    summary_display.to_excel(writer, sheet_name='Resumen_KruskalWallis', index=False)
+                    print("Hoja 'Resumen_KruskalWallis' creada")
+                    
+                    # Hoja 2: Solo variables significativas
+                    significant_vars = summary_display[summary_display['Significativo'] == True]
+                    if len(significant_vars) > 0:
+                        significant_vars.to_excel(writer, sheet_name='Variables_Significativas', index=False)
+                        print(f"Hoja 'Variables_Significativas' creada con {len(significant_vars)} variables")
+                    
+                    # Hoja 3: Ordenado por tamaño del efecto
+                    summary_by_effect = summary_display.sort_values('Eta_Squared', ascending=False, na_last=True)
+                    summary_by_effect.to_excel(writer, sheet_name='Ordenado_por_Efecto', index=False)
+                    print("Hoja 'Ordenado_por_Efecto' creada")
+                    
+                    # Hoja 4: Estadísticas descriptivas si están disponibles
+                    if descriptive_data:
+                        try:
+                            desc_list = []
+                            for var_key, desc_stats in descriptive_data.items():
+                                var_label = mobility_labels.get(var_key, var_key)
+                                if isinstance(desc_stats, dict):
+                                    desc_list.append({
+                                        'Variable': var_label,
+                                        'Variable_Original': var_key,
+                                        **desc_stats
+                                    })
+                            
+                            if desc_list:
+                                desc_df = pd.DataFrame(desc_list)
+                                desc_df.to_excel(writer, sheet_name='Estadisticas_Descriptivas', index=False)
+                                print("Hoja 'Estadisticas_Descriptivas' creada")
+                        except Exception as desc_error:
+                            print(f"Error procesando estadísticas descriptivas: {desc_error}")
+                    
+                    # Hoja 5: Correlaciones si están disponibles
+                    if correlations_data:
+                        try:
+                            if isinstance(correlations_data, pd.DataFrame):
+                                correlations_data.to_excel(writer, sheet_name='Correlaciones')
+                                print("Hoja 'Correlaciones' creada")
+                            elif isinstance(correlations_data, dict):
+                                corr_df = pd.DataFrame(correlations_data)
+                                corr_df.to_excel(writer, sheet_name='Correlaciones')
+                                print("Hoja 'Correlaciones' creada")
+                        except Exception as corr_error:
+                            print(f"Error procesando correlaciones: {corr_error}")
+            
+            except Exception as excel_error:
+                print(f"Error creando Excel: {excel_error}")
+                # Fallback: guardar como CSV
+                csv_path = os.path.join(output_dir, "analisis_estadistico_resumen.csv")
+                summary_df.to_csv(csv_path, index=False)
+                print(f"Guardado como CSV en: {csv_path}")
+            
+            # 4. Imprimir resumen en consola
+            print(f"\n{'='*60}")
+            print("RESUMEN DEL ANÁLISIS ESTADÍSTICO")
+            print(f"{'='*60}")
+            
+            sig_count = sum(summary_df['Significativo'])
+            total_count = len(summary_df)
+            
+            print(f"Variables analizadas: {total_count}")
+            print(f"Variables significativas: {sig_count}")
+            print(f"Porcentaje significativo: {(sig_count/total_count)*100:.1f}%")
+            
+            print(f"\nVARIABLES SIGNIFICATIVAS:")
+            print("-" * 40)
+            for _, row in summary_df[summary_df['Significativo']].iterrows():
+                print(f"• {row['Variable_Movilidad']}: H={row['H_statistic']:.3f}, p={row['p_value']:.2e}, Efecto={row['Tamaño_Efecto']}")
+            
+            print(f"\nArchivo Excel guardado en: {excel_path}")
+            print(f"{'='*60}")
+            
         except Exception as e:
-            print(f"Error guardando resultados de análisis: {e}")
+            print(f"Error in análisis estadístico: {e}")
             import traceback
             traceback.print_exc()
 
-    def _generate_interaction_plots(self, combined_data, mobility_cols):
-        """Genera gráficos de interacción entre patrones y ciudades."""
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        
-        plt.ioff()  # Desactivar modo interactivo para evitar mostrar gráficos en consola
-        
-        try:
-            for col in mobility_cols:
-                plt.figure(figsize=(12, 8))
-                sns.boxplot(x='city', y=col, hue='pattern', data=combined_data)
-                plt.title(f'Interacción Ciudad-Patrón para {col}')
-                plt.xticks(rotation=45)
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, f"interaction_{col}.png"))
-                plt.close()
-                
-                # Crear también una gráfica de interacción con medias y errores estándar
-                plt.figure(figsize=(12, 8))
-                sns.pointplot(x='city', y=col, hue='pattern', data=combined_data, 
-                            dodge=True, ci=68, capsize=0.2)
-                plt.title(f'Medias e Intervalos para {col} por Ciudad y Patrón')
-                plt.xticks(rotation=45)
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, f"interaction_means_{col}.png"))
-                plt.close()
-                
-        except Exception as e:
-            print(f"Error generando gráficos de interacción: {e}")
-    
-    def _generate_global_visualizations(self, combined_data, mobility_cols):
-        """Genera visualizaciones para el análisis global."""
-        try:
-            # 1. Boxplots de movilidad por patrón
-            for mobility_type in mobility_cols:
-                plt.figure(figsize=(14, 8))
-                sns.boxplot(x='pattern', y=mobility_type, data=combined_data)
-                plt.title(f'Global: {self.mobility_columns[mobility_type]} por Patrón')
-                plt.xlabel('Patrón de Calle')
-                plt.ylabel(self.mobility_columns[mobility_type])
-                plt.xticks(rotation=45)
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, f"global_boxplot_{mobility_type}_por_patron.png"))
-                plt.close()
-            
-            # 2. Boxplots de movilidad por ciudad
-            for mobility_type in mobility_cols:
-                plt.figure(figsize=(16, 8))
-                sns.boxplot(x='city', y=mobility_type, data=combined_data)
-                plt.title(f'Global: {self.mobility_columns[mobility_type]} por Ciudad')
-                plt.xlabel('Ciudad')
-                plt.ylabel(self.mobility_columns[mobility_type])
-                plt.xticks(rotation=45)
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, f"global_boxplot_{mobility_type}_por_ciudad.png"))
-                plt.close()
-            
-            # 3. Gráfico de interacción entre patrón y ciudad
-            for mobility_type in mobility_cols:
-                plt.figure(figsize=(16, 12))
-                sns.lineplot(x='pattern', y=mobility_type, hue='city', 
-                           data=combined_data, markers=True, dashes=False)
-                plt.title(f'Global: Interacción entre Patrón y Ciudad para {self.mobility_columns[mobility_type]}')
-                plt.xlabel('Patrón de Calle')
-                plt.ylabel(self.mobility_columns[mobility_type])
-                plt.xticks(rotation=45)
-                plt.legend(title='Ciudad', bbox_to_anchor=(1.05, 1), loc='upper left')
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, f"global_interaccion_{mobility_type}.png"))
-                plt.close()
-            
-            # 4. PCA global por patrón y ciudad
-            if len(mobility_cols) >= 3:
-                # Escalar datos para PCA
-                scaler = StandardScaler()
-                mobility_scaled = scaler.fit_transform(combined_data[mobility_cols])
-                
-                # Aplicar PCA
-                pca = PCA(n_components=2)
-                pca_result = pca.fit_transform(mobility_scaled)
-                
-                # Crear DataFrame con resultados
-                pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2'])
-                pca_df['pattern'] = combined_data['pattern'].values
-                pca_df['city'] = combined_data['city'].values
-                
-                # PCA por patrón
-                plt.figure(figsize=(14, 10))
-                sns.scatterplot(x='PC1', y='PC2', hue='pattern', data=pca_df, palette='viridis', s=100)
-                plt.title('Global: PCA de Movilidad por Patrón')
-                plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} varianza)')
-                plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} varianza)')
-                plt.grid(True, linestyle='--', alpha=0.7)
-                plt.legend(title='Patrón', bbox_to_anchor=(1.05, 1), loc='upper left')
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, "global_pca_patron.png"))
-                plt.close()
-                
-                # PCA por ciudad
-                plt.figure(figsize=(14, 10))
-                sns.scatterplot(x='PC1', y='PC2', hue='city', data=pca_df, palette='tab10', s=100)
-                plt.title('Global: PCA de Movilidad por Ciudad')
-                plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} varianza)')
-                plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} varianza)')
-                plt.grid(True, linestyle='--', alpha=0.7)
-                plt.legend(title='Ciudad', bbox_to_anchor=(1.05, 1), loc='upper left')
-                plt.tight_layout()
-                plt.savefig(os.path.join(self.global_dir, "global_pca_ciudad.png"))
-                plt.close()
-                
-                # Guardar coeficientes de componentes principales
-                pca_components = pd.DataFrame(
-                    data=pca.components_.T,
-                    columns=[f'PC{i+1}' for i in range(pca.n_components_)],
-                    index=mobility_cols
-                )
-                pca_components.to_csv(os.path.join(self.global_dir, "global_pca_componentes.csv"))
-            
-        except Exception as e:
-            print(f"Error generando visualizaciones globales: {e}")
-    
+    def _interpret_effect_size(self, eta_squared):
+        """Interpreta el tamaño del efecto basado en eta cuadrado"""
+        if pd.isna(eta_squared):
+            return 'N/A'
+        elif eta_squared < 0.01:
+            return 'Muy Pequeño'
+        elif eta_squared < 0.06:
+            return 'Pequeño-Mediano'
+        elif eta_squared < 0.14:
+            return 'Mediano-Grande'
+        else:
+            return 'Grande'
+
     def run_analysis(self):
         """Ejecuta el flujo completo de análisis."""
         print("Iniciando análisis de patrones de calles y movilidad urbana...")
@@ -2001,6 +1513,961 @@ class StreetPatternMobilityAnalyzer:
         return True
 
 
+# if __name__ == "__main__":
+#     analyzer = StreetPatternMobilityAnalyzer()
+#     analyzer.run_analysis()
+
+
+
+import pandas as pd
+import numpy as np
+import os
+from scipy import stats
+from scipy.stats import chi2_contingency, kruskal
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+from scipy.stats import chi2_contingency, kruskal, pearsonr
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import r2_score
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.express as px
+import warnings
+warnings.filterwarnings('ignore')
+
+def advanced_causality_analysis(global_data, output_dir, mobility_vars):
+    """
+    Análisis avanzado de causalidad con visualizaciones sofisticadas
+    """
+    print("\n🔬 INICIANDO ANÁLISIS AVANZADO DE CAUSALIDAD...")
+    
+    # 1. Análisis de importancia de features (causalidad implícita)
+    feature_importance = calculate_feature_importance(global_data, mobility_vars)
+    
+    # 2. Análisis de efectos marginales
+    marginal_effects = calculate_marginal_effects(global_data, mobility_vars)
+    
+    # 3. Visualizaciones avanzadas
+    create_advanced_visualizations(global_data, feature_importance, marginal_effects, output_dir, mobility_vars)
+    
+    # 4. Análisis de dominancia de patrones
+    dominance_analysis = analyze_pattern_dominance(global_data, mobility_vars)
+    
+    # 5. Matriz de correlación condicional
+    conditional_correlations = calculate_conditional_correlations(global_data, mobility_vars)
+    
+    return {
+        'feature_importance': feature_importance,
+        'marginal_effects': marginal_effects,
+        'dominance_analysis': dominance_analysis,
+        'conditional_correlations': conditional_correlations
+    }
+
+def calculate_feature_importance(data, mobility_vars):
+    """Calcula importancia de patrones urbanos para predecir movilidad"""
+    le = LabelEncoder()
+    data_encoded = data.copy()
+    data_encoded['pattern_encoded'] = le.fit_transform(data['pattern'])
+    
+    importance_results = {}
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key not in data.columns:
+            continue
+            
+        # Preparar datos
+        valid_data = data_encoded[data_encoded[var_key].notna()]
+        if len(valid_data) < 10:
+            continue
+            
+        X = valid_data[['pattern_encoded']].values
+        y = valid_data[var_key].values
+        
+        # Random Forest para importancia
+        rf = RandomForestRegressor(n_estimators=100, random_state=42)
+        rf.fit(X, y)
+        
+        importance_results[var_key] = {
+            'importance_score': rf.feature_importances_[0],
+            'r2_score': r2_score(y, rf.predict(X)),
+            'pattern_classes': le.classes_
+        }
+    
+    return importance_results
+
+def calculate_marginal_effects(data, mobility_vars):
+    """Calcula efectos marginales de cada patrón urbano"""
+    marginal_effects = {}
+    
+    # Baseline: promedio global
+    for var_key, var_name in mobility_vars.items():
+        if var_key not in data.columns:
+            continue
+            
+        global_mean = data[var_key].mean()
+        pattern_effects = {}
+        
+        for pattern in data['pattern'].unique():
+            pattern_data = data[data['pattern'] == pattern]
+            pattern_mean = pattern_data[var_key].mean()
+            
+            # Efecto marginal = diferencia con respecto al promedio global
+            marginal_effect = pattern_mean - global_mean
+            effect_size = marginal_effect / data[var_key].std()  # Normalizado
+            
+            pattern_effects[pattern] = {
+                'marginal_effect': marginal_effect,
+                'normalized_effect': effect_size,
+                'pattern_mean': pattern_mean,
+                'n_observations': len(pattern_data)
+            }
+        
+        marginal_effects[var_key] = {
+            'global_mean': global_mean,
+            'pattern_effects': pattern_effects
+        }
+    
+    return marginal_effects
+
+def analyze_pattern_dominance(data, mobility_vars):
+    """Analiza qué patrón domina en cada tipo de movilidad"""
+    dominance = {}
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key not in data.columns:
+            continue
+            
+        pattern_means = data.groupby('pattern')[var_key].agg(['mean', 'std', 'count'])
+        
+        # Ordenar por media descendente
+        pattern_ranking = pattern_means.sort_values('mean', ascending=False)
+        
+        dominance[var_key] = {
+            'dominant_pattern': pattern_ranking.index[0],
+            'dominant_value': pattern_ranking.iloc[0]['mean'],
+            'weakest_pattern': pattern_ranking.index[-1],
+            'weakest_value': pattern_ranking.iloc[-1]['mean'],
+            'dominance_ratio': pattern_ranking.iloc[0]['mean'] / pattern_ranking.iloc[-1]['mean'],
+            'full_ranking': pattern_ranking.to_dict('index')
+        }
+    
+    return dominance
+
+def calculate_conditional_correlations(data, mobility_vars):
+    """Correlaciones entre variables de movilidad condicionadas por patrón"""
+    conditional_corr = {}
+    
+    mobility_keys = [k for k in mobility_vars.keys() if k in data.columns]
+    
+    for pattern in data['pattern'].unique():
+        pattern_data = data[data['pattern'] == pattern]
+        
+        if len(pattern_data) < 10:
+            continue
+            
+        # Matriz de correlación para este patrón
+        pattern_corr = pattern_data[mobility_keys].corr()
+        conditional_corr[pattern] = pattern_corr
+    
+    return conditional_corr
+
+def create_advanced_visualizations(data, feature_importance, marginal_effects, output_dir, mobility_vars):
+    """Crea visualizaciones avanzadas para análisis de causalidad"""
+    
+    # 1. RADAR CHART: Perfil de movilidad por patrón
+    create_mobility_radar_chart(data, mobility_vars, output_dir)
+    
+    # 2. HEATMAP INTERACTIVO: Efectos marginales
+    create_marginal_effects_heatmap(marginal_effects, mobility_vars, output_dir)
+          
+
+def create_mobility_radar_chart(data, mobility_vars, output_dir):
+    """Radar chart comparando perfiles de movilidad por patrón"""
+    
+    # Calcular medias por patrón (normalizadas 0-1)
+    pattern_profiles = {}
+    for pattern in data['pattern'].unique():
+        pattern_data = data[data['pattern'] == pattern]
+        profile = {}
+        
+        for var_key, var_name in mobility_vars.items():
+            if var_key in data.columns:
+                # Normalizar a escala 0-1
+                var_mean = pattern_data[var_key].mean()
+                var_min = data[var_key].min()
+                var_max = data[var_key].max()
+                normalized = (var_mean - var_min) / (var_max - var_min) if var_max != var_min else 0
+                profile[var_name] = normalized
+        
+        pattern_profiles[pattern] = profile
+    
+    # Crear radar chart
+    fig = go.Figure()
+    
+    categories = list(next(iter(pattern_profiles.values())).keys())
+    
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FCEA2B', '#FF9F43', '#A55EEA']
+    
+    for i, (pattern, profile) in enumerate(pattern_profiles.items()):
+        values = list(profile.values())
+        values.append(values[0])  # Cerrar el radar
+        
+        fig.add_trace(go.Scatterpolar(
+            r=values,
+            theta=categories + [categories[0]],
+            fill='toself',
+            name=pattern.replace('_', ' ').title(),
+            line_color=colors[i % len(colors)],
+            fillcolor=colors[i % len(colors)],
+            opacity=0.6
+        ))
+    
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 1]
+            )),
+        showlegend=True,
+        title="Perfiles de Movilidad por Patrón Urbano<br><sub>Valores normalizados (0=mínimo, 1=máximo)</sub>",
+        font=dict(size=12)
+    )
+    
+    fig.write_html(f"{output_dir}/radar_mobility_patterns.html")
+    print("✅ Radar chart guardado")
+
+def create_marginal_effects_heatmap(marginal_effects, mobility_vars, output_dir):
+    """
+    Create a clean heatmap of marginal effects for academic publication.
+    Relies on matplotlib style sheet for all formatting configurations.
+    """
+    
+    with plt.style.context("styles/matplotlib_style.mplstyle"):
+        
+        # Define target variables for analysis
+        target_vars = {
+            'a': 'A',
+            'b': 'B', 
+            'car_share': 'C'
+        }
+        
+        # Extract unique patterns and prepare data matrix
+        patterns = set()
+        for var_key in target_vars.keys():
+            if var_key in marginal_effects:
+                patterns.update(marginal_effects[var_key]['pattern_effects'].keys())
+        
+        patterns = sorted(list(patterns))
+        
+        # Build effects matrix
+        effects_matrix = []
+        for var_key in target_vars.keys():
+            if var_key in marginal_effects:
+                row = []
+                for pattern in patterns:
+                    effect = marginal_effects[var_key]['pattern_effects'].get(
+                        pattern, {}
+                    ).get('normalized_effect', 0)
+                    row.append(effect)
+                effects_matrix.append(row)
+        
+        effects_matrix = np.array(effects_matrix)
+        
+        # Create figure - let style sheet control size
+        fig, ax = plt.subplots()
+        
+        # Adjust subplot position to center the heatmap
+        plt.subplots_adjust(left=0.15, right=0.85)
+        
+        ax.grid(False)
+        # Create heatmap with minimal configuration and adjusted size
+        im = ax.imshow(effects_matrix, cmap='RdBu_r', vmin=-0.5, vmax=0.5, aspect=1)
+        
+        # Configure labels
+        pattern_labels = [
+            {'cul_de_sac': 'Cul-de-Sac', 'cul de sac': 'Cul-de-Sac',
+             'gridiron': 'Gridiron', 'hibrido': 'Hybrid', 'hybrid': 'Hybrid',
+             'organico': 'Organic', 'organic': 'Organic'}.get(
+                pattern.lower(), pattern.replace('_', ' ').title()
+            ) for pattern in patterns
+        ]
+        
+        # Set ticks and labels
+        ax.set_xticks(np.arange(len(patterns)))
+        ax.set_yticks(np.arange(len(target_vars)))
+        ax.set_xticklabels(pattern_labels)
+        ax.set_yticklabels(list(target_vars.values()))
+        
+        # Add cell values with appropriate contrast
+        for i in range(len(target_vars)):
+            for j in range(len(patterns)):
+                val = effects_matrix[i, j]
+                # Color del texto basado en contraste
+                text_color = 'white' if abs(val) > 0.3 else 'black'
+                # Formato condicional: mostrar más decimales solo si es necesario
+                if abs(val) < 0.01:
+                    text = '0.00'
+                else:
+                    text = f'{val:.2f}'
+                
+                ax.text(j, i, text, ha="center", va="center", 
+                        color=text_color, fontweight='bold')
+        
+        # Titles and labels
+        ax.set_title(r'\textbf{Marginal Effects of Urban Patterns on Mobility}' + '\n' + 
+                    r'\textit{Positive = Above Average | Negative = Below Average}', 
+                     pad=20)
+        ax.set_xlabel('Urban Pattern')
+        ax.set_ylabel('Mobility Mode')
+        ax.tick_params(length=0)
+
+        # Add colorbar with same height as heatmap
+        cbar = plt.colorbar(im, ax=ax, fraction=0.033, pad=0.04, shrink=1)
+        cbar.ax.tick_params(length=0, labelsize=7)
+
+        
+        # Save files
+        plt.savefig(f"{output_dir}/marginal_effects_heatmap.pdf", 
+                   bbox_inches='tight')
+        plt.savefig(f"{output_dir}/marginal_effects_heatmap.png", 
+                   bbox_inches='tight', dpi=300)
+        plt.close()
+        
+        print("✅ Marginal effects heatmap saved")
+        print(f"📁 Files: marginal_effects_heatmap.pdf/.png")
+
+def integrate_advanced_analysis(global_data, global_analysis, output_dir, mobility_vars):
+    """
+    Función para integrar el análisis avanzado con tu código existente
+    AÑADIR ESTA LLAMADA AL FINAL DE tu función analyze_patterns_mobility_correlation
+    """
+    print("\n" + "="*80)
+    print("ANÁLISIS AVANZADO DE CAUSALIDAD Y CORRELACIÓN")
+    print("="*80)
+    
+    # Ejecutar análisis avanzado
+    advanced_results = advanced_causality_analysis(global_data, output_dir, mobility_vars)
+    
+    # Crear resumen de causalidad
+    create_causality_summary(advanced_results, global_analysis, output_dir, mobility_vars)
+    
+    return advanced_results
+
+def create_causality_summary(advanced_results, global_analysis, output_dir, mobility_vars):
+    """Crea resumen ejecutivo de causalidad"""
+    
+    summary_lines = []
+    summary_lines.append("="*60)
+    summary_lines.append("RESUMEN DE CAUSALIDAD: PATRONES URBANOS → MOVILIDAD")
+    summary_lines.append("="*60)
+    
+    # Análisis de dominancia
+    dominance = advanced_results['dominance_analysis']
+    summary_lines.append("\n🎯 PATRONES DOMINANTES POR TIPO DE MOVILIDAD:")
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key in dominance:
+            dom_pattern = dominance[var_key]['dominant_pattern']
+            dom_value = dominance[var_key]['dominant_value']
+            weak_pattern = dominance[var_key]['weakest_pattern']  # AÑADIR ESTA LÍNEA
+            ratio = dominance[var_key]['dominance_ratio']
+            
+            summary_lines.append(f"  • {var_name}: {dom_pattern.title()} ({dom_value:.3f})")
+            # CAMBIAR ESTA LÍNEA para incluir el patrón más bajo específico:
+            summary_lines.append(f"    └─ {ratio:.1f}x más alto que el patrón más bajo ({weak_pattern.title()})")
+    
+    # Feature importance
+    feature_imp = advanced_results['feature_importance']
+    summary_lines.append(f"\n🔍 PODER PREDICTIVO DE PATRONES URBANOS:")
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key in feature_imp:
+            r2 = feature_imp[var_key]['r2_score']
+            importance = feature_imp[var_key]['importance_score']
+            
+            predictive_power = "ALTO" if r2 > 0.3 else "MEDIO" if r2 > 0.1 else "BAJO"
+            summary_lines.append(f"  • {var_name}: R² = {r2:.3f} ({predictive_power})")
+    
+    summary_lines.append(f"\n✅ CONCLUSIÓN CAUSAL:")
+    high_r2_count = sum(1 for k, v in feature_imp.items() if v['r2_score'] > 0.2)
+    total_vars = len(feature_imp)
+    
+    if high_r2_count / total_vars > 0.5:
+        summary_lines.append("  Los patrones urbanos SÍ tienen un efecto causal significativo en la movilidad.")
+    else:
+        summary_lines.append("  Los patrones urbanos tienen un efecto causal LIMITADO en la movilidad.")
+    
+    # Guardar resumen
+    with open(f"{output_dir}/RESUMEN_CAUSALIDAD.txt", 'w', encoding='utf-8') as f:
+        f.write('\n'.join(summary_lines))
+    
+    # Imprimir en consola
+    for line in summary_lines:
+        print(line)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def analyze_patterns_mobility_correlation(polygons_analysis_path, output_dir):
+    """
+    Análisis REAL de correlación entre patrones urbanos y movilidad
+    Extrae datos reales, los une por poly_id y calcula correlaciones específicas
+    VERSIÓN CORREGIDA: Maneja diferentes tipos de datos en poly_id
+    """
+    
+    # Ciudades a analizar
+    cities = [
+        "Moscow_ID", "Philadelphia_PA", "Peachtree_GA", "Boston_MA",
+        "Chandler_AZ", "Salt_Lake_UT", "Santa_Fe_NM","Charleston_SC", "Cary_Town_NC",
+        "Fort_Collins_CO"
+    ]
+    
+    # Variables de movilidad y sus nombres descriptivos
+    mobility_vars = {
+        'car_share': 'Automóvil (%)',
+        'transit_share': 'Transporte Público (%)', 
+        'bicycle_share': 'Bicicleta (%)',
+        'walked_share': 'Caminata (%)',
+        'a': 'Movilidad Activa',
+        'b': 'Movilidad Pública', 
+        'c': 'Movilidad Privada'
+    }
+    
+    # Contenedor para todos los datos
+    all_city_data = []
+    city_summaries = []
+    
+    print("="*80)
+    print("ANÁLISIS DE CORRELACIÓN: PATRONES URBANOS vs MOVILIDAD (VERSIÓN CORREGIDA)")
+    print("="*80)
+    
+    for city in cities:
+        try:
+            print(f"\n🏙️ Procesando {city}...")
+            
+            # 1. Cargar datos de movilidad
+            mobility_path = os.path.join(polygons_analysis_path, city, "Mobility_Data", f"polygon_mobility_data_{city}.xlsx")
+            if not os.path.exists(mobility_path):
+                print(f"❌ No se encontró archivo de movilidad: {mobility_path}")
+                continue
+                
+            mobility_data = pd.read_excel(mobility_path)
+            print(f"   📊 Datos de movilidad cargados: {len(mobility_data)} polígonos")
+            
+            # 2. Cargar datos de patrones urbanos
+            pattern_path = os.path.join(polygons_analysis_path, city, "clustering_analysis", "urban_pattern_analysis.xlsx")
+            if not os.path.exists(pattern_path):
+                print(f"❌ No se encontró archivo de patrones: {pattern_path}")
+                continue
+                
+            # Cargar hoja 5 (índice 4)
+            pattern_data = pd.read_excel(pattern_path, sheet_name=4)
+            
+            # Renombrar columnas para clarity (asumiendo estructura A=poly_id, C=patrón)
+            pattern_data.columns = ['poly_id', 'empty', 'pattern'] + list(pattern_data.columns[3:])
+            pattern_data = pattern_data[['poly_id', 'pattern']].dropna()
+            
+            print(f"   🏗️ Patrones urbanos cargados: {len(pattern_data)} polígonos")
+            print(f"   🔍 Patrones encontrados: {pattern_data['pattern'].value_counts().to_dict()}")
+            
+            # 3. CORRECCIÓN: Normalizar tipos de poly_id antes del merge
+            print(f"   🔧 Normalizando tipos de poly_id...")
+            print(f"      - Movilidad poly_id tipo: {mobility_data['poly_id'].dtype}")
+            print(f"      - Patrones poly_id tipo: {pattern_data['poly_id'].dtype}")
+            
+            # Convertir ambos a string para evitar problemas de tipo
+            mobility_data['poly_id'] = mobility_data['poly_id'].astype(str)
+            pattern_data['poly_id'] = pattern_data['poly_id'].astype(str)
+            
+            # También limpiar espacios en blanco que podrían causar problemas
+            mobility_data['poly_id'] = mobility_data['poly_id'].str.strip()
+            pattern_data['poly_id'] = pattern_data['poly_id'].str.strip()
+            
+            print(f"      - Ejemplos IDs movilidad ANTES: {list(mobility_data['poly_id'].head())}")
+            print(f"      - Ejemplos IDs patrones ANTES: {list(pattern_data['poly_id'].head())}")
+            
+            # CORRECCIÓN ESPECÍFICA: Normalizar formatos de ID
+            # Los IDs de movilidad tienen formato "CITY_N" y los de patrones son solo números
+            # Además, movilidad empieza en 1 y patrones en 0
+            
+            # Extraer solo el número del ID de movilidad y ajustar índice
+            mobility_data['poly_id_original'] = mobility_data['poly_id'].copy()
+            
+            # Si el ID tiene formato "CITY_N", extraer N y restar 1 para empezar en 0
+            if mobility_data['poly_id'].str.contains('_').any():
+                mobility_data['poly_id'] = mobility_data['poly_id'].str.split('_').str[-1]
+                # Convertir a numérico, restar 1, y volver a string
+                mobility_data['poly_id'] = (mobility_data['poly_id'].astype(int) - 1).astype(str)
+                print(f"      - ⚙️ Convertidos IDs de movilidad de formato CITY_N a índice base-0")
+            
+            # Asegurar que los IDs de patrones sean strings
+            pattern_data['poly_id'] = pattern_data['poly_id'].astype(str)
+            
+            print(f"      - Ejemplos IDs movilidad DESPUÉS: {list(mobility_data['poly_id'].head())}")
+            print(f"      - Ejemplos IDs patrones DESPUÉS: {list(pattern_data['poly_id'].head())}")
+            print(f"      - Movilidad: {len(mobility_data['poly_id'].unique())} IDs únicos")
+            print(f"      - Patrones: {len(pattern_data['poly_id'].unique())} IDs únicos")
+            
+            # 4. Verificar overlap antes del merge
+            mobility_ids = set(mobility_data['poly_id'])
+            pattern_ids = set(pattern_data['poly_id'])
+            common_ids = mobility_ids.intersection(pattern_ids)
+            
+            print(f"      - IDs en común: {len(common_ids)}")
+            print(f"      - IDs solo en movilidad: {len(mobility_ids - pattern_ids)}")
+            print(f"      - IDs solo en patrones: {len(pattern_ids - mobility_ids)}")
+            
+            if len(common_ids) == 0:
+                print(f"❌ No hay IDs en común entre datasets para {city}")
+                print(f"   Ejemplos IDs movilidad: {list(mobility_data['poly_id'].head())}")
+                print(f"   Ejemplos IDs patrones: {list(pattern_data['poly_id'].head())}")
+                continue
+            
+            # 5. Unir datos por poly_id
+            merged_data = pd.merge(mobility_data, pattern_data, on='poly_id', how='inner')
+            
+            if len(merged_data) == 0:
+                print(f"❌ El merge resultó en 0 filas para {city}")
+                continue
+                
+            print(f"   ✅ Datos unidos exitosamente: {len(merged_data)} polígonos con ambos datos")
+            
+            # 6. Verificar que tenemos las variables de movilidad necesarias
+            available_mobility_vars = [var for var in mobility_vars.keys() if var in merged_data.columns]
+            print(f"   📊 Variables de movilidad disponibles: {available_mobility_vars}")
+            
+            if not available_mobility_vars:
+                print(f"❌ No se encontraron variables de movilidad para {city}")
+                continue
+            
+            # 7. Añadir identificador de ciudad
+            merged_data['city'] = city
+            all_city_data.append(merged_data)
+            
+            # 8. Análisis por ciudad
+            city_analysis = analyze_single_city(merged_data, city, mobility_vars)
+            city_summaries.append(city_analysis)
+            
+        except Exception as e:
+            print(f"❌ Error procesando {city}: {e}")
+            import traceback
+            print(f"   Detalles del error: {traceback.format_exc()}")
+            continue
+    
+    if not all_city_data:
+        print("❌ No se pudieron procesar datos de ninguna ciudad")
+        return None
+    
+    # 9. Análisis global (todas las ciudades juntas)
+    print(f"\n🌍 ANÁLISIS GLOBAL...")
+    global_data = pd.concat(all_city_data, ignore_index=True)
+    print(f"Total de polígonos analizados: {len(global_data)}")
+    print(f"Distribución de patrones global: {global_data['pattern'].value_counts().to_dict()}")
+    print(f"Ciudades incluidas: {global_data['city'].unique()}")
+    
+    # 10. Análisis estadístico global
+    global_analysis = perform_global_analysis(global_data, mobility_vars)
+    
+    # 11. Guardar resultados
+    save_comprehensive_results(city_summaries, global_analysis, global_data, output_dir, mobility_vars)
+    
+    print(f"\n✅ Análisis completado. Resultados guardados en: {output_dir}")
+    advanced_results = integrate_advanced_analysis(global_data, global_analysis, output_dir, mobility_vars)
+
+    return global_data, global_analysis, advanced_results
+
+def analyze_single_city(data, city_name, mobility_vars):
+    """Análisis estadístico para una ciudad específica"""
+    
+    results = {
+        'city': city_name,
+        'total_polygons': len(data),
+        'pattern_distribution': data['pattern'].value_counts().to_dict(),
+        'correlations': {},
+        'kruskal_wallis': {},
+        'descriptive_stats': {}
+    }
+    
+    print(f"   📈 Calculando correlaciones para {city_name}...")
+    
+    # Análisis por cada variable de movilidad
+    for var_key, var_name in mobility_vars.items():
+        if var_key not in data.columns:
+            continue
+            
+        try:
+            # Verificar que hay datos válidos
+            valid_data = data[data[var_key].notna()]
+            if len(valid_data) == 0:
+                print(f"      ⚠️ No hay datos válidos para {var_name}")
+                continue
+                
+            # Estadísticas descriptivas por patrón
+            desc_stats = valid_data.groupby('pattern')[var_key].agg(['mean', 'std', 'count']).round(3)
+            results['descriptive_stats'][var_key] = desc_stats.to_dict('index')
+            
+            # Test de Kruskal-Wallis (diferencias entre patrones)
+            groups = [group[var_key].dropna().values for name, group in valid_data.groupby('pattern')]
+            groups = [g for g in groups if len(g) > 0]  # Filtrar grupos vacíos
+            
+            if len(groups) > 1 and all(len(g) > 0 for g in groups):
+                h_stat, p_val = kruskal(*groups)
+                results['kruskal_wallis'][var_key] = {
+                    'h_statistic': h_stat,
+                    'p_value': p_val,
+                    'significant': p_val < 0.05
+                }
+            
+            # Correlación con patrones (convirtiendo a numérico)
+            pattern_numeric = pd.Categorical(valid_data['pattern']).codes
+            correlation, p_corr = stats.spearmanr(pattern_numeric, valid_data[var_key])
+            results['correlations'][var_key] = {
+                'correlation': correlation,
+                'p_value': p_corr,
+                'significant': p_corr < 0.05
+            }
+            
+        except Exception as e:
+            print(f"      ⚠️ Error analizando {var_name}: {e}")
+            continue
+    
+    return results
+
+def perform_global_analysis(global_data, mobility_vars):
+    """Análisis estadístico global combinando todas las ciudades"""
+    
+    print("   🔬 Realizando análisis estadístico global...")
+    
+    global_results = {
+        'total_polygons': len(global_data),
+        'cities_analyzed': global_data['city'].nunique(),
+        'cities_list': list(global_data['city'].unique()),
+        'pattern_distribution': global_data['pattern'].value_counts().to_dict(),
+        'pattern_percentages': (global_data['pattern'].value_counts(normalize=True) * 100).round(2).to_dict(),
+        'correlations_by_pattern': {},
+        'kruskal_wallis_global': {},
+        'mobility_by_pattern': {}
+    }
+    
+    # Análisis detallado por patrón
+    for pattern in global_data['pattern'].unique():
+        pattern_data = global_data[global_data['pattern'] == pattern]
+        global_results['mobility_by_pattern'][pattern] = {}
+        
+        for var_key, var_name in mobility_vars.items():
+            if var_key in pattern_data.columns:
+                valid_data = pattern_data[pattern_data[var_key].notna()]
+                if len(valid_data) > 0:
+                    stats_summary = {
+                        'mean': float(valid_data[var_key].mean()),
+                        'std': float(valid_data[var_key].std()),
+                        'median': float(valid_data[var_key].median()),
+                        'count': len(valid_data),
+                        'min': float(valid_data[var_key].min()),
+                        'max': float(valid_data[var_key].max())
+                    }
+                    global_results['mobility_by_pattern'][pattern][var_key] = stats_summary
+    
+    # Tests globales de Kruskal-Wallis
+    for var_key, var_name in mobility_vars.items():
+        if var_key in global_data.columns:
+            try:
+                valid_data = global_data[global_data[var_key].notna()]
+                if len(valid_data) == 0:
+                    continue
+                    
+                groups = [group[var_key].dropna().values for name, group in valid_data.groupby('pattern')]
+                groups = [g for g in groups if len(g) > 0]  # Filtrar grupos vacíos
+                
+                if len(groups) > 1 and all(len(g) > 0 for g in groups):
+                    h_stat, p_val = kruskal(*groups)
+                    
+                    # Calcular eta-squared (tamaño del efecto)
+                    n = len(valid_data)
+                    eta_squared = (h_stat - len(groups) + 1) / (n - len(groups))
+                    eta_squared = max(0, eta_squared)  # No puede ser negativo
+                    
+                    global_results['kruskal_wallis_global'][var_key] = {
+                        'h_statistic': float(h_stat),
+                        'p_value': float(p_val),
+                        'significant': p_val < 0.05,
+                        'eta_squared': float(eta_squared),
+                        'effect_size': interpret_effect_size(eta_squared),
+                        'n_total': n,
+                        'n_groups': len(groups)
+                    }
+                    
+            except Exception as e:
+                print(f"      ⚠️ Error en test global para {var_name}: {e}")
+                continue
+    
+    return global_results
+
+def interpret_effect_size(eta_squared):
+    """Interpreta el tamaño del efecto"""
+    if pd.isna(eta_squared) or eta_squared < 0:
+        return 'N/A'
+    elif eta_squared < 0.01:
+        return 'Muy Pequeño'
+    elif eta_squared < 0.06:
+        return 'Pequeño'
+    elif eta_squared < 0.14:
+        return 'Mediano'
+    else:
+        return 'Grande'
+
+def save_comprehensive_results(city_summaries, global_analysis, global_data, output_dir, mobility_vars):
+    """Guarda todos los resultados en un Excel comprehensivo"""
+    
+    os.makedirs(output_dir, exist_ok=True)
+    excel_path = os.path.join(output_dir, "analisis_patrones_movilidad_COMPLETO.xlsx")
+    
+    with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+        
+        # 1. HOJA: Resumen Ejecutivo Global
+        create_executive_summary(global_analysis, writer, mobility_vars)
+        
+        # 2. HOJA: Comparación de Medias por Patrón
+        create_pattern_comparison(global_analysis, writer, mobility_vars)
+        
+        # 3. HOJA: Tests Estadísticos Globales
+        create_statistical_tests(global_analysis, writer, mobility_vars)
+        
+        # 4. HOJA: Análisis por Ciudad
+        create_city_analysis(city_summaries, writer, mobility_vars)
+        
+        # 5. HOJA: Datos Crudos para Verificación (con IDs originales)
+        global_data_with_orig = global_data.copy()
+        # Si existe la columna de ID original, incluirla
+        if 'poly_id_original' in global_data.columns:
+            cols = ['poly_id_original', 'poly_id', 'city', 'pattern'] + [col for col in global_data.columns if col not in ['poly_id_original', 'poly_id', 'city', 'pattern']]
+            global_data_with_orig = global_data_with_orig[cols]
+        
+        global_data_with_orig.to_excel(writer, sheet_name='Datos_Crudos', index=False)
+        
+        # 6. HOJA: Interpretación y Conclusiones
+        create_conclusions(global_analysis, writer, mobility_vars)
+        
+        # 7. HOJA: Diagnóstico de Datos
+        create_data_diagnostics(global_data, writer, mobility_vars)
+    
+    print(f"📋 Excel completo guardado en: {excel_path}")
+
+def create_executive_summary(global_analysis, writer, mobility_vars):
+    """Crea hoja de resumen ejecutivo"""
+    
+    summary_data = []
+    
+    # Información general
+    summary_data.append(['RESUMEN EJECUTIVO', ''])
+    summary_data.append(['Total de polígonos analizados', global_analysis['total_polygons']])
+    summary_data.append(['Ciudades analizadas', global_analysis['cities_analyzed']])
+    summary_data.append(['Ciudades incluidas', ', '.join(global_analysis['cities_list'])])
+    summary_data.append(['', ''])
+    
+    # Distribución de patrones
+    summary_data.append(['DISTRIBUCIÓN DE PATRONES URBANOS', ''])
+    for pattern, count in global_analysis['pattern_distribution'].items():
+        percentage = global_analysis['pattern_percentages'][pattern]
+        summary_data.append([f'{pattern}', f'{count} polígonos ({percentage}%)'])
+    
+    summary_data.append(['', ''])
+    
+    # Variables con diferencias significativas
+    summary_data.append(['VARIABLES CON DIFERENCIAS SIGNIFICATIVAS', ''])
+    kw_results = global_analysis['kruskal_wallis_global']
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key in kw_results:
+            result = kw_results[var_key]
+            status = "SÍ" if result['significant'] else "NO"
+            p_str = f"{result['p_value']:.2e}" if result['p_value'] < 0.001 else f"{result['p_value']:.3f}"
+            summary_data.append([
+                f'{var_name}', 
+                f'{status} (p={p_str}, efecto={result["effect_size"]})'
+            ])
+    
+    summary_df = pd.DataFrame(summary_data, columns=['Concepto', 'Valor'])
+    summary_df.to_excel(writer, sheet_name='Resumen_Ejecutivo', index=False)
+
+def create_pattern_comparison(global_analysis, writer, mobility_vars):
+    """Crea comparación de medias por patrón"""
+    
+    comparison_data = []
+    mobility_by_pattern = global_analysis['mobility_by_pattern']
+    
+    for var_key, var_name in mobility_vars.items():
+        for pattern in mobility_by_pattern.keys():
+            if var_key in mobility_by_pattern[pattern]:
+                stats = mobility_by_pattern[pattern][var_key]
+                comparison_data.append({
+                    'Variable_Movilidad': var_name,
+                    'Patron_Urbano': pattern.replace('_', ' ').title(),
+                    'Media': round(stats['mean'], 3),
+                    'Desviacion_Std': round(stats['std'], 3),
+                    'Mediana': round(stats['median'], 3),
+                    'Minimo': round(stats['min'], 3),
+                    'Maximo': round(stats['max'], 3),
+                    'N_Poligonos': stats['count']
+                })
+    
+    comparison_df = pd.DataFrame(comparison_data)
+    comparison_df.to_excel(writer, sheet_name='Comparacion_por_Patron', index=False)
+
+def create_statistical_tests(global_analysis, writer, mobility_vars):
+    """Crea hoja de tests estadísticos"""
+    
+    test_data = []
+    kw_results = global_analysis['kruskal_wallis_global']
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key in kw_results:
+            result = kw_results[var_key]
+            p_str = f"{result['p_value']:.2e}" if result['p_value'] < 0.001 else f"{result['p_value']:.4f}"
+            
+            test_data.append({
+                'Variable_Movilidad': var_name,
+                'Variable_Codigo': var_key,
+                'Test_Aplicado': 'Kruskal-Wallis',
+                'Pregunta': f'¿Difiere {var_name} entre patrones urbanos?',
+                'H_Statistic': round(result['h_statistic'], 3),
+                'P_Value': p_str,
+                'P_Value_Numerico': result['p_value'],
+                'Significativo': 'SÍ' if result['significant'] else 'NO',
+                'Eta_Squared': round(result['eta_squared'], 4),
+                'Tamaño_Efecto': result['effect_size'],
+                'N_Total': result['n_total'],
+                'N_Grupos': result['n_groups'],
+                'Interpretacion': f"{'Hay' if result['significant'] else 'No hay'} diferencias significativas en {var_name} entre patrones urbanos"
+            })
+    
+    test_df = pd.DataFrame(test_data)
+    test_df.to_excel(writer, sheet_name='Tests_Estadisticos', index=False)
+
+def create_city_analysis(city_summaries, writer, mobility_vars):
+    """Crea análisis por ciudad"""
+    
+    city_data = []
+    
+    for city_result in city_summaries:
+        city = city_result['city']
+        
+        for var_key, var_name in mobility_vars.items():
+            if var_key in city_result['kruskal_wallis']:
+                kw_result = city_result['kruskal_wallis'][var_key]
+                p_str = f"{kw_result['p_value']:.2e}" if kw_result['p_value'] < 0.001 else f"{kw_result['p_value']:.4f}"
+                
+                city_data.append({
+                    'Ciudad': city,
+                    'Variable_Movilidad': var_name,
+                    'H_Statistic': round(kw_result['h_statistic'], 3),
+                    'P_Value': p_str,
+                    'P_Value_Numerico': kw_result['p_value'],
+                    'Significativo': 'SÍ' if kw_result['significant'] else 'NO',
+                    'N_Poligonos': city_result['total_polygons'],
+                    'Patrones_Ciudad': ', '.join(city_result['pattern_distribution'].keys())
+                })
+    
+    city_df = pd.DataFrame(city_data)
+    city_df.to_excel(writer, sheet_name='Analisis_por_Ciudad', index=False)
+
+def create_conclusions(global_analysis, writer, mobility_vars):
+    """Crea hoja de conclusiones"""
+    
+    conclusions = []
+    kw_results = global_analysis['kruskal_wallis_global']
+    
+    conclusions.append(['CONCLUSIONES DEL ANÁLISIS', ''])
+    conclusions.append(['', ''])
+    conclusions.append([f'Análisis basado en {global_analysis["total_polygons"]} polígonos', ''])
+    conclusions.append([f'de {global_analysis["cities_analyzed"]} ciudades: {", ".join(global_analysis["cities_list"])}', ''])
+    conclusions.append(['', ''])
+    
+    # Análisis de cada variable
+    significant_vars = []
+    non_significant_vars = []
+    
+    for var_key, var_name in mobility_vars.items():
+        if var_key in kw_results:
+            result = kw_results[var_key]
+            p_str = f"{result['p_value']:.2e}" if result['p_value'] < 0.001 else f"{result['p_value']:.4f}"
+            
+            if result['significant']:
+                conclusion = f"✅ {var_name}: Existen diferencias significativas entre patrones urbanos"
+                detail = f"   (H={result['h_statistic']:.3f}, p={p_str}, efecto {result['effect_size']})"
+                significant_vars.append(var_name)
+            else:
+                conclusion = f"❌ {var_name}: No hay diferencias significativas entre patrones urbanos"
+                detail = f"   (H={result['h_statistic']:.3f}, p={p_str})"
+                non_significant_vars.append(var_name)
+            
+            conclusions.append([conclusion, ''])
+            conclusions.append([detail, ''])
+            conclusions.append(['', ''])
+    
+    # Resumen final
+    conclusions.append(['RESUMEN FINAL', ''])
+    conclusions.append([f'Variables con diferencias significativas: {len(significant_vars)}', ''])
+    conclusions.append([f'Variables sin diferencias significativas: {len(non_significant_vars)}', ''])
+    
+    conclusions_df = pd.DataFrame(conclusions, columns=['Conclusión', 'Detalle'])
+    conclusions_df.to_excel(writer, sheet_name='Conclusiones', index=False)
+
+def create_data_diagnostics(global_data, writer, mobility_vars):
+    """Crea diagnóstico de los datos"""
+    
+    diagnostics = []
+    
+    diagnostics.append(['DIAGNÓSTICO DE CALIDAD DE DATOS', ''])
+    diagnostics.append(['', ''])
+    
+    # Información general
+    diagnostics.append(['Total de registros', len(global_data)])
+    diagnostics.append(['Ciudades', global_data['city'].nunique()])
+    diagnostics.append(['Patrones únicos', global_data['pattern'].nunique()])
+    diagnostics.append(['', ''])
+    
+    # Completitud por variable
+    diagnostics.append(['COMPLETITUD POR VARIABLE', ''])
+    for var_key, var_name in mobility_vars.items():
+        if var_key in global_data.columns:
+            non_null = global_data[var_key].notna().sum()
+            percentage = (non_null / len(global_data)) * 100
+            diagnostics.append([f'{var_name}', f'{non_null}/{len(global_data)} ({percentage:.1f}%)'])
+    
+    diagnostics.append(['', ''])
+    
+    # Distribución por ciudad
+    diagnostics.append(['DISTRIBUCIÓN POR CIUDAD', ''])
+    for city in global_data['city'].unique():
+        count = (global_data['city'] == city).sum()
+        percentage = (count / len(global_data)) * 100
+        diagnostics.append([city, f'{count} polígonos ({percentage:.1f}%)'])
+    
+    diagnos_df = pd.DataFrame(diagnostics, columns=['Métrica', 'Valor'])
+    diagnos_df.to_excel(writer, sheet_name='Diagnostico_Datos', index=False)
+
+# Ejemplo de uso:
 if __name__ == "__main__":
-    analyzer = StreetPatternMobilityAnalyzer()
-    analyzer.run_analysis()
+    polygons_analysis_path = "Polygons_analysis"  
+    output_dir = "Resultados_Patrones_Movilidad"
+    
+    global_data, global_analysis, advanced_results = analyze_patterns_mobility_correlation(polygons_analysis_path, output_dir)

@@ -168,19 +168,22 @@ from typing import Union, List, Dict, Any
 
 
 
-# Procesamiento para todos los GDB disponibles
-gdbs = [
-    "boston_ma.gdb",
-    "chandler_az.gdb",
-    "moscow_id.gdb",
-    "peachtree_ga.gdb",
-    "philadelphia_pa.gdb",
-    "salt_lake_ut.gdb",
-    "santa_fe_nm.gdb"
-]
+# # Procesamiento para todos los GDB disponibles
+# gdbs = [
+#     "boston_ma.gdb",
+#     "chandler_az.gdb",
+#     "moscow_id.gdb",
+#     "peachtree_ga.gdb",
+#     "philadelphia_pa.gdb",
+#     "salt_lake_ut.gdb",
+#     "santa_fe_nm.gdb",
+#     "charleston_sc.gdb",
+#     "cary_town_nc.gdb",
+#     "fort_collins_co.gdb"
+# ]
 
-# Carpeta base donde están todos los GDBs
-base_folder = "MLowry_files"
+# # Carpeta base donde están todos los GDBs
+# base_folder = "MLowry_files"
 
 # for gdb_file in gdbs:
 #     # Construir la ruta completa al archivo GDB
@@ -194,7 +197,12 @@ base_folder = "MLowry_files"
 #     # Procesar los primeros 2 layers de cada GDB
 #     # Ajusta los índices según necesites o usa todos los layers
 #     try:
-#         layer_data = process_selected_layers(gdb_path, layer_indices=[1, 2])
+#         layer_data = process_selected_layers(
+#         gdb_path, 
+#         layer_names=["tracts", "streets"],  # Cambia estos nombres por los reales
+#         save_geojson=True,
+#         visualize=False  # Cambia a True si quieres ver los mapas
+#     )
 #     except Exception as e:
 #         print(f"Error al procesar {gdb_file}: {str(e)}")
 #         continue
@@ -213,8 +221,12 @@ base_folder = "MLowry_files"
 #         "GeoJSON_Export/chandler_az/tracts/chandler_az_tracts.geojson": "Chandler, AZ",
 #         "GeoJSON_Export/salt_lake_ut/tracts/salt_lake_ut_tracts.geojson": "Salt Lake, UT",
 #         "GeoJSON_Export/boston_ma/tracts/boston_ma_tracts.geojson": "Boston, MA",
-#         "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA"
+#         "GeoJSON_Export/philadelphia_pa/tracts/philadelphia_pa_tracts.geojson": "Philadelphia, PA",
+#         "GeoJSON_Export/charleston_sc/tracts/charleston_sc_tracts.geojson": "Charleston, SC",
+#         "GeoJSON_Export/cary_town_nc/tracts/cary_town_nc_tracts.geojson": "Cary Town, NC",
+#         "GeoJSON_Export/fort_collins_co/tracts/fort_collins_co_tracts.geojson": "Fort Collins, CO"
 #     }
+
 #     # Dictionary of Stats txt files without sorting and cleaning 
 #     Stats_preprocessing = {
 #         "Polygons_analysis/Moscow_ID/stats/Polygon_Stats_for_Moscow_ID.txt": "Moscow, ID",
@@ -223,8 +235,10 @@ base_folder = "MLowry_files"
 #         "Polygons_analysis/Chandler_AZ/stats/Polygon_Stats_for_Chandler_AZ.txt": "Chandler, AZ",
 #         "Polygons_analysis/Salt_Lake_UT/stats/Polygon_Stats_for_Salt_Lake_UT.txt": "Salt Lake, UT",
 #         "Polygons_analysis/Boston_MA/stats/Polygon_Stats_for_Boston_MA.txt": "Boston, MA",
-#         "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt": "Philadelphia, PA"
-
+#         "Polygons_analysis/Philadelphia_PA/stats/Polygon_Stats_for_Philadelphia_PA.txt": "Philadelphia, PA",
+#         "Polygons_analysis/Charleston_SC/stats/Polygon_Stats_for_Charleston_SC.txt": "Charleston, SC",
+#         "Polygons_analysis/Cary_Town_NC/stats/Polygon_Stats_for_Cary_Town_NC.txt": "Cary Town, NC",
+#         "Polygons_analysis/Fort_Collins_CO/stats/Polygon_Stats_for_Fort_Collins_CO.txt": "Fort Collins, CO"
 #     }
 
 #     # Calculate polygon stats with OSMX
@@ -276,30 +290,30 @@ base_folder = "MLowry_files"
 
 
 
-import osmnx as ox
-import geopandas as gpd
-import folium
-import webbrowser
-import os
+# import osmnx as ox
+# import geopandas as gpd
+# import folium
+# import webbrowser
+# import os
 
-# Cargar GeoJSON con geopandas
-geojson_path = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
-gdf = gpd.read_file(geojson_path)
+# # Cargar GeoJSON con geopandas
+# geojson_path = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"
+# gdf = gpd.read_file(geojson_path)
 
-# Centrar el mapa en Medellín
-centroide = gdf.unary_union.centroid
-mapa = folium.Map(location=[centroide.y, centroide.x], zoom_start=12, tiles='cartodbpositron')
+# # Centrar el mapa en Medellín
+# centroide = gdf.unary_union.centroid
+# mapa = folium.Map(location=[centroide.y, centroide.x], zoom_start=12, tiles='cartodbpositron')
 
-# Agregar los polígonos al mapa solo con bordes azules (sin relleno)
-folium.GeoJson(
-    gdf,
-    style_function=lambda x: {
-        'color': 'black',      # Color del borde
-        'weight': 2,          # Grosor del borde
-        'fillOpacity': 0      # Transparencia del relleno (0 = completamente transparente)
-    }
-).add_to(mapa)
+# # Agregar los polígonos al mapa solo con bordes azules (sin relleno)
+# folium.GeoJson(
+#     gdf,
+#     style_function=lambda x: {
+#         'color': 'black',      # Color del borde
+#         'weight': 2,          # Grosor del borde
+#         'fillOpacity': 0      # Transparencia del relleno (0 = completamente transparente)
+#     }
+# ).add_to(mapa)
 
-# Guardar y abrir en el navegador
-mapa.save("mapa_eod.html")
-webbrowser.open("file://" + os.path.abspath("mapa_eod.html"))
+# # Guardar y abrir en el navegador
+# mapa.save("mapa_eod.html")
+# webbrowser.open("file://" + os.path.abspath("mapa_eod.html"))

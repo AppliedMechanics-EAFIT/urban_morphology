@@ -1,0 +1,31 @@
+============================================================
+RESUMEN DE CAUSALIDAD: PATRONES URBANOS → MOVILIDAD
+============================================================
+
+🎯 PATRONES DOMINANTES POR TIPO DE MOVILIDAD:
+  • Automóvil (%): Organico (0.843)
+    └─ 1.4x más alto que el patrón más bajo (Gridiron)
+  • Transporte Público (%): Gridiron (0.220)
+    └─ 2.8x más alto que el patrón más bajo (Organico)
+  • Bicicleta (%): Gridiron (0.027)
+    └─ 2.3x más alto que el patrón más bajo (Organico)
+  • Caminata (%): Gridiron (0.116)
+    └─ 2.6x más alto que el patrón más bajo (Organico)
+  • Movilidad Activa: Gridiron (0.143)
+    └─ 2.5x más alto que el patrón más bajo (Organico)
+  • Movilidad Pública: Gridiron (0.220)
+    └─ 2.8x más alto que el patrón más bajo (Organico)
+  • Movilidad Privada: Organico (0.843)
+    └─ 1.4x más alto que el patrón más bajo (Gridiron)
+
+🔍 PODER PREDICTIVO DE PATRONES URBANOS:
+  • Automóvil (%): R² = 0.128 (MEDIO)
+  • Transporte Público (%): R² = 0.184 (MEDIO)
+  • Bicicleta (%): R² = 0.030 (BAJO)
+  • Caminata (%): R² = 0.050 (BAJO)
+  • Movilidad Activa: R² = 0.057 (BAJO)
+  • Movilidad Pública: R² = 0.184 (MEDIO)
+  • Movilidad Privada: R² = 0.128 (MEDIO)
+
+✅ CONCLUSIÓN CAUSAL:
+  Los patrones urbanos tienen un efecto causal LIMITADO en la movilidad.

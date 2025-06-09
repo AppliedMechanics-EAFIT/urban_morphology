@@ -1,0 +1,49 @@
+# file: clean.mplstyle
+# author: Nicolas Guarin-Zapata
+# date: June 2025
+# description: style sheet for Matplotlib figures.
+#
+# Color palette from:
+# http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=8
+
+# Configuración proporcional para figura de 1 columna (base 9pt)
+# Configuración proporcional para figura de 1 columna (base 7pt)
+text.usetex : True
+font.family : serif
+font.serif : Computer Modern Roman
+font.size : 7.0
+
+axes.labelsize : 7
+axes.titlesize : 7
+xtick.labelsize : 6
+ytick.labelsize : 6
+legend.fontsize : 6
+figure.titlesize : 8
+axes.titlepad : 6
+axes.labelpad : 4
+
+axes.facecolor : white
+axes.prop_cycle : cycler('color',['e41a1c', '377eb8', '4daf4a', '984ea3', 'ff7f00', 'ffff33', 'a65628', 'f781bf'])
+axes.linewidth : 0.0
+axes.grid : True
+
+lines.linewidth : 1.5
+
+xtick.direction : in
+ytick.direction : in
+
+grid.color : c7dedf
+grid.linestyle : -
+grid.linewidth : 0.3
+
+figure.figsize : 3.5, 3
+
+legend.fancybox : False
+legend.frameon : False
+legend.loc : best
+
+# Configuraciones específicas para heatmaps
+image.cmap : RdBu_r
+image.interpolation : nearest
+image.aspect : equal
+
