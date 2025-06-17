@@ -2311,8 +2311,7 @@ def optimal_clustering_improved(X, feature_names, n_clusters=None, use_pca=True,
         print(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}")
 
         # Add this code after line 78 (after the PCA components analysis section)
-# Add this code after line 78 (after the PCA components analysis section)
-# Insert right after: print(f"Varianza total explicada: {sum(pca.explained_variance_ratio_):.4f}")
+
 
         # ENHANCED PCA VISUALIZATION FOR PAPER - SEPARATE PDF FILES
         if visualize:
@@ -4378,43 +4377,7 @@ def urban_pattern_clustering(
                 dpi=300, 
                 bbox_inches='tight')
     plt.close()
-   
-    
-    # # Añadir etiquetas de valores
-    # for bar in bars:
-    #     height = bar.get_height()
-    #     ax3.text(bar.get_x() + bar.get_width()/2., height + 2,
-    #             f'{height:.1f}%', ha='center', va='bottom')
-    
-    # # Distribución original vs. clustering
-    # ax4 = plt.subplot(gs[1, :])
-    
-    # # Preparar datos para la comparación
-    # pattern_counts = results_df['original_pattern'].value_counts(normalize=True) * 100
-    # cluster_pattern_counts = results_df['cluster_pattern'].value_counts(normalize=True) * 100
-    
-    # Crear DataFrame para visualización
-    # compare_df = pd.DataFrame({
-    #     'Clasificación Original (%)': pattern_counts,
-    #     'Clasificación por Clustering (%)': cluster_pattern_counts
-    # }).fillna(0).sort_index()
-    
-    # # Gráfico de barras agrupadas
-    # compare_df.plot(kind='bar', ax=ax4, width=0.7)
-    # ax4.set_title('Distribución de Patrones: Clasificación Original vs. Clustering', fontsize=16)
-    # ax4.set_ylabel('Porcentaje (%)')
-    # ax4.set_ylim(0, max(compare_df.max().max() * 1.1, 100))
-    
-    # # Añadir etiquetas de valores
-    # for container in ax3.containers:
-    #     ax3.bar_label(container, fmt='%.1f%%')
-    
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(output_dir, 'urban_pattern_comparison_accuracy.png'), 
-    #             dpi=300, 
-    #             bbox_inches='tight')
-    # plt.close()
-    
+       
     # Visualización original de comparación (mantenida para compatibilidad)
     fig, axes = plt.subplots(1, 2, figsize=(18, 10))
     
@@ -6061,12 +6024,12 @@ print("Procesamiento completado para todas las ciudades.")
 
 
 
-## Generar ambos PDFs (igual que tu función original)
-result = plot_street_patterns_pdf_optimized(
-    geojson_path="GeoJSON_Export/cary_town_nc/tracts/cary_town_nc_tracts.geojson",
-    classify_func=classify_polygon,
-    stats_dict=stats_dict,
-    graph_dict=graph_dict,
-    place_name="TEST1"
-)
+# ## Generar ambos PDFs (igual que tu función original)
+# result = plot_street_patterns_pdf_optimized(
+#     geojson_path="GeoJSON_Export/cary_town_nc/tracts/cary_town_nc_tracts.geojson",
+#     classify_func=classify_polygon,
+#     stats_dict=stats_dict,
+#     graph_dict=graph_dict,
+#     place_name="TEST1"
+# )
 

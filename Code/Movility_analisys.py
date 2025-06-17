@@ -1046,284 +1046,174 @@ class StreetPatternMobilityAnalyzer:
 
 
 
-    # def _create_mobility_density_plots(self, data, viz_dir):
-    #     """
-    #     Creates an elegant and readable ridgeline plot using a "cell" approach.
-    #     Each urban typology gets its own subplot ("cell"), and these cells are
-    #     stacked with a slight overlap to create a cohesive final image.
-    #     """
-    #     # --- 1. Style and Parameter Setup ---
-    #     MOBILITY_COLORS = {
-    #         'a': '#0077b6', 'b': '#f7b801', 'car_share': '#d00000'
-    #     }
-    #     MOBILITY_LABELS_EN = {
-    #         'a': 'Active', 'b': 'Public', 'car_share': 'Private'
-    #     }
-    #     PATTERN_LABELS_EN = {
-    #         'organico': 'Organic', 'cul_de_sac': 'Cul-de-sac',
-    #         'hibrido': 'Hybrid', 'gridiron': 'Gridiron'
-    #     }
-        
-    #     # CRITICAL: Define draw order to prevent smaller plots from being hidden.
-    #     # The largest distribution (Private) is drawn first (bottom layer).
-    #     MOBILITY_ORDER = ['car_share', 'b', 'a'] 
-        
-    #     DESIRED_PATTERN_ORDER = ['organico', 'cul_de_sac', 'hibrido', 'gridiron']
-    #     patterns = [p for p in DESIRED_PATTERN_ORDER if p in data['pattern'].unique()]
-        
-    #     if not patterns:
-    #         print("No valid patterns found for plotting.")
-    #         return
-
-    #     # --- 2. Figure and Axes "Cells" Creation ---
-    #     n_patterns = len(patterns)
-    #     # Increase vertical space per plot for better separation
-    #     fig = plt.figure(figsize=(12, 2 * n_patterns))
-        
-    #     # KEY: Overlap the axes (cells) themselves, not the data.
-    #     # This removes whitespace while keeping data in its own lane.
-    #     gs = fig.add_gridspec(n_patterns, 1, hspace=-0.5)
-        
-    #     # Create the axes from top to bottom
-    #     axs = gs.subplots()
-    #     if n_patterns == 1:
-    #         axs = [axs]
-        
-    #     # Reverse the axes list so we can iterate from bottom to top visually
-    #     axs = axs[::-1]
-
-    #     # --- 3. Iterate and Draw in Each Cell (from bottom to top) ---
-    #     for i, pattern in enumerate(patterns):
-    #         ax = axs[i]
-    #         pattern_data = data[data['pattern'] == pattern]
-            
-    #         # Make the background of the cell transparent
-    #         ax.patch.set_alpha(0)
-            
-    #         # Draw the distributions within the cell, respecting the z-order
-    #         for z_idx, col in enumerate(MOBILITY_ORDER):
-    #             if col not in pattern_data.columns: continue
-                
-    #             x_data = pattern_data[col].dropna()
-    #             if len(x_data) < 2: continue
-
-    #             x_grid = np.linspace(0, 1, 1000)
-    #             kde = KernelDensity(bandwidth=0.035, kernel='gaussian').fit(x_data.to_numpy()[:, np.newaxis])
-    #             density = np.exp(kde.score_samples(x_grid[:, np.newaxis]))
-                
-    #             if np.max(density) > 0:
-    #                 density = density / np.max(density)
-                
-    #             color = MOBILITY_COLORS[col]
-                
-    #             # Use z_idx for zorder, so 'car_share' (z_idx=0) is at the back
-    #             ax.fill_between(x_grid, 0, density, alpha=0.7, color=color, zorder=z_idx)
-    #             ax.plot(x_grid, density, color='black', lw=1.2, zorder=z_idx)
-                
-    #             # Add median line and text
-    #             median_val = x_data.median()
-    #             y_pos_at_median = np.interp(median_val, x_grid, density)
-                
-    #             ax.axvline(x=median_val, color=color, linestyle='--', lw=1.5, 
-    #                     ymax=y_pos_at_median / 1.5, # Scale line height relative to curve
-    #                     zorder=z_idx + 0.5)
-
-    #             text_x_pos = median_val + 0.015
-    #             ha = 'left'
-    #             if median_val > 0.85:
-    #                 text_x_pos = median_val - 0.015
-    #                 ha = 'right'
-
-    #             ax.text(text_x_pos, y_pos_at_median + 0.1, f'{median_val:.2f}',
-    #                     ha=ha, va='center', fontsize=9, fontweight='bold', color='white',
-    #                     bbox=dict(facecolor=color, edgecolor='white',
-    #                             boxstyle='round,pad=0.2', alpha=0.9, linewidth=0.5),
-    #                     zorder=z_idx + 0.6)
-
-    #         # --- 4. Style Each Cell ---
-    #         ax.set_ylim(0, 1.5)
-    #         ax.set_yticks([])
-            
-    #         # Add the pattern label to the left of the cell
-    #         pattern_display_name = PATTERN_LABELS_EN.get(pattern, pattern.capitalize())
-    #         ax.text(-0.01, 0.2, pattern_display_name, transform=ax.transAxes,
-    #                 fontsize=14, fontweight='bold', ha='right', va='bottom')
-
-    #         # Hide all spines except for the baseline
-    #         ax.spines[['left', 'right', 'top', 'bottom']].set_visible(False)
-            
-    #         # Only show the X-axis labels and spine on the very bottom plot (i=0)
-    #         if i == 0:
-    #             ax.spines['bottom'].set_visible(True)
-    #             ax.set_xlabel("Modal Share", fontsize=14, fontweight='bold', labelpad=15)
-    #             ax.set_xticks(np.arange(0, 1.1, 0.2))
-    #             ax.set_xticklabels([f'{x:.1f}' for x in np.arange(0, 1.1, 0.2)], fontsize=12)
-    #         else:
-    #             ax.set_xticks([])
-                
-    #     # --- 5. Titles, Legend, and Final Adjustments ---
-    #     fig.suptitle(
-    #         "Distribution of Mobility Shares by Urban Typology",
-    #         fontsize=20, fontweight='bold', y=0.98
-    #     )
-
-    #     legend_elements = [
-    #         Patch(facecolor=MOBILITY_COLORS[key], edgecolor='black', alpha=0.7,
-    #             linewidth=1, label=label) 
-    #         for key, label in MOBILITY_LABELS_EN.items()
-    #     ]
-
-    #     fig.legend(
-    #         handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, 0.93),
-    #         ncol=len(legend_elements), fontsize=12, frameon=False
-    #     )
-        
-    #     plt.subplots_adjust(left=0.1, right=0.95, top=0.88, bottom=0.1)
-
-    #     self._save_figure(f"{viz_dir}/mobility_ridgeline_final_cells.pdf", 
-    #                     "Elegant cell-based mobility ridgeline visualization generated successfully.")
-
-
     def _create_mobility_density_plots(self, data, viz_dir):
         """
-        Crea un gráfico de densidad (ridgeline plot) de calidad de publicación,
-        con una compresión vertical del 10% respecto al original.
+        Creates an elegant and readable ridgeline plot using a "cell" approach.
+        Each urban typology gets its own subplot ("cell"), and these cells are
+        stacked with a slight overlap to create a cohesive final image.
         """
-        try:
-            plt.style.use('styles/matplotlib_style.mplstyle') # Usando tu estilo
-            pass
-        except:
-            print("Estilo 'matplotlib_style.mplstyle' no encontrado. Usando valores por defecto.")
+        with plt.style.context('styles/matplotlib_style.mplstyle'):
+            # --- 1. Style and Parameter Setup ---
+            MOBILITY_COLORS = {
+                'a': '#FFC300', 'b': '#6895D2', 'car_share': '#D04848'
+            }
+            MOBILITY_LABELS_EN = {
+                'a': 'Active', 'b': 'Public', 'car_share': 'Private'
+            }
+            PATTERN_LABELS_EN = {
+                'organico': 'Organic', 'cul_de_sac': 'Cul-de-sac',
+                'hibrido': 'Hybrid', 'gridiron': 'Gridiron'
+            }
+            
+            MOBILITY_ORDER = ['car_share', 'b', 'a'] 
+            
+            # El orden de los patrones ya está como lo pediste
+            DESIRED_PATTERN_ORDER = ['organico', 'cul_de_sac', 'hibrido', 'gridiron']
+            patterns = [p for p in DESIRED_PATTERN_ORDER if p in data['pattern'].unique()]
+            
+            if not patterns:
+                print("No valid patterns found for plotting.")
+                return
 
-        # --- 1. Configuración de Parámetros Específicos del Gráfico ---
-        # ESTILO ORIGINAL RESTAURADO
-        MOBILITY_COLORS = {'a': '#0077b6', 'b': '#008000', 'car_share': '#d00000'}
-        MOBILITY_ORDER = ['a', 'b', 'car_share']
-        
-        # AJUSTE SUTIL: Reducción del 10% en la separación
-        VERTICAL_SEPARATION = 0.27 # Valor original: 0.3
-        
-        DESIRED_PATTERN_ORDER = ['organico', 'cul_de_sac', 'hibrido', 'gridiron']
-        patterns = [p for p in DESIRED_PATTERN_ORDER if p in data['pattern'].unique()]
+            # --- 2. Figure and Axes "Cells" Creation ---
+            n_patterns = len(patterns)
+            fig = plt.figure(figsize=(7.5, 1.2 * n_patterns))
+            gs = fig.add_gridspec(n_patterns, 1, hspace=-0.33)
+            axs = gs.subplots()
+            if n_patterns == 1:
+                axs = [axs]
+            
+            axs = axs[::-1]
+            patterns_for_plotting = patterns[::-1]
 
-        if not patterns:
-            print("No se encontraron patrones válidos para graficar.")
-            return
-
-        # --- 2. Creación de la Figura y los Ejes ---
-        n_patterns = len(patterns)
-        fig_width = 7.5
-        
-        # AJUSTE SUTIL: Reducción del 10% en la altura de cada subplot
-        subplot_height = 0.9 # Valor original: 1
-        
-        fig = plt.figure(figsize=(fig_width, subplot_height * n_patterns))
-        gs = fig.add_gridspec(n_patterns, 1, hspace=0.01)
-        axs = gs.subplots()
-        if n_patterns == 1:
-            axs = [axs]
-
-        # --- 3. Iteración y Dibujo de las Distribuciones ---
-        PATTERN_LABELS_EN = {
-            'organico': 'Organic', 'cul_de_sac': 'Cul-de-sac',
-            'hibrido': 'Hybrid', 'gridiron': 'Gridiron'
-        }
-
-        for i, pattern in enumerate(patterns):
-            ax = axs[i]
-            pattern_data = data[data['pattern'] == pattern]
-            display_pattern_name = PATTERN_LABELS_EN.get(pattern, pattern.replace('_', ' ').capitalize())
-            # ESTILO ORIGINAL
-            ax.text(-0.05, 0.5, display_pattern_name,
-                    transform=ax.transAxes,
-                    fontsize=8, fontweight='bold', ha='right', va='center')
-
-            vertical_offset = 0.0
-            for col in MOBILITY_ORDER:
-                if col not in pattern_data.columns: continue
-                x_data = pattern_data[col].dropna()
-                if len(x_data) < 2: continue
-
-                x_grid = np.linspace(0, 1, 1000)
+            # --- 3. Iterate and Draw in Each Cell (from bottom to top) ---
+            for i, pattern in enumerate(patterns_for_plotting):
+                ax = axs[i]
+                pattern_data = data[data['pattern'] == pattern]
                 
-                # ESTILO ORIGINAL RESTAURADO
-                kde = KernelDensity(bandwidth=0.04, kernel='gaussian') 
+                ax.patch.set_alpha(0)
                 
-                kde.fit(x_data.to_numpy()[:, np.newaxis])
-                log_density = kde.score_samples(x_grid[:, np.newaxis])
-                density = np.exp(log_density)
-                if np.max(density) > 0:
-                    density = density / np.max(density)
+                median_labels_data = []
 
-                color = MOBILITY_COLORS[col]
-                # ESTILO ORIGINAL RESTAURADO
-                ax.fill_between(x_grid, vertical_offset, density + vertical_offset, alpha=0.6, color=color, zorder=i*10)
-                ax.plot(x_grid, density + vertical_offset, linewidth=0.35, color='black', zorder=i*10 + 1)
+                for z_idx, col in enumerate(MOBILITY_ORDER):
+                    if col not in pattern_data.columns: continue
+                    x_data = pattern_data[col].dropna()
+                    if len(x_data) < 2: continue
 
-                median_val = x_data.median()
-                y_pos_at_median = density[np.abs(x_grid - median_val).argmin()]
+                    x_grid = np.linspace(0, 1, 1000)
+                    kde = KernelDensity(bandwidth=0.035, kernel='gaussian').fit(x_data.to_numpy()[:, np.newaxis])
+                    density = np.exp(kde.score_samples(x_grid[:, np.newaxis]))
+                    
+                    if np.max(density) > 0:
+                        density = density / np.max(density)
+                    
+                    color = MOBILITY_COLORS[col]
+                    
+                    ax.fill_between(x_grid, 0, density, alpha=0.4, color=color, zorder=z_idx)
+                    ax.plot(x_grid, density, color=color, lw=1.5, zorder=z_idx)
+                    
+                    median_val = x_data.median()
+                    y_pos_at_median = np.interp(median_val, x_grid, density)
+                    
+                    ax.axvline(x=median_val, color=color, linestyle='--', lw=1.5, 
+                            ymax=y_pos_at_median / 1.5,
+                            zorder=z_idx + 0.5)
+
+                    median_labels_data.append({
+                        'median': median_val,
+                        'y_pos': y_pos_at_median, # Esta es la altura "natural" en la curva
+                        'color': color,
+                        'zorder': z_idx
+                    })
+
+                # --- NUEVA LÓGICA MEJORADA: Posicionamiento sutil de etiquetas ---
+                # 1. Ordenamos las etiquetas por su altura natural en la curva.
+                median_labels_data.sort(key=lambda item: item['y_pos'])
                 
-                # ESTILO ORIGINAL RESTAURADO
-                ax.plot([median_val, median_val],
-                        [vertical_offset, vertical_offset + y_pos_at_median * 1],
-                        color=color, linestyle='--', linewidth=0.6, zorder=i*10 + 1)
+                # 2. Inicializamos variables para el control de la posición.
+                last_adjusted_y = -1  # Guarda la posición Y del centro de la última etiqueta colocada.
+                # Esta es la distancia vertical MÍNIMA que debe haber entre los centros de dos etiquetas.
+                # Representa la altura de la caja de texto más un pequeño margen.
+                REQUIRED_SEPARATION = 0.14 
 
-                text_x_pos = median_val + 0.015
-                ha = 'left'
-                if median_val > 0.85:
-                    text_x_pos = median_val - 0.015
-                    ha = 'right'
+                for label_info in median_labels_data:
+                    # LÓGICA CLAVE: "Nudge" (Empujón sutil)
+                    # La posición Y ideal (target_y) es la altura natural en la curva.
+                    target_y = label_info['y_pos']
+                    
+                    # La posición final (adjusted_y) será la más alta entre:
+                    # a) Su posición ideal (target_y).
+                    # b) La posición de la última etiqueta más la separación requerida.
+                    # Esto significa que la etiqueta SOLO se moverá hacia arriba si es estrictamente necesario.
+                    adjusted_y = max(target_y, last_adjusted_y + REQUIRED_SEPARATION)
 
-                median_label_y_pos = vertical_offset + (y_pos_at_median * 0.8) / 2
+                    # Posicionamiento horizontal (un poco más de espacio que antes)
+                    median_val = label_info['median']
+                    text_x_pos = median_val + 0.02
+                    ha = 'left'
+                    if median_val > 0.85:
+                        text_x_pos = median_val - 0.02
+                        ha = 'right'
+
+                    # Dibujamos el texto en la posición final calculada
+                    ax.text(text_x_pos, adjusted_y, f'{median_val:.2f}',
+                            ha=ha, va='center',fontsize=5,  fontweight='bold', color='white',
+                            bbox=dict(facecolor=label_info['color'], edgecolor='white',
+                                    boxstyle='round,pad=0.2', alpha=0.95, linewidth=0.5),
+                            zorder=label_info['zorder'] + 10)
+
+                    # Actualizamos la posición de la última etiqueta para la siguiente iteración.
+                    last_adjusted_y = adjusted_y
+
+                # --- 4. Style Each Cell ---
+                 # --- 4. Style Each Cell ---
+                ax.set_ylim(0, 1.5)
+                ax.set_yticks([])
                 
-                # ESTILO ORIGINAL RESTAURADO
-                ax.text(text_x_pos, median_label_y_pos, f'{median_val:.2f}',
-                        ha=ha, va='center', fontsize=4.5, fontweight='bold', color='white',
-                        bbox=dict(boxstyle='round,pad=0.2', facecolor=color, edgecolor='none'),
-                        zorder=i*10 + 2)
+                # --- AQUÍ ESTÁ LA CORRECCIÓN ---
+                # Movemos set_xlim aquí para que se aplique a TODOS los ejes, no solo al último.
+                ax.set_xlim(-0.03, 1.03)
+                
+                # Add the pattern label to the left of the cell
+                pattern_display_name = PATTERN_LABELS_EN.get(pattern, pattern.capitalize())
+                ax.text(-0.01, 0.2, pattern_display_name, transform=ax.transAxes,
+                         fontweight='bold', ha='right', va='bottom')
 
-                vertical_offset += VERTICAL_SEPARATION
+                # Hide all spines except for the baseline
+                ax.spines[['left', 'right', 'top', 'bottom']].set_visible(False)
+                
+                # Only show the X-axis labels and spine on the very bottom plot (i=0)
+                if i == 0:
+                    ax.spines['bottom'].set_visible(True)
+                    ax.set_xlabel("Modal Share", fontweight='bold', labelpad=15)
+                    ax.xaxis.set_label_coords(0.45,-0.15)
+                    ax.set_xticks(np.arange(0, 1.1, 0.2))
+                    ax.tick_params(axis='x', which='both', length=0)  # Quita todos los ticks del eje x
+                    ax.set_xticklabels([f'{x:.1f}' for x in np.arange(0, 1.1, 0.2)], fontsize=6)
+                else:
+                    ax.set_xticks([])
+                    
+            # --- 5. Titles, Legend, and Final Adjustments ---
+            fig.suptitle(
+                "Distribution of Mobility Shares by Urban Typology",
+                fontweight='bold', y=0.87,x=0.46
+            )
 
-        # --- 4. Limpieza y Estilizado de cada Eje ---
-        # El cálculo de la altura total se ajusta automáticamente a la nueva separación
-        total_height = (len(MOBILITY_ORDER) - 1) * VERTICAL_SEPARATION + 1.2
-        Y_AXIS_GAP = 0.2
+            legend_elements = [
+                Patch(facecolor=MOBILITY_COLORS[key], edgecolor=MOBILITY_COLORS[key], alpha=0.7,
+                    linewidth=1.5, label=label) 
+                for key, label in MOBILITY_LABELS_EN.items()
+            ]
 
-        for i, ax in enumerate(axs):
-            ax.set_xlim(0, 1)
-            ax.set_ylim(-Y_AXIS_GAP, total_height)
-            ax.set_yticks([])
-            ax.spines['left'].set_visible(False)
-            ax.spines['right'].set_visible(False)
-            ax.spines['top'].set_visible(False)
-            ax.patch.set_alpha(0)
+            fig.legend(
+                handles=legend_elements, loc='upper center', bbox_to_anchor=(0.46, 0.85),
+                ncol=len(legend_elements),  frameon=False
+            )
+            
+            plt.subplots_adjust(left=0.12, right=0.88, top=0.88, bottom=0.1)
 
-            if i == n_patterns - 1:
-                # ESTILO ORIGINAL RESTAURADO
-                ax.set_xlabel("Share Percentage", labelpad=15)
-                ax.set_xticks(np.arange(0, 1.1, 0.2))
-                ax.set_xticklabels([f'{x:.1f}' for x in np.arange(0, 1.1, 0.2)])
-            else:
-                ax.set_xticks([])
-                ax.spines['bottom'].set_visible(False)
-
-        # --- 5. Títulos, Leyenda y Ajustes Finales ---
-        fig.suptitle("Distribution of Mobility Shares by Urban Typology", y=0.98)
-        MOBILITY_LABELS_EN = {'a': 'Active', 'b': 'Public', 'car_share': 'Private'}
-        legend_elements = [
-            # ESTILO ORIGINAL RESTAURADO
-            Patch(facecolor=MOBILITY_COLORS[key], edgecolor='black', alpha=0.6,
-                linewidth=1, label=MOBILITY_LABELS_EN.get(key, key))
-            for key in MOBILITY_ORDER
-        ]
-        fig.legend(handles=legend_elements, loc='upper center',
-                bbox_to_anchor=(0.5, 0.93), ncol=len(legend_elements))
-        
-        # AJUSTE SUTIL: Se aumenta el margen inferior para "subir" la gráfica
-        plt.subplots_adjust(left=0.18, right=0.82, top=0.92, bottom=0.2) # Original: bottom=0.08
-        self._save_figure(f"{viz_dir}/mobility_ridgeline_compact_10pct.pdf",
-                    "Visualización de movilidad con compresión del 10% generada")
-        
+            self._save_figure(f"{viz_dir}/mobility_ridgeline_final_cells.pdf", 
+                            "Elegant cell-based mobility ridgeline visualization generated successfully.")
 
 
 
@@ -1792,9 +1682,9 @@ class StreetPatternMobilityAnalyzer:
         return True
 
 
-if __name__ == "__main__":
-    analyzer = StreetPatternMobilityAnalyzer()
-    analyzer.run_analysis()
+# if __name__ == "__main__":
+#     analyzer = StreetPatternMobilityAnalyzer()
+#     analyzer.run_analysis()
 
 
 
@@ -2098,12 +1988,12 @@ def create_marginal_effects_heatmap(marginal_effects, mobility_vars, output_dir)
                     text = f'{val:.2f}'
                 
                 ax.text(j, i, text, ha="center", va="center", 
-                        color=text_color, fontweight='bold')
+                        color=text_color, fontsize=6, fontweight='bold')
         
         # Titles and labels
         ax.set_title(r'\textbf{Marginal Effects of Urban Patterns on Mobility}' + '\n' + 
                     r'\textit{Positive = Above Average | Negative = Below Average}', 
-                     pad=20)
+                     pad=20, y=0.9)
         ax.set_xlabel('Urban Pattern')
         ax.set_ylabel('Mobility Mode')
         ax.tick_params(length=0)
@@ -2744,9 +2634,9 @@ def create_data_diagnostics(global_data, writer, mobility_vars):
     diagnos_df = pd.DataFrame(diagnostics, columns=['Métrica', 'Valor'])
     diagnos_df.to_excel(writer, sheet_name='Diagnostico_Datos', index=False)
 
-# # Ejemplo de uso:
-# if __name__ == "__main__":
-#     polygons_analysis_path = "Polygons_analysis"  
-#     output_dir = "Resultados_Patrones_Movilidad"
+# Ejemplo de uso:
+if __name__ == "__main__":
+    polygons_analysis_path = "Polygons_analysis"  
+    output_dir = "Resultados_Patrones_Movilidad"
     
-#     global_data, global_analysis, advanced_results = analyze_patterns_mobility_correlation(polygons_analysis_path, output_dir)
+    global_data, global_analysis, advanced_results = analyze_patterns_mobility_correlation(polygons_analysis_path, output_dir)

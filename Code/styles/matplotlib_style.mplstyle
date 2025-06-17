@@ -9,8 +9,8 @@
 # Configuración proporcional para figura de 1 columna (base 9pt)
 # Configuración proporcional para figura de 1 columna (base 7pt)
 text.usetex : True
-font.family : serif
-font.serif : Computer Modern Roman
+font.family : sans-serif
+font.sans-serif: : Computer Modern Sans Serif
 font.size : 7.0
 
 axes.labelsize : 7
