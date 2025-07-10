@@ -17,7 +17,6 @@ import seaborn as sns
 from scipy.stats import f_oneway, kruskal
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-import matplotlib.patches as mpatches
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.metrics import silhouette_score, confusion_matrix, classification_report , calinski_harabasz_score
@@ -36,6 +35,10 @@ import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
 plt.rcParams.update({'font.size': 14}) 
 from shapely.geometry import LineString
+import gc
+from matplotlib.collections import LineCollection
+import matplotlib.patches as patches
+from matplotlib.backends.backend_pdf import PdfPages
 
 def convert_shapefile_to_geojson(shapefile_paths, output_directory):
     # Ensure the output directory exists
@@ -5243,20 +5246,6 @@ def plot_street_patterns_optimized(
 
 
 
-
-
-
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.backends.backend_pdf import PdfPages
-import geopandas as gpd
-import osmnx as ox
-import numpy as np
-import os
-from shapely.geometry import LineString
-
-
 def plot_street_patterns_pdf_optimized(
     geojson_path,
     classify_func,
@@ -5468,7 +5457,6 @@ def plot_street_patterns_pdf_optimized(
         # OPTIMIZACIÓN 1: Configuración optimizada de matplotlib para vectores
         import matplotlib
         matplotlib.use('Agg')  # Backend sin GUI más rápido
-        import gc
         
         fig, ax = plt.subplots(figsize=figsize, facecolor=background_color)
         ax.set_facecolor(background_color)
@@ -5659,19 +5647,12 @@ def plot_street_patterns_pdf_optimized(
         import gc
         
         # CONFIGURACIÓN PARA PNG 40 DPI CON COLORES SÓLIDOS
-        plt.rcParams['figure.dpi'] = 40         # DPI base reducido
-        plt.rcParams['savefig.dpi'] = 40        # DPI de guardado reducido
-        plt.rcParams['font.size'] = 12          # Fuente más grande para compensar DPI bajo
-        plt.rcParams['axes.linewidth'] = 1.0    # Bordes normales
-        plt.rcParams['lines.linewidth'] = 1.0   # Líneas normales
-        
-        # ANTIALIASING BÁSICO (menos procesamiento)
-        plt.rcParams['lines.antialiased'] = True
-        plt.rcParams['patch.antialiased'] = True
-        plt.rcParams['text.antialiased'] = True
-        
+        plt.rcParams['figure.dpi'] = 300         # DPI base reducido
+        plt.rcParams['savefig.dpi'] = 300        # DPI de guardado reducido
+      
+                
         # Figura con DPI reducido
-        fig, ax = plt.subplots(figsize=figsize, facecolor=background_color, dpi=40)
+        fig, ax = plt.subplots(figsize=figsize, facecolor=background_color, dpi=300)
         ax.set_facecolor(background_color)
         
         # Configurar aspecto y límites
@@ -5686,7 +5667,6 @@ def plot_street_patterns_pdf_optimized(
             spine.set_visible(False)
         
         # PROCESAMIENTO OPTIMIZADO CON TOLERANCIA RELAJADA
-        print("Pre-procesando datos para PNG 40 DPI...")
         pattern_groups = {}
         total_original_lines = 0
         tolerance = 0.5  # Tolerancia más relajada para 40 DPI
@@ -5731,11 +5711,7 @@ def plot_street_patterns_pdf_optimized(
             pattern_groups[pattern]['count'] += 1
         
         print(f"Líneas para PNG 40 DPI: {sum(len(data['lines']) for data in pattern_groups.values())}")
-        
-        # RENDERIZADO CON COLORES SÓLIDOS (SIN TRANSPARENCIA)
-        from matplotlib.collections import LineCollection
-        print("Renderizando con colores sólidos...")
-        
+             
         legend_handles = []
         color_line_counts = {}
         
@@ -5764,9 +5740,7 @@ def plot_street_patterns_pdf_optimized(
                 lc = LineCollection(
                     lines,
                     colors=[color],
-                    linewidths=1,         # Grosor normal para 40 DPI
-                    alpha=None,             # ELIMINAMOS alpha para evitar transparencia
-                    antialiased=True,
+                    linewidths=1.2,         # Grosor normal para 40 DPI
                     capstyle='butt',        # Extremos cuadrados (más sólidos)
                     joinstyle='miter',      # Uniones en ángulo (más definidas)
                     rasterized=True,        # Rasterizado para colores más sólidos
@@ -5789,7 +5763,6 @@ def plot_street_patterns_pdf_optimized(
                 frameon=True,
                 fancybox=False,         # Sin bordes fancy para más solidez
                 shadow=False,           # Sin sombra para evitar transparencias
-                fontsize=10,            # Fuente más grande para 40 DPI
                 bbox_to_anchor=(0.98, 0.98),
                 borderaxespad=0,
                 handlelength=2.0,
@@ -5817,8 +5790,6 @@ def plot_street_patterns_pdf_optimized(
             pad_inches=0.05,            # Padding ligeramente mayor
             facecolor=background_color,
             edgecolor='none',
-            transparent=False,          # CRUCIAL: Sin transparencia
-            # CONFIGURACIONES PARA COLORES SÓLIDOS:
             pil_kwargs={
                 'compress_level': 1,     # Menos compresión para colores más puros
                 'optimize': False        # Sin optimización que pueda afectar colores
@@ -5831,9 +5802,9 @@ def plot_street_patterns_pdf_optimized(
         plt.clf()
         plt.cla()
         gc.collect()
-        
-        print(f"PNG 40 DPI con colores sólidos guardado: {png_path}")
         return png_path
+
+
 
 
     # --------------------------------------------------------------------------------

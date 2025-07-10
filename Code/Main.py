@@ -25,7 +25,10 @@ from matplotlib import cm
 import fiona
 import pandas as pd
 from typing import Union, List, Dict, Any                               
-    
+import folium
+import webbrowser
+
+
 # cities = [
 #     # "Medellin, Colombia",
 #     # "Pasto, Colombia",
@@ -168,44 +171,44 @@ from typing import Union, List, Dict, Any
 
 
 
-# # Procesamiento para todos los GDB disponibles
-# gdbs = [
-#     "boston_ma.gdb",
-#     "chandler_az.gdb",
-#     "moscow_id.gdb",
-#     "peachtree_ga.gdb",
-#     "philadelphia_pa.gdb",
-#     "salt_lake_ut.gdb",
-#     "santa_fe_nm.gdb",
-#     "charleston_sc.gdb",
-#     "cary_town_nc.gdb",
-#     "fort_collins_co.gdb"
-# ]
+# Procesamiento para todos los GDB disponibles
+gdbs = [
+    "boston_ma.gdb",
+    "chandler_az.gdb",
+    "moscow_id.gdb",
+    "peachtree_ga.gdb",
+    "philadelphia_pa.gdb",
+    "salt_lake_ut.gdb",
+    "santa_fe_nm.gdb",
+    "charleston_sc.gdb",
+    "cary_town_nc.gdb",
+    "fort_collins_co.gdb"
+]
 
-# # Carpeta base donde están todos los GDBs
-# base_folder = "MLowry_files"
+# Carpeta base donde están todos los GDBs
+base_folder = "MLowry_files"
 
-# for gdb_file in gdbs:
-#     # Construir la ruta completa al archivo GDB
-#     gdb_path = os.path.join(base_folder, gdb_file)
+for gdb_file in gdbs:
+    # Construir la ruta completa al archivo GDB
+    gdb_path = os.path.join(base_folder, gdb_file)
     
-#     print(f"\n\n{'#'*60}")
-#     print(f"PROCESANDO GDB: {gdb_file}")
-#     print(f"Ruta completa: {gdb_path}")
-#     print(f"{'#'*60}")
+    print(f"\n\n{'#'*60}")
+    print(f"PROCESANDO GDB: {gdb_file}")
+    print(f"Ruta completa: {gdb_path}")
+    print(f"{'#'*60}")
     
-#     # Procesar los primeros 2 layers de cada GDB
-#     # Ajusta los índices según necesites o usa todos los layers
-#     try:
-#         layer_data = process_selected_layers(
-#         gdb_path, 
-#         layer_names=["tracts", "streets"],  # Cambia estos nombres por los reales
-#         save_geojson=True,
-#         visualize=False  # Cambia a True si quieres ver los mapas
-#     )
-#     except Exception as e:
-#         print(f"Error al procesar {gdb_file}: {str(e)}")
-#         continue
+    # Procesar los primeros 2 layers de cada GDB
+    # Ajusta los índices según necesites o usa todos los layers
+    try:
+        layer_data = process_selected_layers(
+        gdb_path, 
+        layer_names=["tracts", "streets"],  # Cambia estos nombres por los reales
+        save_geojson=True,
+        visualize=False  # Cambia a True si quieres ver los mapas
+    )
+    except Exception as e:
+        print(f"Error al procesar {gdb_file}: {str(e)}")
+        continue
 
 
 
@@ -286,15 +289,6 @@ from typing import Union, List, Dict, Any
 
 
 
-
-
-
-
-# import osmnx as ox
-# import geopandas as gpd
-# import folium
-# import webbrowser
-# import os
 
 # # Cargar GeoJSON con geopandas
 # geojson_path = "Poligonos_Medellin/Json_files/EOD_2017_SIT_only_AMVA_URBANO.geojson"

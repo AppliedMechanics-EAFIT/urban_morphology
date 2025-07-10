@@ -1,0 +1,28 @@
+# urban-morphology (UM)
+name: urban-morphology(UM)
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - geopandas
+  - matplotlib
+  - seaborn
+  - networkx
+  - osmnx
+  - shapely
+  - fiona
+  - scipy
+  - scikit-learn
+  - statsmodels
+  - openpyxl
+  - plotly
+  - filelock
+  - jupyterlab  
+  - pip
+  - pip:
+      - momepy
+      - mapclassify
+      - urbanpy

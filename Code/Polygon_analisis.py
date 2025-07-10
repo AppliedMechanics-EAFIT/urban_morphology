@@ -8,176 +8,9 @@ from shapely.geometry import box
 import re
 import multiprocessing
 import time
-from filelock import FileLock  # Necesitamos instalar esta dependencia: pip install filelock
+from filelock import FileLock  
 import pandas as pd
 from typing import Union, List, Dict, Any
-
-# def process_selected_layers(gdb_path, layer_indices=None, layer_names=None, save_geojson=True, visualize=True):
-
-#     """
-#     Process selected layers from a geodatabase and convert to EPSG:4326 with coordinate validation.
-#     Saves GeoJSON files in a directory structure based on the GDB name and layer.
-#     """
-#     # Extract GDB folder name for organizing outputs
-#     gdb_name = os.path.basename(gdb_path).replace(".gdb", "")
-    
-#     # Create base output folder
-#     base_output_dir = "GeoJSON_Export"
-#     os.makedirs(base_output_dir, exist_ok=True)
-    
-#     # Create folder specific to this GDB
-#     gdb_output_dir = os.path.join(base_output_dir, gdb_name)
-#     if save_geojson:
-#         os.makedirs(gdb_output_dir, exist_ok=True)
-    
-#     # List available layers
-#     print(f"\nSearching for layers in the GDB: {gdb_path}")
-#     all_layers = fiona.listlayers(gdb_path)
-#     print(f"Layers found ({len(all_layers)}):")
-#     for i, layer in enumerate(all_layers):
-#         print(f"{i+1}. {layer}")
-    
-#     # Determine which layers to process
-#     selected_layers = []
-#     if layer_indices:
-#         selected_layers.extend([all_layers[i-1] for i in layer_indices if 1 <= i <= len(all_layers)])
-#     if layer_names:
-#         selected_layers.extend([layer for layer in layer_names if layer in all_layers])
-    
-#     selected_layers = list(dict.fromkeys(selected_layers))
-    
-#     if not selected_layers:
-#         print("No valid layers selected.")
-#         return {}
-    
-#     # Process selected layers
-#     print(f"\nProcessing {len(selected_layers)} selected layers:")
-#     results = {}
-#     for layer in selected_layers:
-#         print(f"\nReading layer: {layer}")
-#         try:
-#             gdf = gpd.read_file(gdb_path, layer=layer)
-            
-#             # Check original CRS and save for reference
-#             original_crs = gdf.crs
-#             print(f"Original CRS: {original_crs}")
-            
-#             # Convert to EPSG:4326 if needed
-#             if gdf.crs != "EPSG:4326":
-#                 print(f"Converting from {original_crs} to EPSG:4326")
-#                 gdf = gdf.to_crs(epsg=4326)
-            
-#             # Validate geometry coordinates
-#             invalid_geoms = []
-#             valid_rows = []
-            
-#             for idx, row in gdf.iterrows():
-#                 try:
-#                     geom = row.geometry
-#                     if geom is None:
-#                         print(f"Warning: Null geometry at index {idx}")
-#                         invalid_geoms.append(idx)
-#                         continue
-                        
-#                     # Check if coordinates are valid for long/lat
-#                     coords_valid = True
-                    
-#                     # Function to check if a coordinate is valid
-#                     def check_coords(x, y):
-#                         return -180 <= x <= 180 and -90 <= y <= 90
-                    
-#                     # Handle different geometry types
-#                     if geom.geom_type == 'Point':
-#                         if not check_coords(geom.x, geom.y):
-#                             coords_valid = False
-#                     elif geom.geom_type in ['LineString', 'MultiPoint']:
-#                         for x, y in geom.coords:
-#                             if not check_coords(x, y):
-#                                 coords_valid = False
-#                                 break
-#                     elif geom.geom_type in ['Polygon', 'MultiLineString']:
-#                         for line in geom.geoms if hasattr(geom, 'geoms') else [geom]:
-#                             for x, y in line.coords:
-#                                 if not check_coords(x, y):
-#                                     coords_valid = False
-#                                     break
-#                     elif geom.geom_type == 'MultiPolygon':
-#                         for polygon in geom.geoms:
-#                             for line in polygon.exterior.coords:
-#                                 x, y = line
-#                                 if not check_coords(x, y):
-#                                     coords_valid = False
-#                                     break
-#                             if not coords_valid:
-#                                 break
-                    
-#                     if coords_valid:
-#                         valid_rows.append(idx)
-#                     else:
-#                         print(f"Warning: Invalid coordinates at index {idx}")
-#                         invalid_geoms.append(idx)
-                        
-#                 except Exception as e:
-#                     print(f"Error processing geometry at index {idx}: {str(e)}")
-#                     invalid_geoms.append(idx)
-            
-#             if invalid_geoms:
-#                 print(f"Removing {len(invalid_geoms)} invalid geometries")
-#                 gdf = gdf.iloc[valid_rows]
-            
-#             # Check if we still have data after filtering
-#             if len(gdf) == 0:
-#                 print("No valid geometries remaining after coordinate validation")
-#                 continue
-                
-#             results[layer] = gdf
-            
-#             # Show properties
-#             print("Columns:", gdf.columns.tolist())
-#             print("Total valid geometries:", len(gdf))
-#             print(f"Current CRS: {gdf.crs}")
-#             print(gdf.head())
-            
-#             # Visualize if requested
-#             if visualize:
-#                 gdf.plot(figsize=(8, 6), edgecolor="black", cmap="Set2")
-#                 plt.title(f"{gdb_name} - Layer: {layer}")
-#                 plt.xlabel("Longitude")
-#                 plt.ylabel("Latitude")
-#                 plt.tight_layout()
-#                 plt.show()
-            
-#             # Save as GeoJSON if requested
-#             if save_geojson:
-#                 # Create directory for this specific layer
-#                 layer_dir = os.path.join(gdb_output_dir, layer)
-#                 os.makedirs(layer_dir, exist_ok=True)
-                
-#                 # Define output path with layer name
-#                 output_path = os.path.join(layer_dir, f"{gdb_name}_{layer}.geojson")
-                
-#                 # Use to_crs again to ensure we have the right projection
-#                 gdf_final = gdf.to_crs(epsg=4326)
-                
-#                 # Use to_file with explicit driver
-#                 gdf_final.to_file(output_path, driver="GeoJSON")
-#                 print(f"Saved as GeoJSON: {output_path}")
-                
-#                 # Optional: Validate the saved file
-#                 try:
-#                     with open(output_path, 'r') as f:
-#                         geojson_data = json.load(f)
-#                     print(f"GeoJSON file validated successfully")
-#                 except Exception as e:
-#                     print(f"Warning: Generated GeoJSON file may have issues: {str(e)}")
-                
-#         except Exception as e:
-#             print(f"Error processing layer {layer}: {str(e)}")
-    
-#     return results
-
-
-
 
 def process_selected_layers(gdb_path, layer_indices=None, layer_names=None, save_geojson=True, visualize=True):
     """
@@ -374,10 +207,7 @@ def process_selected_layers(gdb_path, layer_indices=None, layer_names=None, save
     
     return results
 
-
-# Función para obtener el grafo desde un GeoJSON
 def graph_from_geojson(geojson_path):
-
     """
     Carga un grafo de OSM usando los límites de un archivo GeoJSON
     """
@@ -402,7 +232,7 @@ def graph_from_geojson(geojson_path):
     
     return G, place_name
 
-# Variable global para contar el progreso
+# Global variable to count progress
 _progress_counter = 0
 _progress_lock = multiprocessing.Lock()
 
