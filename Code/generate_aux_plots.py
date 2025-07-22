@@ -4,6 +4,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors as mcolors
 import numpy as np
 import os
+import matplotlib.patches as mpatches
+import geopandas as gpd
+from Polygon_clustering import procesar_poligonos_y_generar_grafos, load_polygon_stats_from_txt, classify_polygon, plot_polygons_classification_png
+
 
 def generate_urban_typologies_plot(style_path='styles/matplotlib_style.mplstyle',
                                    output_filename='urban_typologies_single_column',
@@ -218,6 +222,148 @@ def generate_street_legend(style_path='styles/matplotlib_style.mplstyle',
 
         return generated_files if len(generated_files) > 1 else generated_files[0]
 
+def plot_polygons_classification_png(
+    geojson_path,
+    stats_dict,
+    classify_func,
+    output_png="polygons_classification.png",
+    graph_dict=None
+):
+    """
+    Reads a GeoDataFrame (geojson_path), assigns a 'class' to each polygon
+    based on statistics in 'stats_dict', the 'classify_func', and graphs
+    in 'graph_dict', and draws to a PNG (Matplotlib) with different colors per class.
+
+    Parameters:
+    -----------
+    geojson_path : str
+        Path to the GeoJSON file containing the polygons
+    stats_dict : dict
+        Dictionary with statistics for each polygon. Keys are (idx, sub_idx)
+    classify_func : function
+        Classification function that receives statistics and a graph as parameters
+    output_png : str, optional
+        Path to save the resulting image
+    graph_dict : dict, optional
+        Dictionary with road network graphs for each polygon.
+        Keys may have a different format than those in stats_dict.
+
+    Returns:
+    --------
+    gdf : GeoDataFrame
+        The GeoDataFrame with an additional 'pattern' column containing the classification
+    """
+
+    # Load the GeoDataFrame
+    gdf = gpd.read_file(geojson_path)
+    
+    # Create 'pattern' column with the class
+    patterns = []
+    
+    for idx, row in gdf.iterrows():
+        # Identify the polygon
+        poly_id = row['poly_id'] if 'poly_id' in gdf.columns else idx
+        key = (idx, 0)  # Assuming each row = sub-polygon 0
+        
+        if key in stats_dict:
+            poly_stats = stats_dict[key]
+            
+            # Improved graph_dict handling
+            G = None
+            if graph_dict is not None:
+                # 1. Extract main polygon ID
+                if isinstance(poly_id, tuple) and len(poly_id) >= 1:
+                    main_id = poly_id[0]
+                else:
+                    main_id = poly_id
+                
+                # 2. Generate possible key formats
+                possible_keys = [main_id, str(main_id), idx, str(idx), key]
+                
+                # 3. Search the graph using possible keys
+                for possible_key in possible_keys:
+                    if possible_key in graph_dict:
+                        G = graph_dict[possible_key]
+                        break
+                
+                # 4. Check that G is a valid graph object
+                if G is not None and not hasattr(G, 'number_of_nodes'):
+                    print(f"Warning: Object for polygon {poly_id} is not a valid graph.")
+                    G = None
+            
+            # Classify the polygon using the classification function
+            # Passing both the statistics and the graph
+            category = classify_func(poly_stats, G)
+        else:
+            print(f"Warning: No statistics found for polygon {poly_id}")
+            category = "unknown"
+            
+        patterns.append(category)
+
+    # Add the pattern column to the GeoDataFrame
+    gdf["pattern"] = patterns
+
+    # Count how many polygons per category
+    pattern_counts = gdf["pattern"].value_counts()
+    print("Pattern counts:")
+    for pattern, count in pattern_counts.items():
+        print(f"  - {pattern}: {count}")
+
+    # Map each class to a color
+    color_map = {
+        'cul_de_sac': '#FF6B6B',   # Red for cul-de-sacs
+        'gridiron': '#006400',     # Dark green for grid
+        'organico': '#45B7D1',     # Blue for organic
+        'hibrido': '#FDCB6E',      # Yellow for hybrid
+        'unknown': '#CCCCCC'       # Gray for unknown
+    }
+
+    # Function to get color by category
+    def get_color(cat):
+        return color_map.get(cat, "black")
+
+    # Get colors for each polygon
+    plot_colors = [get_color(cat) for cat in gdf["pattern"]]
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(12, 10))
+    gdf.plot(
+        ax=ax,
+        color=plot_colors,
+        edgecolor="black",
+        linewidth=0.5,
+        alpha=0.7  # Transparency for better visibility
+    )
+
+    # Manual legend with count for each category
+    legend_patches = []
+    for cat, col in color_map.items():
+        count = pattern_counts.get(cat, 0)
+        if count > 0:  # Only show present categories in legend
+            patch = mpatches.Patch(
+                color=col, 
+                label=f"{cat} ({count})"
+            )
+            legend_patches.append(patch)
+    
+    ax.legend(
+        handles=legend_patches, 
+        title="Urban Fabric Types",
+        loc="upper right",
+        frameon=True,
+        framealpha=0.9
+    )
+
+    ax.set_title("Morphological Classification of Urban Fabrics", fontsize=16)
+    ax.set_axis_off()
+
+    # Save image
+    plt.savefig(output_png, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Image saved to: {output_png}")
+    
+    return gdf
+
 
 # Example usage
 if __name__ == "__main__":
@@ -239,3 +385,27 @@ if __name__ == "__main__":
         output_format='pdf',
         locations=custom_locations
     )
+
+
+
+
+
+# 1. Load GeoJSON polygons
+geojson_path = "GeoJSON_Export/medellin_ant/tracts/medellin_ant_tracts.geojson"
+gdf = gpd.read_file(geojson_path)
+
+# 2. Process polygons and generate graphs
+graph_dict = procesar_poligonos_y_generar_grafos(gdf)
+
+# 3. Load polygon statistics from .txt file
+stats_txt = "Polygons_analysis/Medellin_ANT/stats/Polygon_Analisys_Medellin_ANT_sorted.txt"
+stats_dict = load_polygon_stats_from_txt(stats_txt)
+
+# 4. Classify polygons and save visualization
+plot_polygons_classification_png(
+    geojson_path=geojson_path,
+    stats_dict=stats_dict,
+    classify_fn=classify_polygon,
+    output_png="morphological_classification.png",
+    graph_dict=graph_dict
+)
